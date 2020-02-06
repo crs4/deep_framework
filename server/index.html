@@ -1,0 +1,34 @@
+
+<!DOCTYPE html>
+<html>
+    <head>
+    </head>
+    
+    <body>
+
+
+
+      <h1>Example</h1>
+
+
+      <script>
+            
+
+            var source = new EventSource('/api/stats');
+            source.addEventListener('message', function(e) {
+              var data = e.data;
+              var json_data = JSON.parse(data); 
+              console.log(json_data);
+            }, false);
+
+
+            
+
+          
+
+      </script>
+     
+    </body>
+</html>
+
+

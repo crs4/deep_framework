@@ -1,0 +1,34 @@
+<!-- <md-toolbar layout="row" layout-align="center center" style='height: 6%;background-color: rgba(255,255,255,1);'>
+  <md-content  class="md-padding">
+    
+
+    <md-radio-group layout="row" >
+        <md-radio-button class="md-accent" value="face">Face</md-radio-button>
+        <md-radio-button class="md-accent" value="body">Body</md-radio-button>
+    </md-radio-group>
+
+    
+  </md-content>
+
+</md-toolbar> 
+
+ -->
+<div layout-gt-md="row">
+  <panel-widget flex title="Detector" template="static/js/views/partials/detector.html" 
+  class="fixed-height-widget"></panel-widget>
+  <panel-widget flex title="Collector" template="static/js/views/partials/collector.html" 
+  class="fixed-height-widget"></panel-widget>
+  <panel-widget flex title="Stream server" template="static/js/views/partials/streamStats.html" 
+  class="fixed-height-widget"></panel-widget>
+</div>
+
+
+<div ng-controller="AlgorithmController as vm">
+  <div id="alg_div" layout-gt-md="row">
+
+  </div>
+
+  <div layout-gt-md="row">
+    <panel-widget flex title="Performance" template="static/js/views/partials/performance.html"></panel-widget>
+  </div>
+</div>

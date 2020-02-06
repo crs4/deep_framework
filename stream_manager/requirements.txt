@@ -1,0 +1,4 @@
+# git+https://github.com/crs4/hyperpeer-py
+numpy
+#opencv-python
+pyzmq

@@ -1,0 +1,18 @@
+<div ng-controller="DetectorController as vm">
+
+<md-content  class="md-padding">
+    <nvd3 options="vm.chartOptions" data="chart_data"></nvd3>
+    
+
+	<p>Total frames:
+      <b>{{detector_total}}</b>
+    </p>
+    <p>Fps:
+      <b>{{detector_fps}}</b>
+    </p>
+    <p>Faces detected:
+      <b>{{people}}</b>
+    </p>
+</md-content>
+</div>
+

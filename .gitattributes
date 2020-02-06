@@ -1,0 +1,11 @@
+*.caffemodel filter=lfs diff=lfs merge=lfs -text
+*.tf filter=lfs diff=lfs merge=lfs -text
+*_30k filter=lfs diff=lfs merge=lfs -text
+*ckpt* filter=lfs diff=lfs merge=lfs -text
+*checkpoint* filter=lfs diff=lfs merge=lfs -text
+*.pickle filter=lfs diff=lfs merge=lfs -text
+*.h5 filter=lfs diff=lfs merge=lfs -text
+*.npy filter=lfs diff=lfs merge=lfs -text
+*.meta filter=lfs diff=lfs merge=lfs -text
+*.index filter=lfs diff=lfs merge=lfs -text
+model.* filter=lfs diff=lfs merge=lfs -text

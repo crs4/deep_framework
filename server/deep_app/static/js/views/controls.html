@@ -1,0 +1,83 @@
+<div id='lilo' style='height: 2000px; width: 2000;' 
+    ng-controller="ControlsController">
+
+    <h2>Connection Settings</h1>
+    <div>
+        <form name="user-form" id="user-form" ng-hide="online">
+            <button ng-click="connect()">Connect to Server</button>
+        </form>
+        <button id="disconnect" ng-if="online" ng-click="disconnect()">Disconnect from Server</button>
+    </div>
+    <br>
+    <div id="demo" ng-show="online">
+        <label >Remote peer type: </label>
+        <input type="radio" name="remotePeerType" ng-model="remotePeerType" value="stream_manager" ng-disabled="status == 'connected'">
+        Stream Manager
+        <input type="radio" name="remotePeerType" ng-model="remotePeerType" value="stream_capture" ng-disabled="status == 'connected'"> Stream
+        Capture (IP camera)
+        <br>
+        <div ng-show="remotePeerType == 'stream_manager'">
+            <label for="remotePeerSelect"> Stream Manager ID: </label>
+            <select ng-model="remotePeer" id="remotePeerSelect" ng-options="peer.id for peer in servers"
+                ng-disabled="status == 'connected'">
+            </select>
+        </div>
+        <div ng-show="remotePeerType == 'stream_capture'">
+            <label for="remotePeerSelect">Camera ID: </label>
+            <select ng-model="remotePeer" id="remotePeerSelect" ng-options="peer.id for peer in cameras"
+                ng-disabled="status == 'connected'">
+            </select>
+        </div>
+        <div id="deep-controls" ng-show="remotePeerType == 'stream_manager' && status == 'connected'">
+            <label for="deep-source">Stream Manager Video Source: </label>
+            <select id="deep-source" ng-model='deepVideoSource'>
+                <option ng-value="'none'">None (Pause streaming)</option>
+                <option ng-value="myPeerId">Local webcam</option>
+                <option ng-value="peer.id" ng-repeat="peer in cameras">Camera {{peer.id}}</option>
+            </select>
+        </div>
+        <br>
+        <button id="start" ng-if="status != 'connected' && remotePeer" ng-click="start()">Connect</button>
+        <button id="stop" ng-if="status == 'connected'" ng-click="stop()">Stop remote connection</button>
+        <br>
+        <p>
+            Connection status: <span>{{status}}</span>
+        </p>
+        <div ng-show="status == 'connected'">
+            <h2>Data</h2>
+            <!-- <pre id="data-channel" style="height: 200px;"></pre> -->
+            <label>Show data stream:
+                <input type="checkbox" ng-model="showData">
+            </label><br />
+            <div ng-show="showData">
+                Connection data:
+                <pre >{{connectionData | json}}</pre>
+                Payload data:
+                <pre>{{lastData | json}}</pre>
+            </div>
+        </div>
+        <div ng-show="online">
+            <h2>Video</h2>
+            <label>Show local video:
+                <input type="checkbox" ng-model="showLocalVideo">
+            </label><br />
+            <video id="local_video" muted autoplay ng-show="showLocalVideo" style="float: left; width: 320px;"
+                width='320px' height='240px'></video>
+        </div>
+        <div ng-show="status == 'connected'">
+            <label>Show remote video:
+                <input type="checkbox" ng-model="showRemoteVideo">
+            </label><br />
+            <video id="video" autoplay width='640px' height='480px' ng-show="showRemoteVideo"></video>
+        </div>
+        <button id="play" ng-if="manualPlay" ng-click="goPlay()">Play Video</button>
+
+    </div>
+
+
+
+    <!-- <img style='height: 100%; width: 100%; object-fit: contain' id="bg" src="/video_stream"> -->
+
+
+
+</div>

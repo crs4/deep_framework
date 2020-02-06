@@ -1,0 +1,13 @@
+import os
+
+PROV_OUT_TO_COL = os.environ['PROV_OUT_TO_COL']
+OUT_STREAM_PORT = os.environ['OUT_STREAM_PORT']
+OUT_SERVER_PORT = os.environ['OUT_SERVER_PORT']
+ALGS = os.environ['ALGS']
+PROT = os.environ['PROT']
+STREAM_MANAGER_ADDRESS = os.environ['STREAM_MANAGER_ADDRESS']
+SERVER_ADDRESS = os.environ['SERVER_ADDRESS']
+MONITOR_ADDRESS = os.environ['MONITOR_ADDRESS']
+MONITOR_STATS_IN = os.environ['MONITOR_STATS_IN']
+INTERVAL_STATS = float(os.environ['INTERVAL_STATS'])
+STAT = os.environ['STAT']

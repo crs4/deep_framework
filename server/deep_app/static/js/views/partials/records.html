@@ -1,0 +1,57 @@
+
+<md-bottom-sheet class="md-list md-has-header">
+  <md-subheader>Select action</md-subheader>
+
+  <md-button class="md-list-item-content" ng-click="startRecording()" target="_blank" ng-disabled="timerRunning">
+       <i class="material-icons">fiber_manual_record</i>
+       Start recording
+  </md-button>
+
+  <md-button class="md-list-item-content" ng-click="stopRecording()" target="_blank" ng-disabled="!timerRunning">
+       <i class="material-icons">stop</i>
+       Stop recording
+  </md-button>
+
+  <md-button class="md-list-item-content" ng-disabled="true">
+      <i class="material-icons">timer</i>
+      <b>Time elapsed: {{seconds}} </b>
+  </md-button>
+
+  <md-button class="md-list-item-content" ng-show="!table_visible" ng-click="showTable()">
+  	  <i class="material-icons">visibility</i>
+      <b>Show stats</b>
+  </md-button>
+
+  
+
+
+  <div class="table-responsive-vertical md-whiteframe-z1" ng-show="table_visible">
+	<b><i style="cursor:pointer" class="material-icons" ng-click="hideTable()">visibility_off</i> Hide stats</b>
+  <b><i style="cursor:pointer" class="material-icons" ng-click="download()">save_alt</i> Save stats</b>
+    <table id="table" class="table table-hover table-bordered">
+        <thead>
+        <tr>
+            <th><b>Component</b></th>
+            <th><b>Frame elaborated in {{seconds}} s</b></th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr ng-repeat="(comp, fps) in mean_fps_data">
+            <td>{{comp}}</td>
+            <td>{{fps}}</td>
+        </tr>
+        </tbody>
+    </table>
+   </div>
+
+
+
+
+
+
+  
+</md-bottom-sheet>
+
+
+		
+	    

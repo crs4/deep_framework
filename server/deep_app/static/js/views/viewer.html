@@ -1,0 +1,65 @@
+<div ng-controller="ViewerController">
+    <div layout-gt-lg="row" layout="column">
+        <div flex="" flex-gt-lg="75" ng-show="status == 'connected'" >
+            <h2 style="text-align: center;">Enhanced Video</h2>
+            <video id="video" width='1280px' height='720px' autoplay style="display: none"></video>
+            <canvas id="canvas" width='auto' height='auto' ></canvas>
+            
+        </div>
+        <div flex="" flex-gt-lg="25" ng-show="status == 'connected'" ng-if="remotePeerType == 'stream_manager'">
+
+            <h2 style="text-align: center;">Video Data</h2>
+            <div class="table-responsive-vertical md-whiteframe-z1">
+                <table id="table" class="table table-hover table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Subject</th>
+                            <th>Gender</th>
+                            <th>Age</th>
+                            <th>Emotion</th>
+                            <th>Glasses</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr ng-repeat="face in demoVideoCanvas.facesData track by face.pid" >
+                            <td data-title="Name">
+                                <i class="material-icons" style="color: {{face.color}}">face</i> {{face.name}}</td>
+                            <td data-title="Gender">{{face.gender}}</td>
+                            <td data-title="Age">{{face.age}}</td>
+                            <td data-title="Emotion" >
+                                <img ng-src="./static/assets/emoji/Angry.png" alt="Angry" style="width:{{face.emotions[0].emoticonSize}}px;" ng-if="face.emotions[0].emoticonSize">
+                                <img ng-src="./static/assets/emoji/Disgust.png" alt="Disgust" style="width:{{face.emotions[1].emoticonSize}}px;" ng-if="face.emotions[1].emoticonSize">
+                                <img ng-src="./static/assets/emoji/Fear.png" alt="Fear" style="width:{{face.emotions[2].emoticonSize}}px;" ng-if="face.emotions[2].emoticonSize">
+                                <img ng-src="./static/assets/emoji/Happy.png" alt="Happy" style="width:{{face.emotions[3].emoticonSize}}px;" ng-if="face.emotions[3].emoticonSize">
+                                <img ng-src="./static/assets/emoji/Neutral.png" alt="Neutral" style="width:{{face.emotions[4].emoticonSize}}px;" ng-if="face.emotions[4].emoticonSize">
+                                <img ng-src="./static/assets/emoji/Sad.png" alt="Sad" style="width:{{face.emotions[5].emoticonSize}}px;" ng-if="face.emotions[5].emoticonSize">
+                                <img ng-src="./static/assets/emoji/Surprise.png" alt="Surprise" style="width:{{face.emotions[6].emoticonSize}}px;" ng-if="face.emotions[6].emoticonSize">
+                            </td>
+                            <td data-title="Glasses">{{face.glasses}}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    
+    </div>
+    <div layout-gt-md="row">
+        <div flex="50" ng-show="status == 'connected'">
+            <label>Show details:
+                <input type="checkbox" ng-model="showDetails">
+            </label><br />
+            <div ng-if="showDetails">
+                <h2>Demo details</h2>
+                <h5>Canvas resolution: {{demoVideoCanvas.canvas.width}} x {{demoVideoCanvas.canvas.height}}</h5>
+                <h5>Real video resolution: {{demoVideoCanvas.video.videoWidth}} x {{demoVideoCanvas.video.videoHeight}}</h5>
+                <h5>Video aspect ratio: {{demoVideoCanvas.video.videoWidth / demoVideoCanvas.video.videoHeight}}</h5>
+                <!-- <pre id="data-channel" style="height: 200px;"></pre> -->
+                <p>
+                    <pre id="data-channel">{{demoVideoCanvas.data | json}}</pre>
+                </p>
+            </div>
+        
+        </div>
+    </div>
+</div>
+

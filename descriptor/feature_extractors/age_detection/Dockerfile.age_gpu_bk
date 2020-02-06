@@ -1,0 +1,21 @@
+
+
+FROM ufoym/deepo:caffe-py36-cu90
+
+
+
+RUN pip3 install \
+    imutils \
+    pyzmq
+
+
+COPY . /home/deepframework/descriptor/age_detection
+COPY --from=utils:deep /home/deepframework/utils/. /home/deepframework/descriptor/utils
+COPY --from=agent:deep /home/deepframework/agent/. /home/deepframework/descriptor
+
+WORKDIR /home/deepframework/descriptor
+
+CMD python sub_agent.py
+
+
+
