@@ -342,6 +342,8 @@ class Configurator:
 
 		#compose_dir = os.path.join(MAIN_DIR,'compose-files')
 		compose_dir = 'compose-files'
+		if not os.path.exists(compose_dir):
+			os.makedirs(compose_dir)
 
 		desc_dir =os.path.join(MAIN_DIR,'descriptor/feature_extractors')
 		algs_config_files = [os.path.join(dp, f) for dp, dn, filenames in os.walk(desc_dir) for f in filenames if os.path.splitext(f)[1] == '.ini']
