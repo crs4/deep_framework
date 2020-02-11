@@ -1,8 +1,12 @@
+
+
+container_base_dir = '/home/deepframework/descriptor/face_recognition/'
+
 # Paths
-FACENET_DATA_PATH = '/home/idrogeno/facenet-master/src/align'
-FACENET_MODEL_PATH = '/home/idrogeno/facenet-master/src/models/20170131-234652'
-FACENET_SRC_PATH = '/home/idrogeno/facenet-master/src'
-FACE_REC_DATA_DIR_PATH = '/home/idrogeno/face_recognition/cont'
+FACENET_DATA_PATH = container_base_dir + 'facenet/src/align'
+FACENET_MODEL_PATH = container_base_dir + 'facenet/src/models/20170131-234652'
+FACENET_SRC_PATH =  container_base_dir + 'facenet/src'
+FACE_REC_DATA_DIR_PATH = container_base_dir +'template_models'
 
 # Face detection
 FACE_BBOX_KEY = 'bbox'

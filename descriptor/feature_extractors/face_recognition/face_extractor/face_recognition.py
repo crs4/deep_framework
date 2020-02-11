@@ -77,7 +77,7 @@ class FaceRecognition:
             if fec.FACE_REC_THRESHOLD_KEY in self.params:
                 self.face_rec_threshold = self.params[fec.FACE_REC_THRESHOLD_KEY]
 
-        self.det_thresholds = [FACENET_DETECTION_THRESHOLD_1, FACENET_DETECTION_THRESHOLD_2, FACENET_DETECTION_THRESHOLD_3]
+        self.det_thresholds = [det_threshold_1, det_threshold_2, det_threshold_3]
 
         # Initialize tools for face detection and alignment
         self.tools = FaceNet(params)
@@ -136,7 +136,7 @@ class FaceRecognition:
             i = 0
             for im_path in im_paths:
 
-                print 'Adding %s to face model' % im_path
+                print('Adding %s to face model' % im_path)
 
                 img = cv2.imread(im_path, cv2.IMREAD_COLOR)
                 img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
@@ -223,7 +223,7 @@ class FaceRecognition:
                 db_file_path = os.path.join(
                     self.data_dir_path, db_file_name)
 
-                with open(db_file_path, 'w') as f:
+                with open(db_file_path, 'wb') as f:
                     pickle.dump(self.models, f)
 
                 if not tag_label_associations:
@@ -244,11 +244,11 @@ class FaceRecognition:
 
         except IOError as e:
             errno, strerror = e.args
-            print "I/O error({0}): {1}".format(errno, strerror)
-            print 'I/O error'
+            print("I/O error({0}): {1}".format(errno, strerror))
+            print('I/O error')
 
         except:
-            print "Unexpected error:", sys.exc_info()[0]
+            print("Unexpected error:", sys.exc_info()[0])
             raise
 
         return ok
@@ -292,9 +292,9 @@ class FaceRecognition:
                     shutil.rmtree(item_path)
             except IOError as e:
                 errno, strerror = e.args
-                print "I/O error({0}): {1}".format(errno, strerror)
+                print("I/O error({0}): {1}".format(errno, strerror))
             except:
-                print "Unexpected error:", sys.exc_info()[0]
+                print("Unexpected error:", sys.exc_info()[0])
                 raise
 
     def get_labels(self):
@@ -428,7 +428,7 @@ class FaceRecognition:
 
         # Check if file with models exist
         if os.path.exists(db_file_path):
-            with open(db_file_path, 'r') as f:
+            with open(db_file_path, 'rb') as f:
 
                 # Load models
                 self.models = pickle.load(f)
