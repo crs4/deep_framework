@@ -11,7 +11,7 @@
 4.  In each subfolder, you have to save images of the relative person (at least 5 good quality images in different poses).
 
 #### Working tree
-![alt text](working_tree.png)
+![alt text](tree.jpg)
 
 #### Sample images Alessandro Sassu
 ![alt text](as_sample.jpg)
