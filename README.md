@@ -80,7 +80,7 @@ Software dependencies:
 2.  Install pip3.
 3.  Install [git LFS](https://github.com/git-lfs/git-lfs/wiki/Installation).
 4.  Install nvidia-driver (at least 384.130 version).
-5.  Install [Docker](https://docs.docker.com/install/linux/docker-ce/ubuntu/)(at least 18.03.1-ce version but lower than 19 version). 
+5.  Install [Docker](https://docs.docker.com/install/linux/docker-ce/ubuntu/) (at least 18.03.1-ce version but lower than 19 version). 
 6.  Install [Docker Compose](https://docs.docker.com/compose/install/) (at least 1.23.1 version).
 7.  Install [nvidia-docker 2 and nvidia-container-runtime 2](https://github.com/nvidia/nvidia-docker/wiki/Installation-(version-2.0)) (follow instructions in order to install the proper version according to Docker's one).
 8.  Clone the repository.
