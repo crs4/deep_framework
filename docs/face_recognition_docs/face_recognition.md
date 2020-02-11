@@ -4,7 +4,7 @@
 
 1.  Navigate to the followign path: `descriptor/feature_extractors/face_recognition/`
 
-2.  Create the folder: `template_models/images/`
+2.  Create the path: `template_models/images/`
 
 3.  In folder `images`, create subfolders named as people you want to recognize (Ex. 'Alessandro Sassu').
 
