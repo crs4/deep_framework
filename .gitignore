@@ -18,6 +18,8 @@
 *.part
 *.pdf
 
+**/descriptor/feature_extractors/face_recognition/template_models/images/
+
 
 **/compose-files/*.yml
 **/compose-files/*.list
