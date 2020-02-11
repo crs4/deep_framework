@@ -73,12 +73,12 @@ def load_YAML_file(file_path):
 
     except IOError as e:
         error_str = "I/O error({0}): {1}".format(e.errno, e.strerror)
-        print error_str
-        print 'Unable to load %s' % file_path
+        print(error_str)
+        print('Unable to load %s' % file_path)
         return None
 
     except:
-        print "Unexpected error:", sys.exc_info()[0]
+        print("Unexpected error:", sys.exc_info()[0])
         return None
 
 def save_YAML_file(file_path, data):
@@ -103,10 +103,10 @@ def save_YAML_file(file_path, data):
 
     except IOError as e:
         error_str = "I/O error({0}): {1}".format(e.errno, e.strerror)
-        print error_str
-        print 'Unable to save %s' % file_path
+        print(error_str)
+        print('Unable to save %s' % file_path)
         return None
 
     except:
-        print "Unexpected error:", sys.exc_info()[0]
+        print("Unexpected error:", sys.exc_info()[0])
         return None

@@ -131,8 +131,8 @@ class FaceRecognition(AbstractDescriptor):
       imgs = np.stack(batch)
       probe_features = self.__features_computation(imgs)
 
-      template_features= self.template_models[b'reps']
-      template_labels = self.template_models[b'labels']
+      template_features= self.template_models['reps']
+      template_labels = self.template_models['labels']
       results = self.__probe_templates_distance_computation(probe_features,template_features,template_labels)
       return results
       

@@ -116,7 +116,7 @@ class FaceNet(object):
 
         if show_results:
             # Show image with bounding boxes of detected faces
-            print faces
+            print(faces)
 
             # Convert face to BGR
             img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
@@ -189,10 +189,10 @@ class FaceNet(object):
         if show_results:
             # Show image with bounding boxes of detected faces
             if face_bbox is None:
-                print 'No detected faces'
+                print('No detected faces')
             else:
-                print 'Detected face:'
-                print face_bbox
+                print('Detected face:')
+                print(face_bbox)
 
                 # Convert face to BGR
                 img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
@@ -286,11 +286,11 @@ class FaceNet(object):
                     cv2.imshow('aligned face', aligned_face_bgr)
                     cv2.waitKey(0)
                 else:
-                    print 'Alignment failed'
+                    print('Alignment failed')
 
         else:
             if show_results:
-                print 'No face detected'
+                print('No face detected')
 
         return bbox, aligned_face
 
