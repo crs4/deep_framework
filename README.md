@@ -89,7 +89,7 @@ Software dependencies:
 ```
 $ pip3 install -r requirements.txt
 ```
-10.  In order to setup Face Recognition algorithm, follow these [instructions](docs/dace_recognition_docs/face_recognition.md).
+10.  In order to setup Face Recognition algorithm, follow these [instructions](docs/face_recognition_docs/face_recognition.md).
 
 
 DEEP-Framework can be deployed on a single node cluster or in a multi node cluster. Make sure every node is accessible via SSH.
