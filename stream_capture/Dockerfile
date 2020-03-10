@@ -1,7 +1,5 @@
 # Use hyperpeer-py image as a parent image
-#FROM hyperpeer-py-test 
-
-FROM 156.148.14.162/jsaenz:hyperpeer-py
+FROM 156.148.14.162/hyperpeer-py:latest
 
 
 # Set the working directory to /app

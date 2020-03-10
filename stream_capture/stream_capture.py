@@ -1,5 +1,5 @@
 import sys
-sys.path.append('/hyperpeer')
+# sys.path.append('/hyperpeer')
 from hyperpeer import Peer, PeerState
 import asyncio
 import subprocess
@@ -14,7 +14,7 @@ import urllib.request
 ROOT = os.path.dirname(__file__)
 logging.basicConfig(level=logging.INFO)
 
-logging.info('*** STREAM CAPTURE v0.1 ***')
+logging.info('*** STREAM CAPTURE v0.2 ***')
 #ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
 #ssl_context.load_verify_locations('cert.pem')
 
@@ -62,17 +62,21 @@ class Player:
 
 
 source_url = os.environ["SOURCE"]
-source_format = os.environ.get("SOURCE_FORMAT", 'mpjpeg')
+#source_format = os.environ.get("SOURCE_FORMAT", 'mpjpeg')
 
 
 try:
     req = urllib.request.Request(source_url)
     urllib.request.urlopen(req)
 except (ValueError, urllib.error.URLError) as e:
-    print(f'Invalid source url ({source_url}, format: {source_format}): {str(e)}')
-    sys.exit()
+    print(f'Invalid source url ({source_url}): {str(e)}')
+    #sys.exit()
 
-
+if source_url.endswith('mjpg'):
+    source_format = 'mpjpeg'
+else:
+    source_format = None
+    
 stream_capture = Player(source=source_url, peer_type='stream_capture', format=source_format)
 
 
