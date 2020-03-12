@@ -1,0 +1,31 @@
+
+FROM tensorflow/tensorflow:1.12.3-py3
+
+
+RUN apt-get update && apt-get install -y \ 
+    build-essential \
+    libjpeg-dev \
+    libopencv-dev \
+    pkg-config \
+    iputils-ping \
+    python-setuptools
+
+RUN pip3 install \
+    pyzmq==18.0.1 \
+    opencv-python==4.1.0.25 \
+    keras==2.2.4 \
+    pyyaml==5.1.1
+
+COPY . /home/deepframework/descriptor/face_recognition
+
+WORKDIR /home/deepframework/descriptor/face_recognition/template_models
+
+RUN if [ -f "Face_models_facenet" ]; then rm Face_models_facenet; fi
+
+RUN if [ -f "Tag_label_associations_facenet.yaml" ]; then rm Tag_label_associations_facenet.yaml; fi
+
+
+
+WORKDIR /home/deepframework/descriptor/face_recognition/face_extractor
+RUN python3 face_recognition.py -a /home/deepframework/descriptor/face_recognition/template_models/images
+
