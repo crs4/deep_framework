@@ -14,7 +14,7 @@ import urllib.request
 ROOT = os.path.dirname(__file__)
 logging.basicConfig(level=logging.INFO)
 
-logging.info('*** STREAM CAPTURE v0.2 ***')
+logging.info('*** STREAM CAPTURE v0.4 ***')
 #ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
 #ssl_context.load_verify_locations('cert.pem')
 
@@ -26,13 +26,13 @@ ssl_context.verify_mode = ssl.CERT_NONE
 
 
 class Player:
-    def __init__(self, source, peer_type, format=None):
-        self.id = 'temp_id'
+    def __init__(self, source, peer_id, peer_type, format=None):
+        self.id = peer_id
         if format:
-            self.peer = Peer('wss://' + os.environ['HP_SERVER']+':'+ os.environ['SERVER_PORT'],
+            self.peer = Peer('wss://' + os.environ['HP_SERVER']+':'+ os.environ['SERVER_PORT'], id=peer_id,
                              peer_type=peer_type, media_source=source, ssl_context=ssl_context, media_source_format=format)
         else:
-            self.peer = Peer('wss://' + os.environ['HP_SERVER']+':'+ os.environ['SERVER_PORT'],
+            self.peer = Peer('wss://' + os.environ['HP_SERVER']+':'+ os.environ['SERVER_PORT'], id=peer_id,
                              peer_type=peer_type, media_source=source, ssl_context=ssl_context)
 
     async def start(self, remotePeerId=None):
@@ -61,7 +61,10 @@ class Player:
         await self.peer.close()
 
 
-source_url = os.environ["SOURCE"]
+source_id = os.environ["STREAM_CAPTURE_ID"]
+logging.info('STREAM_CAPTURE_ID: ' + source_id)
+source_url = os.environ[f'SOURCE_{source_id}']
+logging.info('Source URL: ' + source_url)
 #source_format = os.environ.get("SOURCE_FORMAT", 'mpjpeg')
 
 
@@ -74,10 +77,12 @@ except (ValueError, urllib.error.URLError) as e:
 
 if source_url.endswith('mjpg'):
     source_format = 'mpjpeg'
+elif source_url.startswith('/dev'):
+    source_format = 'v4l2'
 else:
     source_format = None
     
-stream_capture = Player(source=source_url, peer_type='stream_capture', format=source_format)
+stream_capture = Player(source=source_url, peer_id=source_id, peer_type='stream_capture', format=source_format)
 
 
 # run event loop
