@@ -20,16 +20,8 @@ COPY . /home/deepframework/descriptor/face_recognition
 COPY --from=utils:deep /home/deepframework/utils /home/deepframework/descriptor/utils
 COPY --from=agent:deep /home/deepframework/agent/. /home/deepframework/descriptor
 
-WORKDIR /home/deepframework/descriptor/face_recognition/template_models
 
-RUN if [ -f "Face_models_facenet" ]; then rm Face_models_facenet; fi
-
-RUN if [ -f "Tag_label_associations_facenet.yaml" ]; then rm Tag_label_associations_facenet.yaml; fi
-
-
-
-WORKDIR /home/deepframework/descriptor/face_recognition/face_extractor
-RUN python3 face_recognition.py -a /home/deepframework/descriptor/face_recognition/template_models/images
+COPY --from=face_recognition_setup:deep /home/deepframework/descriptor/face_recognition/template_models/. /home/deepframework/descriptor/face_recognition/template_models
 
 WORKDIR /home/deepframework/descriptor
 
