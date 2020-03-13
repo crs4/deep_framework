@@ -187,23 +187,22 @@ class ImageManager:
 		self.machine = machine
 		self.registry = registry.insecure_addr
 
+
+
 	def build_images(self):
 
 		base_com = 'docker build '
 		build_utils = base_com + '-t utils:deep utils/'
 		build_agent = base_com + '-t agent:deep descriptor/agent'
+		build_recog_setup = base_com + '-f descriptor/feature_extractors/face_recognition/Dockerfile.recognition_setup' + ' -t face_recognition_setup:deep descriptor/feature_extractors/face_recognition/'
+
+
 		build_face_detector  = base_com + '-t '+self.registry+'/face_detector:deep detector/face_detection'
 		build_collector = base_com + '-t '+self.registry+'/collector:deep collector/'
 		build_broker = base_com + ' -t '+self.registry+'/broker:deep descriptor/broker'
 		build_sub_col = base_com + ' -t '+self.registry+'/sub_collector:deep descriptor/sub_collector'
 		build_monitor = base_com + ' -t '+self.registry+'/monitor:deep monitor/'
-		build_yaw_gpu = base_com + '-f descriptor/feature_extractors/yaw_detection/Dockerfile.yaw_detection_gpu'+ ' -t '+self.registry+'/yaw:deep_gpu descriptor/feature_extractors/yaw_detection/'
-		build_recog_gpu = base_com + '-f descriptor/feature_extractors/face_recognition/Dockerfile.recognition_gpu'+ ' -t '+self.registry+'/face_recognition:deep_gpu descriptor/feature_extractors/face_recognition/'
-		build_age_gpu = base_com + '-f descriptor/feature_extractors/age_detection/Dockerfile.age_gpu' + ' -t '+self.registry+'/age:deep_gpu descriptor/feature_extractors/age_detection'
-		build_emotion_gpu = base_com + '-f descriptor/feature_extractors/emotion_detection/Dockerfile.emotion_gpu' + ' -t '+self.registry+'/emotion:deep_gpu descriptor/feature_extractors/emotion_detection/'
-		build_gender_gpu = base_com + '-f descriptor/feature_extractors/gender_detection/Dockerfile.gender_gpu' + ' -t '+self.registry+'/gender:deep_gpu descriptor/feature_extractors/gender_detection'
-		build_glasses_gpu = base_com + '-f descriptor/feature_extractors/glasses_detection/Dockerfile.glasses_recognition_gpu' + ' -t '+self.registry+'/glasses:deep_gpu descriptor/feature_extractors/glasses_detection/'
-		build_pitch_gpu = base_com + '-f descriptor/feature_extractors/pitch_detection/Dockerfile.pitch_detection_gpu' + ' -t '+self.registry+'/pitch:deep_gpu descriptor/feature_extractors/pitch_detection/'
+
 		build_yaw_cpu = base_com + '-f descriptor/feature_extractors/yaw_detection/Dockerfile.yaw_detection_cpu' + ' -t '+self.registry+'/yaw:deep_cpu descriptor/feature_extractors/yaw_detection/'
 		build_recog_cpu = base_com + '-f descriptor/feature_extractors/face_recognition/Dockerfile.recognition_cpu' + ' -t '+self.registry+'/face_recognition:deep_cpu descriptor/feature_extractors/face_recognition/'
 		build_age_cpu = base_com + '-f descriptor/feature_extractors/age_detection/Dockerfile.age_cpu' + ' -t '+self.registry+'/age:deep_cpu descriptor/feature_extractors/age_detection'
@@ -211,12 +210,29 @@ class ImageManager:
 		build_gender_cpu = base_com + '-f descriptor/feature_extractors/gender_detection/Dockerfile.gender_cpu' + ' -t '+self.registry+'/gender:deep_cpu descriptor/feature_extractors/gender_detection'
 		build_glasses_cpu = base_com + '-f descriptor/feature_extractors/glasses_detection/Dockerfile.glasses_recognition_cpu' + ' -t '+self.registry+'/glasses:deep_cpu descriptor/feature_extractors/glasses_detection/'
 		build_pitch_cpu = base_com + '-f descriptor/feature_extractors/pitch_detection/Dockerfile.pitch_detection_cpu' + ' -t '+self.registry+'/pitch:deep_cpu descriptor/feature_extractors/pitch_detection/'
+
+		build_yaw_gpu = base_com + '-f descriptor/feature_extractors/yaw_detection/Dockerfile.yaw_detection_gpu'+ ' -t '+self.registry+'/yaw:deep_gpu descriptor/feature_extractors/yaw_detection/'
+		build_recog_gpu = base_com + '-f descriptor/feature_extractors/face_recognition/Dockerfile.recognition_gpu'+ ' -t '+self.registry+'/face_recognition:deep_gpu descriptor/feature_extractors/face_recognition/'
+		build_age_gpu = base_com + '-f descriptor/feature_extractors/age_detection/Dockerfile.age_gpu' + ' -t '+self.registry+'/age:deep_gpu descriptor/feature_extractors/age_detection'
+		build_emotion_gpu = base_com + '-f descriptor/feature_extractors/emotion_detection/Dockerfile.emotion_gpu' + ' -t '+self.registry+'/emotion:deep_gpu descriptor/feature_extractors/emotion_detection/'
+		build_gender_gpu = base_com + '-f descriptor/feature_extractors/gender_detection/Dockerfile.gender_gpu' + ' -t '+self.registry+'/gender:deep_gpu descriptor/feature_extractors/gender_detection'
+		build_glasses_gpu = base_com + '-f descriptor/feature_extractors/glasses_detection/Dockerfile.glasses_recognition_gpu' + ' -t '+self.registry+'/glasses:deep_gpu descriptor/feature_extractors/glasses_detection/'
+		build_pitch_gpu = base_com + '-f descriptor/feature_extractors/pitch_detection/Dockerfile.pitch_detection_gpu' + ' -t '+self.registry+'/pitch:deep_gpu descriptor/feature_extractors/pitch_detection/'
+		
 		build_server = base_com + ' -t '+self.registry+'/server:deep server/'
 		build_stream_capture = base_com + ' -t '+self.registry+'/stream_capture:deep stream_capture/'
 		build_stream_manager = base_com + ' -t '+self.registry+'/stream_manager:deep stream_manager/'
-		build_commands = [build_utils,build_agent,build_face_detector,build_collector,build_broker,build_sub_col,build_monitor,build_yaw_gpu,build_recog_gpu,build_age_gpu,build_emotion_gpu,build_gender_gpu,build_glasses_gpu,build_pitch_gpu,build_yaw_cpu,build_recog_cpu,build_age_cpu,build_emotion_cpu,build_gender_cpu,build_glasses_cpu,build_pitch_cpu,build_server,build_stream_capture,build_stream_manager ]
+		build_commands = [build_utils,build_agent,build_recog_setup,build_face_detector,build_collector,build_broker,build_sub_col,build_monitor,build_yaw_gpu,build_recog_gpu,build_age_gpu,build_emotion_gpu,build_gender_gpu,build_glasses_gpu,build_pitch_gpu,build_yaw_cpu,build_recog_cpu,build_age_cpu,build_emotion_cpu,build_gender_cpu,build_glasses_cpu,build_pitch_cpu,build_server,build_stream_capture,build_stream_manager ]
 		for i,build in enumerate(build_commands):
 			
+			if 'cpu' in build:
+				mode = 'cpu'
+			elif 'gpu' in build:
+				mode = 'gpu'
+			else:
+				mode = ''
+
+
 
 			try:
 				result = re.search('5000/(.*):deep', build)
@@ -226,7 +242,7 @@ class ImageManager:
 				image_name = result.group(1)
 
 
-			print('Building %s: %s of %s' % (image_name, str(i+1), str(len(build_commands))))
+			print('Building %s %s: %s of %s' % (image_name, mode, str(i+1), str(len(build_commands))))
 			self.machine.exec_shell_command(build,ignore_err = False)
 
 	def push_images(self):
@@ -259,6 +275,13 @@ class ImageManager:
 		
 		for i,push in enumerate(push_commands):
 
+			if 'cpu' in push:
+				mode = 'cpu'
+			elif 'gpu' in push:
+				mode = 'gpu'
+			else:
+				mode = ''
+
 			try:
 				result = re.search('5000/(.*):deep', push)
 				image_name = result.group(1)
@@ -266,5 +289,5 @@ class ImageManager:
 				result = re.search('-t (.*):deep', push)
 				image_name = result.group(1)
 
-			print('Pushing %s: %s of %s' % (image_name, str(i+1), str(len(push_commands))))
+			print('Pushing %s %s: %s of %s' % (image_name,mode, str(i+1), str(len(push_commands))))
 			self.machine.exec_shell_command(push)

@@ -227,17 +227,20 @@ class Configurator:
 
 
 
-	def set_stream_capture(self):
+	def set_stream_capture(self, id):
 		stream_capture = dict()
+		stream_capture['environment'] = [f'STREAM_CAPTURE_ID={id}']
 		stream_capture['env_file'] = ['env_params.list', 'env_ports.list']
 		stream_capture['image'] = self.reg.insecure_addr+'/stream_capture:deep'
 		stream_capture['networks'] = ['net_deep']
+		stream_capture['devices'] = ['/dev/video0:/dev/video0']
+		#stream_capture['volumes'] = ['/dev/video0:/dev/video0']
 		return stream_capture
 
 
 
 
-	def set_compose_images(self,s_compose_file, source):
+	def set_compose_images(self,s_compose_file, sources):
 	
 		path = Path(s_compose_file)
 		with open(str(path)) as fp:
@@ -253,12 +256,15 @@ class Configurator:
 				image_name = image.split('/')[1] 
 				val['image'] = self.reg.insecure_addr +'/'+ image_name
 			
-			if source != '':
-				stream_capture = self.set_stream_capture()
-				compose['services']['stream_capture'] = stream_capture
-			else:
-				if 'stream_capture' in list(compose['services'].keys()):
-					del compose['services']['stream_capture']
+			for service_name in list(compose['services'].keys()):
+				if service_name.startswith('stream_capture'):
+					del compose['services'][service_name]
+			if len(sources):
+				i = 0
+				for id, source in sources:
+					stream_capture = self.set_stream_capture(id)
+					compose['services'][f'stream_capture_{i}'] = stream_capture
+					i += 1
 
 
 		outf = Path(s_compose_file)
