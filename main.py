@@ -36,9 +36,12 @@ if __name__ == "__main__":
 	print(nodes_data)
 
 	filename = 'env_params.list'
-	if os.path.isfile('./'+filename) and not args.run:
-		change_params_question = 'Do you want to change streaming params? (y/n): \n'
-		if q.get_acceptable_answer(change_params_question,['y','n']).lower() == 'y':
+	if not args.run:
+		change_params_answer =  'y'
+		if os.path.isfile('./'+filename):
+			change_params_question = 'Do you want to change streaming params? (y/n): \n'
+			change_params_answer = q.get_acceptable_answer(change_params_question,['y','n']).lower()
+		if  change_params_answer == 'y':
 			max_delay = q.get_number('Insert max delay in seconds you consider acceptable for getting algorithms results (default: 1s): \n','float',1)
 			interval_stats = q.get_number('How often do you want to generate statics of execution in seconds? (default: 1s): \n','float',1)
 			#timezone = q.get_answer('Please, insert your timezone (default Europe/Rome): \n')
@@ -56,7 +59,7 @@ if __name__ == "__main__":
 				out.write('INTERVAL_STATS=' + str(interval_stats) + '\n')
 				#out.write('TZ=' + timezone + '\n')
 				for id, source  in sources:
-					out.write(f'\nSOURCE_{id}={source}\n')
+					out.write('\nSOURCE_' + id + '=' + source + '\n')
 	else:
 		sources = []
 		with open(filename) as f:
