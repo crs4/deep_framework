@@ -8,6 +8,8 @@ WORKDIR /app
 # Copy the current directory contents into the container at /app
 ADD . /app
 
+RUN mkdir /mnt/remote_media
+
 # Install any needed packages specified in requirements.txt
 #RUN pip install --trusted-host pypi.python.org -r requirements.txt
 
