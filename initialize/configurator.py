@@ -233,8 +233,8 @@ class Configurator:
 		stream_capture['env_file'] = ['env_params.list', 'env_ports.list']
 		stream_capture['image'] = self.reg.insecure_addr+'/stream_capture:deep'
 		stream_capture['networks'] = ['net_deep']
-		stream_capture['devices'] = ['/dev/video0:/dev/video0']
-		stream_capture['volumes'] = ['/mnt/remote_media:/mnt/remote_media']
+		# stream_capture['devices'] = ['/dev/video0:/dev/video0']
+		# stream_capture['volumes'] = ['/mnt/remote_media:/mnt/remote_media']
 		return stream_capture
 
 

@@ -36,8 +36,8 @@ if __name__ == "__main__":
 	print(nodes_data)
 
 	filename = 'env_params.list'
+	change_params_answer =  'y'
 	if not args.run:
-		change_params_answer =  'y'
 		if os.path.isfile('./'+filename):
 			change_params_question = 'Do you want to change streaming params? (y/n): \n'
 			change_params_answer = q.get_acceptable_answer(change_params_question,['y','n']).lower()
@@ -60,7 +60,7 @@ if __name__ == "__main__":
 				#out.write('TZ=' + timezone + '\n')
 				for id, source  in sources:
 					out.write('\nSOURCE_' + id + '=' + source + '\n')
-	else:
+	if args.run or change_params_answer == 'n':
 		sources = []
 		with open(filename) as f:
 			content = f.read().splitlines()
