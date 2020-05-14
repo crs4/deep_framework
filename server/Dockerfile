@@ -8,10 +8,11 @@ COPY . /server
 
 WORKDIR /server/deep_app/static
 RUN yarn install
+RUN npm install -g browserify
+RUN yarn run build
 
 WORKDIR /server
 RUN npm install
-# RUN npm install zeromq
 
 CMD ["node", "server.js"]
 

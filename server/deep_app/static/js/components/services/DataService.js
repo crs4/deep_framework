@@ -199,7 +199,8 @@ function dataService($window) {
     setDeepVideoSource: function(sourcePeerId) {
       if (!hp || sourcePeerId === 'none' || deepSourcePeerId == sourcePeerId) return
       deepVideoSource = sourcePeerId
-      hp.send({ type: 'source', peerId: sourcePeerId})
+      hp.send({ type: 'source', peerId: sourcePeerId })
+      hp.send({ type: 'metadata', metadata: { type: 'browser_video'} })
     },
     setRemotePeerType: (peerType) => remotePeerType = peerType,
     setRemotePeer: (peer) => remotePeer = peer
