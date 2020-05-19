@@ -32,3 +32,4 @@ env_params.list
 **/bower_components/
 **/bower_components
 .vscode/
+*.local

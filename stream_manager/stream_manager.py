@@ -16,7 +16,7 @@ from utils.socket_commons import send_data, recv_data
 ROOT = os.path.dirname(__file__)
 logging.basicConfig(level=logging.INFO)
 
-logging.info('*** DEEP STREAM MANAGER v0.0.5 ***')
+logging.info('*** DEEP STREAM MANAGER v0.5 ***')
 #ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
 #ssl_context.load_verify_locations('cert.pem')
 
@@ -78,6 +78,7 @@ class StreamServer():
         self.received_frames = 0
         self.remotePeerId = None
         self.source_peer_id = None
+        self.source_metadata = None
         self.source_changed = False
         self.stream_ready = False
         self.deep_delay = 0
@@ -186,7 +187,7 @@ class StreamServer():
         # logging.info(f'[{self.id}]: Sending data: {str(data_merged)}')
         await self.peer.send(data_merged)
 
-    def on_data(self, data):
+    def on_remote_data(self, data):
         # logging.info(f'[{self.id}]: Remote message: {str(data)}')
         data_type = data['type']
         if data_type == 'acknowledge':
@@ -195,7 +196,7 @@ class StreamServer():
             except Exception as e:
                 logging.error('error on data' + str(e))
         
-        if data_type == 'source':
+        elif data_type == 'source':
             logging.info('Source info: ' + str(data))
             
             if self.source_peer_id == data['peerId']:
@@ -206,6 +207,16 @@ class StreamServer():
 
             if self.source_peer_id == 'none':
                 self.source_peer_id = None
+
+        elif data_type == 'metadata' and self.remotePeerId == self.source_peer_id:
+            self.source_metadata = data['metadata']
+            logging.info('Source metadata: ' + str(self.source_metadata))
+    
+    async def on_capture_data(self, data):
+        if data['type'] == 'metadata' and self.remotePeerId != self.source_peer_id:
+            self.source_metadata = data['metadata']
+            logging.info('Source metadata: ' + str(self.source_metadata))
+            await self.peer.send(data)
 
     
     async def stop(self):
@@ -218,7 +229,7 @@ class StreamServer():
 
     async def start(self, remotePeerId=None):
         await self.peer.open()
-        self.peer.add_data_handler(self.on_data)
+        self.peer.add_data_handler(self.on_remote_data)
         try:
             while True:
                 tasks = []               
@@ -254,7 +265,7 @@ class StreamServer():
                                 
                                 await self.capture_peer.open()
                                 logging.info(f'[{self.id}]: capture peer instance created')
-
+                                self.capture_peer.add_data_handler(self.on_capture_data)
 
                                 await self.capture_peer.connect_to(self.source_peer_id)
                                 logging.info(f'[{self.id}]: connected to {self.source_peer_id}')
