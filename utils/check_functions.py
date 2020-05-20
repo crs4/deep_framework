@@ -6,19 +6,6 @@ import cv2
 import random
 
 
-def check_faces_accuracy(features, thr):
-	"""
-	This function filters out faces detected with accuracy under thr
-	"""
-	faces = features['boxes']
-	points = features['points']
-	filtered_features = {'boxes':[],'points':[]}
-	for face,point in zip(faces,points):
-		if face['accuracy'] > thr:
-			filtered_features['boxes'].append(face)
-			filtered_features['points'].append(point)
-	
-	return filtered_features
 
 	
 
@@ -26,10 +13,10 @@ def check_faces_accuracy(features, thr):
 
 
 
-
+"""
 def check_departed_people(new_faces,people, num_departed):
 	"""
-	This function tracks person from people to new faces if present
+	#This function tracks person from people to new faces if present
 	"""
 	temp_results = []
 	results = []
@@ -50,6 +37,7 @@ def check_departed_people(new_faces,people, num_departed):
 		results.append(people[res[0]])
 
 	return results
+"""
 
 
 
@@ -64,10 +52,10 @@ def check_lost_face(num_faces, track_points,lost_thr):
 		return True
 	return False
    
-
+"""
 def init_people(mtcnn_points, mtcnn_faces, old_people):
 	"""
-	This function update people already present in previous frames and creates new one
+	#This function update people already present in previous frames and creates new one
 	"""
 	result_people = []
 
@@ -98,7 +86,7 @@ def init_people(mtcnn_points, mtcnn_faces, old_people):
 
 	return result_people
 
-
+"""
 def check_points_similarity(old_points,new_points):
 	if len(old_points.keys()) != len(new_points.keys()):
 		return False

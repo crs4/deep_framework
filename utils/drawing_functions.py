@@ -24,7 +24,7 @@ def draw_keypoints(img, keypoints,color):
     
     for i,p in enumerate(keypoints):
         x,y = int(p[0][0]),int(p[0][1])
-        cv2.circle(img,(x,y), 3, color, -1)
+        cv2.circle(img,(x,y), 3, (200*i,0,200/i), -1)
 
 
 

@@ -3,25 +3,21 @@ import cv2
 import numpy as np
 import sys
 from scipy.spatial import distance
+from utils.features import Rect, Point
 
 
 
-def get_rect_around_points(img_w,img_h,points, delta_facerect=1,delta_eye_w=1,delta_eye_h=1, de=None):
+def get_rect_around_points(img_w,img_h,points, delta_rect=1):
     """
     This function computes rectangle around points in a dynamic way related to keypoints distances
 
     """
     
+    points = [ [[p.x_coordinate,p.y_coordinate]] for p in points ]
+    (x,y,w,h) = cv2.boundingRect(np.array(points, np.float32) )
+    dx = int(delta_rect*w) #80
+    dy = int(delta_rect*h) #80
     
-    if len(points) > 1:
-        points = list(points.values())
-        (x,y,w,h) = cv2.boundingRect(np.array(points, np.float32) )
-        dx = int(delta_facerect*w) #80
-        dy = int(delta_facerect*h) #80
-    else:
-        (x,y,w,h) = (points[0][0], points[0][1],0,0)
-        dx = int(delta_eye_w * de) 
-        dy = int(delta_eye_h * de)
 
     # dx e dy servono per regolare l'ampiezza del rettangolo attorno alla faccia in maniera dinamica
     # in base ai keypoints calcolati dall'algoritmo. Sono stati calcolati in maniera euristica
@@ -31,7 +27,9 @@ def get_rect_around_points(img_w,img_h,points, delta_facerect=1,delta_eye_w=1,de
     y_topleft = (y-dy) if (y-dy) > 0 else 0
     x_bottomright = (x+w+dx) if (x+w+dx) < img_w else img_w
     y_bottomright = (y+h+int(dy)) if (y+h+int(dy)) < img_h else img_h
-    rect = {'x_topleft':x_topleft,'y_topleft':y_topleft, 'x_bottomright':x_bottomright, 'y_bottomright':y_bottomright}#(x_topleft,y_topleft, x_bottomright, y_bottomright)
+    p_top_left = Point(x_topleft,y_topleft)
+    p_bottom_right = Point(x_bottomright,y_bottomright)
+    rect = Rect(p_top_left,p_bottom_right)
 
     return rect
 
