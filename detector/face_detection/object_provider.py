@@ -8,7 +8,7 @@ import imutils
 from face_detector import FaceNet_vcaffe
 from tracking.tracker import Tracker
 from utils.check_functions import check_faces_accuracy,check_lost_face,check_departed_people,init_people,check_points_similarity
-from utils.geometric_functions import get_rect_around_points,get_nearest_person_index,resize_image
+from utils.geometric_functions import get_rect_around_points,get_nearest_person_index,resize_image,get_int_over_union
 from utils.socket_commons import send_data, recv_data
 from utils.stats_maker import StatsMaker
 
@@ -17,131 +17,6 @@ import zmq
 import time,json
 import cv2
 import sys
-
-class Object:
-    def __init__(self, box = None, points = None):
-
-
-class ObjectManager:
-    def __init__(self):
-
-        self.objects_list = [] # list of people present in video
-
-
-
-    """
-    def track_people(self,frame,features):
-
-        point_list = features['points']
-        people_updated = []
-        for object_points in point_list:
-
-            rect = get_rect_around_points(frame.shape[1],frame.shape[0],object_points,delta_rect=DELTA_RECT)
-            center = tr[2][0]
-            person_index = get_nearest_person_index(center,self.people)
-            person = self.people[person_index]
-            if not check_points_similarity(person.face_points, face_points):
-                person.center = center
-                person.rect = face_rect
-                person.face_points = face_points
-
-            people_updated.append(person)
-            del self.people[person_index]
-        return people_updated
-    """
-
-    
-
-
-
-    def update_object_list(self, features,frame_w,frame_h):
-        
-        rects = []
-        if features['boxes'] is not None:
-            rects = features['boxes']
-        
-        if features['points'] is not None:
-            points = features['points']
-
-            for object_points in points:
-                rect = get_rect_around_points(frame_w,frame_h,points,delta_rect=DELTA_RECT)
-                rects.append(rect)
-
-        diff_objects = ( actual_number - len(self.objects_list) )
-        # checks if any person appears in scene
-        if diff_objects > 0:
-            self.objects_list = self.create_object(points,rects,self.objects_list)
-        #checks if any person disappears from scene
-        if diff_objects < 0:
-            self.objects_list = self.remove_object(points, self.objects_list, diff_objects)
-
-        return self.objects_list
-        
-
-    def remove_object(self,new_faces,people, num_departed):
-        """
-        This function tracks person from people to new faces if present
-        """
-        temp_results = []
-        results = []
-        for i,new_face in enumerate(new_faces):
-
-            for j,old_face in enumerate(people):
-                
-                center_new_face = new_face['nose']#new_face[2],new_face[7]
-                center_old_face = old_face.center#['center']
-                
-                dist = distance.euclidean(tuple(center_old_face),center_new_face)
-
-                temp_results.append((j,dist))
-
-        temp_results.sort(key=lambda tup: tup[1])
-        
-        for res in temp_results[:num_departed]:
-            results.append(people[res[0]])
-
-        return results
-
-
-    def create_object(self,mtcnn_points, mtcnn_faces, old_people):
-        """
-        This function update people already present in previous frames and creates new one
-        """
-        result_people = []
-
-        count_match = 0
-
-        for i,face in enumerate(mtcnn_points):
-            #print i, 'face'
-            mouth_measure = distance.euclidean(face['right_mouth'],face['left_mouth'])
-            nose = tuple(face['nose'])
-            assigned = False
-            for person in old_people[count_match:]:
-                #print 'p'
-                dist = distance.euclidean(person.center,nose)
-                if dist < mouth_measure:
-                    count_match+=1
-                    assigned = True
-                    #print 'match' ,count_match
-                    result_people.append(person)
-                    break
-                    
-
-            if not assigned:
-                #print 'new'
-                face_rect = mtcnn_faces[i]
-                
-                new_person = Person(face_rect, face, nose)
-                result_people.append(new_person)
-
-        return result_people
-
-
-    def reset_app(self):
-        self.features = []
-        self.people = []
-        self.lost_face = True
-        self.tracking_success = False
 
 
 
@@ -232,30 +107,29 @@ class ObjectsProvider(Process):
 
             current_frame = imutils.resize(current_frame, width=FACE_IMAGE_WIDTH)
 
-            #computation of new tracks point from old ones
+            #computation of tracking features
             if len(self.features) > 0 and  self.tracking_success:
                
                 try:
                     self.tracking_success, new_features = self.tracker.update_features(current_frame,self.features)   
                 except Exception as e:
                     print(str(e),'tracks')
-                    #a = raw_input('optical_flow')
                     self.reset_app()
 
                 if self.tracking_success:
                     self.features = new_features
                 
 
-            # computation of new track point through MTCNN
+            # computation of detector features
             if frame_counter % DETECTION_INTERVAL == 0 or not self.tracking_success:
                 self.features = self.face_det.detect_face(current_frame)
 
 
-            
+            # update object list
             try:
-                self.people = self.track_people(current_frame, self.tracks)
-                
 
+                object_list = self.object_manager.manage_object_list(self.features, current_frame.shape[1],current_frame.shape[0])
+                
             except Exception as e:
                 print(str(e),'res')
                 self.reset_app()
