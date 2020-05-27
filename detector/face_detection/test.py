@@ -31,12 +31,19 @@ tracker = Tracker(**LK_PARAMS) # method for points tracking
 face_det = FaceNet_vcaffe(**FACENET_PARAMS) # method for face detection.
 obj_man = ObjectManager()
 
-features = face_det.detect_face(frame)
-print('Det: ',features)
+features = face_det.detect_face(nextframe)
+rects = features['boxes']
+print(rects)
+
+
+
 
 obj_list_det = obj_man.manage_object_list(features, frame.shape[1],frame.shape[0])
-print('Obj after det: ',obj_list_det)
 
+for obj in obj_list_det:
+	print('ser: ',obj.serialize() )
+a = input('ser')
+"""
 tracker.set_last_frame(frame)
 
 succ,features = tracker.update_features(nextframe,features)
@@ -46,12 +53,16 @@ new_points_obj = features['points']
 obj_list_track = obj_man.manage_object_list(features, nextframe.shape[1],nextframe.shape[0])
 print('Obj after track: ',obj_list_track)
 
-for i,obj in enumerate(new_points_obj):
-	for p in obj:
-		x,y = int(p.x_coordinate) , int(p.y_coordinate)
-		cv2.circle(nextframe,(x,y), 3, (50,i*255,0) , -1)
+
+
+for i,rect in enumerate(rects):
+	centroid = rect.centroid
+	x,y = int(centroid.x_coordinate) , int(centroid.y_coordinate)
+	cv2.circle(nextframe,(x,y), 3, (50,i*255,0) , -1)
+	cv2.rectangle(nextframe,(int(rect.top_left_point.x_coordinate),int(rect.top_left_point.y_coordinate)),(int(rect.bottom_right_point.x_coordinate),int(rect.bottom_right_point.y_coordinate)),(50,i*255,0),2)
+
 
 
 cv2.imwrite('/tmp/res.jpg',nextframe)
-
+"""
 

@@ -1,13 +1,30 @@
 
 
+import uuid
 
-from utils.geometric_functions import get_int_over_union,get_rect_around_points
+from utils.geometric_functions import bb_intersection_over_union,get_rect_around_points,get_int_over_union
+from scipy.spatial import distance
 
 
 class Object:
     def __init__(self, rect = None, points = None):
+        self.pid= uuid.uuid4()
         self.rect = rect
         self.points = points
+
+    def serialize(self):
+        obj_dict = dict()
+        points = []
+        for point in self.points:
+            p_ser = point.serialize()
+            points.append(p_ser)
+
+        obj_dict['points'] = points
+        obj_dict['rect'] = self.rect.serialize()
+        obj_dict['pid'] = str(self.pid)
+        return obj_dict
+
+
 
 
 class ObjectManager:
@@ -26,110 +43,141 @@ class ObjectManager:
         use_boxes = False
         points = []
         boxes = []
-        if features['boxes'] is not None:
+        #print('man: ',features)
+        if len(features['boxes']) > 0:
             use_boxes = True
             boxes = features['boxes']
+            for box in boxes:
+                #pass
+                print('box ser man: ',box.serialize())
 
-        if len(features['points']) is not None:
+        if len(features['points']) > 0:
             points = features['points']
+            for p_list in points:
+                for p in p_list:
+                    #pass
+                    print(p.serialize())
             use_points = True
             boxes = []
             # only in case points are used as features
             # we consider boxes as a bounding boxes around points with customizable spread around them
             for object_points in points:
                 rect = get_rect_around_points(frame_w,frame_h,object_points,delta_rect=DELTA_RECT)
+                print('rec around ' ,rect.serialize())
                 boxes.append(rect)
         
         if not use_boxes and not use_points:
+            print('not features in man')
             self.objects_list = []
+            return self.objects_list
 
-        actual_number = len(boxes)
-        # checks if any object appears in scene
-        diff_objects = ( actual_number - len(self.objects_list) )
-        abs_diff_objects = abs(diff_objects)
+        #print('points man: ',points)
+        #print('boxes man: ',boxes)
+        #print('obj list pre: ', self.objects_list)
+        updated = []
+        created = []
+        # checks if something changes in scene
+        #print('diff: ',diff)
+        indices = self.compare_boxes_obj_distance(boxes,self.objects_list)
+        #print('indi: ', indices)
         
-        indices = self.__get_box_obj_best_match(boxes,self.objects_list)
-        to_update = indices[abs_diff_objects:] #to update
-
-        print(indices)
-
-        objects_updated = self.update_and_remove_objects(to_update,boxes,points,self.objects_list)
+        if len(self.objects_list) == 0 and len(boxes) > 0:
+            created = self.create_objects(boxes, points)
+            self.objects_list = created
+            return self.objects_list
         
-        objects_created = []
+        if len(self.objects_list) > 0 and len(boxes) == 0:
+            self.objects_list = []
+            return self.objects_list
 
-        # something apperead
-        if diff_objects > 0:
-            to_create = indices[:abs_diff_objects] #box to create
-            print(to_create)
-            objects_created = self.create_objects(to_create,boxes,points)
-
-        
-        self.objects_list = objects_created + objects_updated
-        return self.objects_list
-
-
-
-
-
-    def update_and_remove_objects(self,indices,boxes,points,old_object_list):
-
-        updated = [] 
-        for box_index, obj_index, score in indices:
-            obj = old_object_list[obj_index]
-            box = boxes[box_index]
-            if len(points)  > 0:
-                points = points[box_index]
-                obj.points = points
-            
-            obj.rects = box
-            updated.append(obj)
-
-        return updated
+        if len(self.objects_list) > 0 and len(boxes) > 0:
+            diff = ( len(boxes) - len(self.objects_list) )
+            if diff > 0: # create 
+                indices_used, updated = self.update(boxes,points, self.objects_list, indices, len(self.objects_list))
+                created = self.create_objects(boxes, points, indices_used)
+                if len(created) != diff:
+                    a = input('error creating')
+                self.objects_list = updated + created
+                return self.objects_list
+            if diff == 0:
+                __, updated = self.update(boxes,points, self.objects_list, indices, len(self.objects_list))
+                self.objects_list = updated
+                return self.objects_list
+            if diff < 0:
+                __, updated = self.update(boxes,points, self.objects_list, indices, len(boxes))
+                self.objects_list = updated
+                return self.objects_list
 
 
 
-    def create_objects(self,indices, boxes, points):
-        
-        created = [] 
-        for box_index, obj_index, score in indices:
-            box = boxes[box_index]
-            if len(points) > 0:
-                points = points[box_index]
-            else:
-                points = None
-            obj = Object(box,points)
-            created.append(obj)
 
+
+
+    def compare_boxes_obj_distance(self,boxes,objects_list):
+        indices = []
+        for box_index, box in enumerate(boxes):
+            box_centroid = [box.centroid.x_coordinate, box.centroid.y_coordinate]
+            for obj_index, obj in enumerate(objects_list):
+                obj_centroid = [obj.rect.centroid.x_coordinate, obj.rect.centroid.y_coordinate]
+                dist = distance.euclidean(obj_centroid, box_centroid)
+                indices.append((box_index,obj_index,dist))
+
+        # lower distances in top
+        sorted_indices = sorted(indices, key=lambda t: t[2])
+        return sorted_indices
+
+    def update(self, boxes,points, objects_list, indices, to_update):
+
+        objects_updated = []
+        last_updated = None
+        count_updated = 0
+        indices_used = []
+        for ind in indices:
+            #print('ind',ind)
+            box_index,obj_index,distance = ind
+
+            if count_updated < to_update:
+                if obj_index != last_updated:
+                    #print('updating')
+                    obj = objects_list[obj_index]
+                    box = boxes[box_index]
+                    points_list = points[box_index]
+
+                    obj.rect = box
+                    obj.points = points_list
+                    count_updated += 1
+                    last_updated = obj_index
+                    indices_used.append((box_index,obj_index,distance))
+                    objects_updated.append(obj)
+                    #print('update finish')
+                else:
+                    continue
+            #print('next')
+
+
+        if len(objects_updated) != count_updated:
+            a = input('Error updating')
+            return []
+        else:
+            return indices_used,objects_updated
+
+    def create_objects(self, boxes, points, indices_used=[]):
+        box_used_indices = [box_index for box_index,obj_index,distance in indices_used ]
+        created = []
+        for i,box in enumerate(boxes):
+            if i not in box_used_indices:
+                if len(points) > 0:
+                    obj_points = points[i]
+                else:
+                    obj_points = None
+
+                #print('crate: ',points)
+                obj = Object(box,obj_points)
+                created.append(obj)
         return created
 
+    
 
 
-    def __get_max_overlap_obj_index(self, box, old_object_list):
-
-        """
-        This function tracks person from people to new faces if present
-        """
-        max_overlap = 0
-        index = None
-
-        for i,old_obj in enumerate(old_object_list):
-            print(old_obj.rect, box)
-            overlap = get_int_over_union(old_obj.rect, box)
-            if overlap > max_overlap:
-                max_overlap = overlap
-                index = i
 
 
-        return index,max_overlap
-
-    def __get_box_obj_best_match(self, boxes, old_object_list):
-        
-        indices = []
-        for box_index,box in enumerate(boxes):
-            obj_index,score = self.__get_max_overlap_obj_index(box, old_object_list)
-            indices.append((box_index,obj_index,score))
-
-        #best scores bottom
-        indices = sorted(indices, key=lambda t: t[2])
-
-        return indices

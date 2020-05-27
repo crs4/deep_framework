@@ -94,7 +94,7 @@ class Tracker:
         if success:
             tracks_split = [new_tracks[i:i+LOST_THR] for i in range(0,len(new_tracks),LOST_THR)]
 
-        new_features = {'boxes': None,'points': tracks_split}
+        new_features = {'boxes': [],'points': tracks_split}
         return success, new_features
 
 

@@ -93,7 +93,7 @@ class Sub(Process):
             self.stats_maker.received_frames +=1
 
             vc_frame_idx = rec_dict['frame_idx']
-            people = rec_dict['data'] # {'frame_idx': 123, 'data': [(p1,crop1),....,(pn,cropn)]}
+            people = rec_dict['objects'] # {'frame_idx': 123, 'data': [(p1,crop1),....,(pn,cropn)]}
 
             fp_time = rec_dict['fp_time']
             vc_time = rec_dict['vc_time']

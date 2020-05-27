@@ -50,7 +50,7 @@ class SubBroker(Process):
             #receive data from frame provider. Data type: {'frame_idx': 123, 'data': [(p1,crop1),....,(pn,cropn)]}
             rec_dict,imgs =recv_data(fp_socket,0,False)
             vc_frame_idx = rec_dict['frame_idx']
-            people_data = rec_dict['data'] 
+            people_data = rec_dict['objects'] 
             fp_time = rec_dict['fp_time']
             vc_time = rec_dict['vc_time']
             
@@ -59,7 +59,7 @@ class SubBroker(Process):
                 continue
             
             # creation of message for descriptors
-            sub_broker_data['data'] = people_data
+            sub_broker_data['objects'] = people_data
             sub_broker_data['frame_idx'] = vc_frame_idx
             sub_broker_data['vc_time'] = vc_time
             sub_broker_data['fp_time'] = fp_time

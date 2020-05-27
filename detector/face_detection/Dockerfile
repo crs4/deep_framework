@@ -17,4 +17,4 @@ COPY --from=utils:deep /home/deepframework/utils /home/deepframework/detector/fa
 
 WORKDIR /home/deepframework/detector/face_detection
 
-CMD python face_provider.py
+CMD python object_provider.py

@@ -85,7 +85,7 @@ class Collector(Process):
             # receive frame and data from frame provider
             fp_dict,__= recv_data(fp_socket,0,False)
             frame_id = fp_dict['frame_idx']
-            fp_people = fp_dict['people']
+            fp_people = fp_dict['objects']
             vc_time = fp_dict['vc_time']
 
 
@@ -140,6 +140,7 @@ class Collector(Process):
             r['collector_time'] = time.time()
             r['data'] = people_res
             r['vc_time'] = vc_time
+            print(people_res)
             
             send_data(sender,None,0,False,**r)
             send_data(server_sender,None,0,False,**r)
