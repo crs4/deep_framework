@@ -113,10 +113,8 @@ class ObjectsProvider(Process):
 
             #computation of tracking features
             if len(self.features) > 0 and  self.tracking_success:
-                print('track')
                 try:
                     self.tracking_success, new_features = self.tracker.update_features(current_frame,self.features)   
-                    print('success ', self.tracking_success)
                 except Exception as e:
                     print(str(e),'tracks')
                     self.reset_app()
@@ -129,19 +127,16 @@ class ObjectsProvider(Process):
             if frame_counter % DETECTION_INTERVAL == 0 or not self.tracking_success:
                 self.features = self.face_det.detect_face(current_frame)
                 self.tracking_success = True
-                print('det')
 
 
 
-            # update object list
-            object_list = object_manager.manage_object_list(self.features, current_frame.shape[1],current_frame.shape[0])
-
+            # creating / updating / removing objects
             try:
 
-                #object_list = self.object_manager.manage_object_list(self.features, current_frame.shape[1],current_frame.shape[0])
-                a=1
+                object_list = object_manager.manage_object_list(self.features, current_frame.shape[1],current_frame.shape[0])
+
             except Exception as e:
-                print(str(e),'res')
+                print(str(e),'updating')
                 self.reset_app()
 
         

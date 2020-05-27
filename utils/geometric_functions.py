@@ -40,28 +40,7 @@ def get_int_over_union(rect1, rect2):
 
     return ratio
 
-def bb_intersection_over_union(rect1, rect2):
-    # determine the (x, y)-coordinates of the intersection rectangle
-    
 
-    xA = max(rect1.top_left_point.x_coordinate, rect2.top_left_point.x_coordinate)
-    yA = max(rect1.top_left_point.y_coordinate, rect2.top_left_point.y_coordinate)
-    xB = min(rect1.bottom_right_point.x_coordinate, rect2.bottom_right_point.x_coordinate)
-    yB = min(rect1.bottom_right_point.y_coordinate,rect2.bottom_right_point.y_coordinate)
-    # compute the area of intersection rectangle
-    interArea = abs(max((xB - xA, 0)) * max((yB - yA), 0))
-    if interArea == 0:
-        return 0
-    # compute the area of both the prediction and ground-truth
-    # rectangles
-    boxAArea = abs((rect1.bottom_right_point.x_coordinate - rect1.top_left_point.x_coordinate) * (rect1.bottom_right_point.y_coordinate - rect1.top_left_point.y_coordinate))
-    boxBArea = abs((rect2.bottom_right_point.x_coordinate - rect2.bottom_right_point.x_coordinate) * (rect2.bottom_right_point.y_coordinate - rect2.top_left_point.y_coordinate))
-    # compute the intersection over union by taking the intersection
-    # area and dividing it by the sum of prediction + ground-truth
-    # areas - the interesection area
-    iou = interArea / float(boxAArea + boxBArea - interArea)
-    # return the intersection over union value
-    return iou
 
 
 

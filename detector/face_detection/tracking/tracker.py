@@ -38,8 +38,6 @@ class Tracker:
         gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         return gray_image
 
-    def __format_result(self):
-        pass
 
     def set_last_frame(self,image):
         self.previous_frame = self.__convert_to_grayscale(image)

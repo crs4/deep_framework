@@ -2,7 +2,7 @@
 
 import uuid
 
-from utils.geometric_functions import bb_intersection_over_union,get_rect_around_points,get_int_over_union
+from utils.geometric_functions import get_rect_around_points,get_int_over_union
 from scipy.spatial import distance
 
 
@@ -43,43 +43,30 @@ class ObjectManager:
         use_boxes = False
         points = []
         boxes = []
-        #print('man: ',features)
         if len(features['boxes']) > 0:
             use_boxes = True
             boxes = features['boxes']
-            for box in boxes:
-                #pass
-                print('box ser man: ',box.serialize())
 
         if len(features['points']) > 0:
             points = features['points']
-            for p_list in points:
-                for p in p_list:
-                    #pass
-                    print(p.serialize())
             use_points = True
             boxes = []
             # only in case points are used as features
             # we consider boxes as a bounding boxes around points with customizable spread around them
             for object_points in points:
                 rect = get_rect_around_points(frame_w,frame_h,object_points,delta_rect=DELTA_RECT)
-                print('rec around ' ,rect.serialize())
                 boxes.append(rect)
         
         if not use_boxes and not use_points:
-            print('not features in man')
             self.objects_list = []
             return self.objects_list
 
-        #print('points man: ',points)
-        #print('boxes man: ',boxes)
-        #print('obj list pre: ', self.objects_list)
+        
         updated = []
         created = []
-        # checks if something changes in scene
-        #print('diff: ',diff)
+        
+        #compare distance matrix between boxes and objects
         indices = self.compare_boxes_obj_distance(boxes,self.objects_list)
-        #print('indi: ', indices)
         
         if len(self.objects_list) == 0 and len(boxes) > 0:
             created = self.create_objects(boxes, points)
@@ -133,26 +120,29 @@ class ObjectManager:
         count_updated = 0
         indices_used = []
         for ind in indices:
-            #print('ind',ind)
+
             box_index,obj_index,distance = ind
 
             if count_updated < to_update:
                 if obj_index != last_updated:
-                    #print('updating')
+
                     obj = objects_list[obj_index]
                     box = boxes[box_index]
                     points_list = points[box_index]
+                    iou = get_int_over_union(obj.rect,box)
+                    print('iou: ', iou)
+                    if iou < 0.9:
+                        obj.rect = box
+                        obj.points = points_list
 
-                    obj.rect = box
-                    obj.points = points_list
                     count_updated += 1
                     last_updated = obj_index
+
                     indices_used.append((box_index,obj_index,distance))
                     objects_updated.append(obj)
-                    #print('update finish')
+
                 else:
                     continue
-            #print('next')
 
 
         if len(objects_updated) != count_updated:
@@ -171,7 +161,6 @@ class ObjectManager:
                 else:
                     obj_points = None
 
-                #print('crate: ',points)
                 obj = Object(box,obj_points)
                 created.append(obj)
         return created
