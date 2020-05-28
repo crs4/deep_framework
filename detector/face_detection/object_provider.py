@@ -36,7 +36,7 @@ class ObjectsProvider(Process):
 
         self.tracker = Tracker(**LK_PARAMS) # method for points tracking
         
-        self.features = []
+        self.features = dict()
         self.tracking_success = False
     
     def reset_app(self):
@@ -112,7 +112,7 @@ class ObjectsProvider(Process):
             current_frame = imutils.resize(current_frame, width=FACE_IMAGE_WIDTH)
 
             #computation of tracking features
-            if len(self.features) > 0 and  self.tracking_success:
+            if any(self.features.values()) and  self.tracking_success:
                 try:
                     self.tracking_success, new_features = self.tracker.update_features(current_frame,self.features)   
                 except Exception as e:
@@ -159,6 +159,10 @@ class ObjectsProvider(Process):
 
                 obj_rect = obj_serialized['rect']
                 obj_points = obj_serialized['points']
+                crop = current_frame[obj_rect['top_left_point']['y_coordinate']:obj_rect['bottom_right_point']['y_coordinate'],obj_rect['top_left_point']['x_coordinate']:obj_rect['bottom_right_point']['x_coordinate']]
+                if frame_counter < 100:
+                    cv2.imwrite('/tmp/crop'+str(frame_counter)+'.jpg',crop)
+
 
                 obj_dict = dict()
                 
@@ -168,7 +172,6 @@ class ObjectsProvider(Process):
                 rect['x_bottomright'] = int(obj_rect['bottom_right_point']['x_coordinate'] / self.ratio)
                 rect['y_bottomright'] =int(obj_rect['bottom_right_point']['y_coordinate'] / self.ratio)
                 
-                crop = current_frame[rect['y_topleft']:rect['y_bottomright'],rect['x_topleft']:rect['x_bottomright']]
                 
                 points = []
                 for obj_p in obj_points:

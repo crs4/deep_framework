@@ -138,6 +138,22 @@ def area_intersection(rect_a,rect_b):
     if (dx>=0) and (dy>=0):
         return float(dx*dy)/min(a_area,b_area)
 
+def iou(rect_a,rect_b):
+
+    dx = min(rect_a['x_bottomright'],rect_b['x_bottomright']) - max(rect_a['x_topleft'],rect_b['x_topleft'])
+
+    dy = min(rect_a['y_bottomright'],rect_b['y_bottomright']) - max(rect_a['y_topleft'],rect_b['y_topleft'])
+
+
+    intersection_area = dx*dy
+
+    a_area = ((rect_a['x_bottomright']-rect_a['x_topleft']) * (rect_a['y_bottomright'] -rect_a['y_topleft']))
+    b_area = ((rect_b['x_bottomright']-rect_b['x_topleft']) * (rect_b['y_bottomright'] -rect_b['y_topleft']))
+    
+    union_area = a_area * b_area - intersection_area
+    iou = intersection_area / float(union_area)
+    return iou
+
 def check_point_in_rect(point,rect):
     x0 = point[0]
     y0 = point[1]
