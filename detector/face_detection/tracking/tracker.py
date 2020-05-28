@@ -57,7 +57,7 @@ class Tracker:
     
     #This function checks tracked points between frames and add other good points if present and returns them
     #Frames must be in gray scale. 'tracked_points' must be in the current format tracked_points = [[[x0,y0]],...,[[xn,yn]]]
-    def update_features(self, current_frame, features):
+    def update_features(self, current_frame, features,**settings):
 
         current_frame = self.__convert_to_grayscale(current_frame) # gray frame required by tracking system
         
@@ -119,7 +119,6 @@ class Tracker:
 class TrackerCV:
 
     def __init__(self):
-        self.trackers = cv2.MultiTracker_create()
         self.OPENCV_OBJECT_TRACKERS = {
             "csrt": cv2.TrackerCSRT_create,
             "kcf": cv2.TrackerKCF_create,
@@ -129,15 +128,64 @@ class TrackerCV:
             "medianflow": cv2.TrackerMedianFlow_create,
             "mosse": cv2.TrackerMOSSE_create
         }
-        self.tracker = self.OPENCV_OBJECT_TRACKERS["csrt"]()
 
-    def create_trackable_objects(frame,box):
-        # box = (x, y, w, h)
-        self.trackers.add(self.tracker, frame, box)
+    def set_last_frame(self,frame):
+        self.previous_frame = frame
 
-    def update_tracked_objects(frame):
-        (success, boxes) = trackers.update(frame)
-        return (success, boxes)
+    def __format_boxes(self,features,frame_w,frame_h):
+        boxes_formatted = []
+        if len(features['boxes']) > 0:
+            for box in features['boxes']:
+                x = box.top_left_point.x_coordinate
+                y = box.top_left_point.x_coordinate
+                w = box.bottom_right_point.x_coordinate - box.top_left_point.x_coordinate
+                h = box.bottom_right_point.y_coordinate - box.top_left_point.y_coordinate
+                boxes_formatted.append((x,y,w,h))
+            return boxes_formatted
+        else:
+            if len(features['points']) > 0:
+                for object_points in features['points']:
+                    box = get_rect_around_points(frame_w,frame_h,object_points,delta_rect=1)
+                    x = box.top_left_point.x_coordinate
+                    y = box.top_left_point.x_coordinate
+                    w = box.bottom_right_point.x_coordinate - box.top_left_point.x_coordinate
+                    h = box.bottom_right_point.y_coordinate - box.top_left_point.y_coordinate
+                    boxes_formatted.append(rect)
+                return boxes_formatted
+
+    def update_features(self, current_frame, features,**settings):
+        
+        frame_w = current_frame.shape[1]
+        frame_h = current_frame.shape[0]
+        features_by_detector = settings['features_by_detector']
+        boxes = self.__format_boxes(features,frame_w,frame_h)
+        res_boxes = []
+
+
+        if features_by_detector:
+            for box in boxes:
+                tracker = self.OPENCV_OBJECT_TRACKERS["csrt"]()
+                self.trackers = cv2.MultiTracker_create()
+
+                self.trackers.add(tracker, current_frame, box)
+
+
+
+        (success, new_boxes) = self.trackers.update(current_frame)
+        print('tr_in: ',new_boxes)
+
+        if success:
+            for box in new_boxes:
+                x,y,w,h = box
+                p_top = Point(x,y)
+                p_bot = Point(x+w,y+h)
+
+                box = Rect(p_top,p_bot)
+                res_boxes.append(box)
+
+        new_features = {'boxes': res_boxes,'points': []}
+
+        return success, new_features
 
 
    

@@ -128,12 +128,14 @@ class ObjectManager:
 
                     obj = objects_list[obj_index]
                     box = boxes[box_index]
-                    points_list = points[box_index]
                     iou = get_int_over_union(obj.rect,box)
-                    print('iou: ', iou)
                     if iou < 0.9:
                         obj.rect = box
-                        obj.points = points_list
+                        if len(points) > 0:
+                            obj_points = points[box_index]
+                        else:
+                            obj_points = []
+                        obj.points = obj_points
 
                     count_updated += 1
                     last_updated = obj_index
@@ -159,7 +161,7 @@ class ObjectManager:
                 if len(points) > 0:
                     obj_points = points[i]
                 else:
-                    obj_points = None
+                    obj_points = []
 
                 obj = Object(box,obj_points)
                 created.append(obj)

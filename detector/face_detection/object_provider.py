@@ -6,7 +6,7 @@ from face_detection_constants import *
 import imutils
 
 from face_detector import FaceNet_vcaffe
-from tracking.tracker import Tracker
+from tracking.tracker import Tracker,TrackerCV
 from object_manager.manager import ObjectManager
 from utils.geometric_functions import resize_image
 from utils.socket_commons import send_data, recv_data
@@ -34,14 +34,18 @@ class ObjectsProvider(Process):
         self.rec_port = configuration['in']
 
 
-        self.tracker = Tracker(**LK_PARAMS) # method for points tracking
+        #self.tracker = Tracker(**LK_PARAMS) # method for points tracking
+        self.tracker = TrackerCV() # method for points tracking
         
         self.features = dict()
         self.tracking_success = False
+        self.features_by_detector = False
     
     def reset_app(self):
         self.features = []
         self.tracking_success = False
+
+
 
 
     def run(self):
@@ -112,25 +116,33 @@ class ObjectsProvider(Process):
             current_frame = imutils.resize(current_frame, width=FACE_IMAGE_WIDTH)
 
             #computation of tracking features
-            if any(self.features.values()) and  self.tracking_success:
+            if any(self.features.values()) and  (self.tracking_success or self.features_by_detector):
+                """
                 try:
-                    self.tracking_success, new_features = self.tracker.update_features(current_frame,self.features)   
+                    self.tracking_success, new_features = self.tracker.update_features(current_frame,self.features, **{'features_by_detector':self.features_by_detector})   
                 except Exception as e:
                     print(str(e),'tracks')
                     self.reset_app()
+                """
+                print('tr')
+                self.tracking_success, new_features = self.tracker.update_features(current_frame,self.features, **{'features_by_detector':self.features_by_detector})   
 
                 if self.tracking_success:
                     self.features = new_features
+                    self.features_by_detector = False
                 
 
             # computation of detector features
             if frame_counter % DETECTION_INTERVAL == 0 or not self.tracking_success:
+                print('det')
                 self.features = self.face_det.detect_face(current_frame)
-                self.tracking_success = True
+                self.features_by_detector = True
 
 
 
             # creating / updating / removing objects
+            object_list = object_manager.manage_object_list(self.features, current_frame.shape[1],current_frame.shape[0])
+            """
             try:
 
                 object_list = object_manager.manage_object_list(self.features, current_frame.shape[1],current_frame.shape[0])
@@ -138,6 +150,7 @@ class ObjectsProvider(Process):
             except Exception as e:
                 print(str(e),'updating')
                 self.reset_app()
+            """
 
         
             
@@ -160,10 +173,7 @@ class ObjectsProvider(Process):
                 obj_rect = obj_serialized['rect']
                 obj_points = obj_serialized['points']
                 crop = current_frame[obj_rect['top_left_point']['y_coordinate']:obj_rect['bottom_right_point']['y_coordinate'],obj_rect['top_left_point']['x_coordinate']:obj_rect['bottom_right_point']['x_coordinate']]
-                if frame_counter < 100:
-                    cv2.imwrite('/tmp/crop'+str(frame_counter)+'.jpg',crop)
-
-
+                
                 obj_dict = dict()
                 
                 rect = dict()
@@ -197,7 +207,6 @@ class ObjectsProvider(Process):
             # send data to collector
             send_data(col_socket,None,0,False,**res)
 
-            print('det: ',res)
             frame_counter += 1
             
             #clearing memory
