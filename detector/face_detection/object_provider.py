@@ -34,8 +34,8 @@ class ObjectsProvider(Process):
         self.rec_port = configuration['in']
 
 
-        #self.tracker = Tracker(**LK_PARAMS) # method for points tracking
-        self.tracker = TrackerCV() # method for points tracking
+        self.tracker = Tracker(**LK_PARAMS) # method for points tracking
+        #self.tracker = TrackerCV() # method for points tracking
         
         self.features = dict()
         self.tracking_success = False
@@ -44,6 +44,7 @@ class ObjectsProvider(Process):
     def reset_app(self):
         self.features = []
         self.tracking_success = False
+        self.features_by_detector = False
 
 
 
@@ -124,7 +125,7 @@ class ObjectsProvider(Process):
                     print(str(e),'tracks')
                     self.reset_app()
                 """
-                print('tr')
+                #print('tr')
                 self.tracking_success, new_features = self.tracker.update_features(current_frame,self.features, **{'features_by_detector':self.features_by_detector})   
 
                 if self.tracking_success:
@@ -134,7 +135,7 @@ class ObjectsProvider(Process):
 
             # computation of detector features
             if frame_counter % DETECTION_INTERVAL == 0 or not self.tracking_success:
-                print('det')
+                #print('det')
                 self.features = self.face_det.detect_face(current_frame)
                 self.features_by_detector = True
 
@@ -199,8 +200,10 @@ class ObjectsProvider(Process):
             res['objects'] = obj_list_serialized
             res['fp_time'] = time.time()
             res['vc_time'] = vc_time
+
+            print('det res: ',obj_list_serialized)
             
-            # send images to descriptors only if people is detected
+            # send images to descriptors only if objects are detected
             if len(crops) > 0:
                 send_data(publisher,crops,0,False,**res)
 

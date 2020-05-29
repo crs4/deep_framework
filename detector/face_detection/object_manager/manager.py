@@ -47,7 +47,7 @@ class ObjectManager:
             use_boxes = True
             boxes = features['boxes']
 
-        if len(features['points']) > 0:
+        elif len(features['points']) > 0:
             points = features['points']
             use_points = True
             boxes = []
@@ -61,7 +61,7 @@ class ObjectManager:
             self.objects_list = []
             return self.objects_list
 
-        
+
         updated = []
         created = []
         
@@ -82,6 +82,7 @@ class ObjectManager:
             if diff > 0: # create 
                 indices_used, updated = self.update(boxes,points, self.objects_list, indices, len(self.objects_list))
                 created = self.create_objects(boxes, points, indices_used)
+                
                 if len(created) != diff:
                     a = input('error creating')
                 self.objects_list = updated + created

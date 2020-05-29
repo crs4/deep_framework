@@ -137,7 +137,7 @@ class TrackerCV:
         if len(features['boxes']) > 0:
             for box in features['boxes']:
                 x = box.top_left_point.x_coordinate
-                y = box.top_left_point.x_coordinate
+                y = box.top_left_point.y_coordinate
                 w = box.bottom_right_point.x_coordinate - box.top_left_point.x_coordinate
                 h = box.bottom_right_point.y_coordinate - box.top_left_point.y_coordinate
                 boxes_formatted.append((x,y,w,h))
@@ -147,7 +147,7 @@ class TrackerCV:
                 for object_points in features['points']:
                     box = get_rect_around_points(frame_w,frame_h,object_points,delta_rect=1)
                     x = box.top_left_point.x_coordinate
-                    y = box.top_left_point.x_coordinate
+                    y = box.top_left_point.y_coordinate
                     w = box.bottom_right_point.x_coordinate - box.top_left_point.x_coordinate
                     h = box.bottom_right_point.y_coordinate - box.top_left_point.y_coordinate
                     boxes_formatted.append(rect)
@@ -163,16 +163,16 @@ class TrackerCV:
 
 
         if features_by_detector:
+            self.trackers = cv2.MultiTracker_create()
+
             for box in boxes:
                 tracker = self.OPENCV_OBJECT_TRACKERS["csrt"]()
-                self.trackers = cv2.MultiTracker_create()
-
                 self.trackers.add(tracker, current_frame, box)
 
 
 
         (success, new_boxes) = self.trackers.update(current_frame)
-        print('tr_in: ',new_boxes)
+        #print('tr_in: ',new_boxes)
 
         if success:
             for box in new_boxes:
