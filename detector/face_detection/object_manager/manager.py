@@ -2,7 +2,7 @@
 
 import uuid
 
-from utils.geometric_functions import get_rect_around_points,get_int_over_union
+from utils.geometric_functions import compute_rect,get_int_over_union
 from scipy.spatial import distance
 
 
@@ -36,25 +36,26 @@ class ObjectManager:
 
 
 
-    def manage_object_list(self, features,frame_w,frame_h):
+    def manage_object_list(self, features,frame_w,frame_h, feature_used):
         DELTA_RECT=1.2
 
         use_points = False
         use_boxes = False
         points = []
         boxes = []
-        if len(features['boxes']) > 0:
+        if len(features['boxes']) > 0 and feature_used=='RECTS':
             use_boxes = True
             boxes = features['boxes']
+            
 
-        elif len(features['points']) > 0:
+        if len(features['points']) > 0 and feature_used=='POINTS':
             points = features['points']
             use_points = True
             boxes = []
             # only in case points are used as features
             # we consider boxes as a bounding boxes around points with customizable spread around them
             for object_points in points:
-                rect = get_rect_around_points(frame_w,frame_h,object_points,delta_rect=DELTA_RECT)
+                rect = compute_rect(frame_w,frame_h,rect=None, points =object_points,delta_rect=DELTA_RECT)
                 boxes.append(rect)
         
         if not use_boxes and not use_points:

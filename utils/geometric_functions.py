@@ -44,22 +44,29 @@ def get_int_over_union(rect1, rect2):
 
 
 
-def get_rect_around_points(img_w,img_h,points, delta_rect=1):
+def compute_rect(img_w,img_h,rect = None,points=None, delta_rect=1):
     """
     This function computes rectangle around points in a dynamic way related to keypoints distances
 
     """
-    
-    points = [ [[p.x_coordinate,p.y_coordinate]] for p in points ]
-    (x,y,w,h) = cv2.boundingRect(np.array(points, np.float32) )
-    dx = int(delta_rect*w) #80
-    dy = int(delta_rect*h) #80
+    if points is not None:
+        points = [ [[p.x_coordinate,p.y_coordinate]] for p in points ]
+        (x,y,w,h) = cv2.boundingRect(np.array(points, np.float32) )
+        dx = int(delta_rect*w) #80
+        dy = int(delta_rect*h) #80
+    else:
+        w = rect.bottom_right_point.x_coordinate - rect.top_left_point.x_coordinate
+        h = rect.bottom_right_point.y_coordinate - rect.top_left_point.y_coordinate
+        x = rect.top_left_point.x_coordinate
+        y = rect.top_left_point.y_coordinate
+        dx = int(delta_rect*w) #80
+        dy = int(delta_rect*h) #80
+
     
 
     # dx e dy servono per regolare l'ampiezza del rettangolo attorno alla faccia in maniera dinamica
     # in base ai keypoints calcolati dall'algoritmo. Sono stati calcolati in maniera euristica
     
-    print(x,y,w,h)
     x_topleft = (x-dx) if (x-dx) > 0 else 0
     y_topleft = (y-dy) if (y-dy) > 0 else 0
     x_bottomright = (x+w+dx) if (x+w+dx) < img_w else img_w
@@ -69,6 +76,9 @@ def get_rect_around_points(img_w,img_h,points, delta_rect=1):
     rect = Rect(p_top_left,p_bottom_right)
 
     return rect
+
+
+
 
 def crop_img(img,crop_factor):
 
