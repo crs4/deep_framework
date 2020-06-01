@@ -22,17 +22,18 @@ class Tracker:
         # formats mtcnn_points in order to be tracked
 
         kpoints = []
-
+        tags = []
         for obj_points in points:
             for p in obj_points:
                 kpoints.append([[p.x_coordinate, p.y_coordinate]])
+                tags.append(p.properties['tag'])
 
         points_to_track = []
         if points is not None:
-            for x, y in np.float32(kpoints).reshape(-1, 2):
+            for x,y in np.float32(kpoints).reshape(-1, 2):
                 points_to_track.append([[x, y]])
 
-        return np.array(points_to_track, np.float32)
+        return tags,np.array(points_to_track, np.float32)
 
     def __convert_to_grayscale(self,image):
         gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -65,8 +66,8 @@ class Tracker:
 
         num_obj = len(points_obj)
 
-        tracked_points = self.__create_track_points(points_obj)
-        
+        tags,tracked_points = self.__create_track_points(points_obj)
+       
         new_tracks = []
         tracks_split = []
 
@@ -79,18 +80,21 @@ class Tracker:
         good = d < 1
 
 
-        for (x, y), good_flag in zip( p1.reshape(-1, 2), good):
+        for (x, y), good_flag,tag in zip( p1.reshape(-1, 2), good,tags):
 
             if not good_flag:
                 continue
 
 
-            point = Point(x,y)
+            #point = Point(x,y)
+            point = Point(x,y,**{'tag':tag})
             new_tracks.append(point)
 
         success = self.check_tracking_success(num_obj, len(new_tracks), LOST_THR)
         if success:
             tracks_split = [new_tracks[i:i+LOST_THR] for i in range(0,len(new_tracks),LOST_THR)]
+        else:
+            print('no succ')
 
         new_features = {'boxes': [],'points': tracks_split}
         return success, new_features

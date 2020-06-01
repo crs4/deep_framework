@@ -38,20 +38,30 @@ print(rects)
 
 
 
-obj_list_det = obj_man.manage_object_list(features, frame.shape[1],frame.shape[0])
+obj_list_det = obj_man.manage_object_list(features, frame.shape[1],frame.shape[0],'POINTS')
 
 for obj in obj_list_det:
 	print('ser: ',obj.serialize() )
-a = input('ser')
-"""
+
 tracker.set_last_frame(frame)
 
-succ,features = tracker.update_features(nextframe,features)
+succ,features = tracker.update_features(nextframe,features,**{'features_by_detector':True})
 print('Tracker features: ',features)
 new_points_obj = features['points']
 
-obj_list_track = obj_man.manage_object_list(features, nextframe.shape[1],nextframe.shape[0])
+obj_list_track = obj_man.manage_object_list(features, nextframe.shape[1],nextframe.shape[0],'POINTS')
 print('Obj after track: ',obj_list_track)
+
+
+for obj in obj_list_det:
+	print('after ser: ',obj.serialize() )
+
+for i,obj in enumerate(obj_list_track):
+	points = obj.points
+	for p in points:
+		if p.properties['tag'] == 'right_eye':
+			x,y = int(p.x_coordinate) , int(p.y_coordinate)
+			cv2.circle(nextframe,(x,y), 3, (50,i*255,0) , -1)
 
 
 
@@ -63,6 +73,6 @@ for i,rect in enumerate(rects):
 
 
 
-cv2.imwrite('/tmp/res.jpg',nextframe)
-"""
+cv2.imwrite('/tmp/res_p.jpg',nextframe)
+
 

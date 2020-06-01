@@ -5,31 +5,31 @@ services:
         environment: [PROV_OUT_TO_COL=5555, OUT_STREAM_PORT=9999, OUT_SERVER_PORT=9990,
             SERVER_ADDRESS=server, STREAM_MANAGER_ADDRESS=stream_manager, STAT=Face,
             'ALGS=gender:6000:6050:7000']
-        image: 192.168.1.35:5000/collector:deep
+        image: 192.168.195.224:5000/collector:deep
         networks: [net_deep]
     face_detector:
         env_file: [env_params.list, env_ports.list]
         environment: [COLLECTOR_ADDRESS=face_collector, VIDEOSRC_ADDRESS=stream_manager]
-        image: 192.168.1.35:5000/face_detector:deep
+        image: 192.168.195.224:5000/face_detector:deep
         networks: [net_deep]
         ports: ['5559:5559', '5556:5556', '5555:5555']
         tty: true
     monitor:
         env_file: [env_params.list, env_ports.list]
         environment: ['ALGS=gender']
-        image: 192.168.1.35:5000/monitor:deep
+        image: 192.168.195.224:5000/monitor:deep
         networks: [net_deep]
         ports: ['5001:5001', '5002:5002']
     server:
         env_file: [env_params.list, env_ports.list]
         environment: [FACE_PORT=9990, 'ALGS=gender']
-        image: 192.168.1.35:5000/server:deep
+        image: 192.168.195.224:5000/server:deep
         networks: [net_deep]
         ports: ['8000:8000']
     stream_manager:
         env_file: [env_params.list, env_ports.list]
         environment: ['SERVER_IN_PORTS=FACE:9999']
-        image: 192.168.1.35:5000/stream_manager:deep
+        image: 192.168.195.224:5000/stream_manager:deep
         networks: [net_deep]
         depends_on:
         - server

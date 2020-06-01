@@ -34,8 +34,8 @@ class ObjectsProvider(Process):
         self.rec_port = configuration['in']
 
 
-        #self.tracker = Tracker(**LK_PARAMS) # method for points tracking
-        self.tracker = TrackerCV() # method for points tracking
+        self.tracker = Tracker(**LK_PARAMS) # method for points tracking
+        #self.tracker = TrackerCV() # method for points tracking
         
         self.features = dict()
         self.tracking_success = False
@@ -142,7 +142,7 @@ class ObjectsProvider(Process):
 
 
             # creating / updating / removing objects
-            object_list = object_manager.manage_object_list(self.features, current_frame.shape[1],current_frame.shape[0],'RECTS')
+            object_list = object_manager.manage_object_list(self.features, current_frame.shape[1],current_frame.shape[0],'POINTS')
             """
             try:
 
@@ -186,7 +186,7 @@ class ObjectsProvider(Process):
                 
                 points = []
                 for obj_p in obj_points:
-                    points.append([obj_p['x_coordinate']/self.ratio, obj_p['y_coordinate'] / self.ratio ])
+                    points.append([obj_p['x_coordinate']/self.ratio, obj_p['y_coordinate'] / self.ratio, obj_p['properties']['tag']])
                     
                 obj_dict['pid'] = obj_serialized['pid']
                 obj_dict['rect'] = rect
