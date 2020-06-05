@@ -1,0 +1,55 @@
+FROM python:3.7
+
+RUN apt-get update -y
+
+# gcc compiler and opencv prerequisites
+RUN apt-get -y install git build-essential libglib2.0-0 libsm6 libxext6 libxrender-dev
+
+# Detectron2 prerequisites
+RUN pip install tensorboard cython
+RUN pip install torch==1.5.0+cpu torchvision==0.6.0+cpu -f https://download.pytorch.org/whl/torch_stable.html
+RUN pip install -U 'git+https://github.com/cocodataset/cocoapi.git#subdirectory=PythonAPI'
+
+
+RUN pip install \
+    scipy \
+    imutils==0.5.2 \
+    pyzmq==18.0.1 \
+    opencv-python==4.1.0.25 \
+    opencv-contrib-python==4.2.0.34
+
+
+
+# Detectron2 - CPU copy
+RUN python -m pip install detectron2 -f https://dl.fbaipublicfiles.com/detectron2/wheels/cpu/index.html
+
+# SAURON
+# RUN pip install --trusted-host pypi.python.org -r requirements.txt
+RUN pip install opencv-python IPython
+
+RUN git clone https://github.com/aim-uofa/AdelaiDet.git /detector
+
+WORKDIR /detector
+RUN python setup.py build develop
+
+
+ADD drone_object_detector/models /detector/models/
+ENV DEVICE_TYPE="cpu"
+
+# Deep sort tracker installation
+RUN pip install numpy scipy opencv-python sklearn pillow vizer edict PyYAML easydict
+RUN git clone https://github.com/ZQPei/deep_sort_pytorch.git ./deep_sort
+RUN cp ./models/deep_sort_ckpt.t7 ./deep_sort/deep_sort/deep/checkpoint/ckpt.t7
+RUN mv deep_sort/utils/ deep_sort/sort_utils/
+
+ADD drone_object_detector/src /detector/src/
+ADD object_provider.py /detector/src/
+ADD test.py /detector/src/
+ADD object_manager /detector/src/object_manager/
+ADD face_detection_constants.py /detector/src/
+
+
+COPY --from=utils:deep /home/deepframework/utils /detector/src/utils
+
+WORKDIR /detector/src
+CMD python object_provider.py

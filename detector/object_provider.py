@@ -2,11 +2,13 @@
 from multiprocessing import Process
 import numpy as np
 
+#from face_detection.face_detection_constants import *
 from face_detection_constants import *
 import imutils
-
-from face_detector import FaceNet_vcaffe
-from tracking.tracker import Tracker,TrackerCV
+from tracker import DeepSortTracker
+#from face_detection.face_detector import FaceNet_vcaffe
+#from tracking.tracker import Tracker,TrackerCV
+from detector import VisdroneDectector
 from object_manager.manager import ObjectManager
 from utils.geometric_functions import resize_image
 from utils.socket_commons import send_data, recv_data
@@ -34,9 +36,9 @@ class ObjectsProvider(Process):
         self.rec_port = configuration['in']
 
 
-        self.tracker = Tracker(**LK_PARAMS) # method for points tracking
+        #self.tracker = Tracker(**LK_PARAMS) # method for points tracking
         #self.tracker = TrackerCV() # method for points tracking
-        
+        self.tracker = DeepSortTracker()
         self.features = dict()
         self.tracking_success = False
         self.features_by_detector = False
@@ -57,7 +59,8 @@ class ObjectsProvider(Process):
         caffe.set_device(0)
         """
        
-        self.face_det = FaceNet_vcaffe(**FACENET_PARAMS) # method for face detection.
+        #self.detector = FaceNet_vcaffe(**FACENET_PARAMS) # method for face detection.
+        self.detector = VisdroneDectector() # method for face detection.
         object_manager = ObjectManager()
         context = zmq.Context()
 
@@ -136,7 +139,7 @@ class ObjectsProvider(Process):
             # computation of detector features
             if frame_counter % DETECTION_INTERVAL == 0 or not self.tracking_success:
                 #print('det')
-                self.features = self.face_det.detect_face(current_frame)
+                self.features = self.detector.detect(current_frame)
                 self.features_by_detector = True
 
 
@@ -169,28 +172,10 @@ class ObjectsProvider(Process):
 
 
             for obj in object_list:
-                obj_serialized = obj.serialize()
-
-                obj_rect = obj_serialized['rect']
-                obj_points = obj_serialized['points']
-                crop = current_frame[obj_rect['top_left_point']['y_coordinate']:obj_rect['bottom_right_point']['y_coordinate'],obj_rect['top_left_point']['x_coordinate']:obj_rect['bottom_right_point']['x_coordinate']]
                 
-                obj_dict = dict()
+                crop = current_frame[obj.rect.top_left_point.y_coordinate:obj.rect.bottom_right_point.y_coordinate, obj.rect.top_left_point.x_coordinate:obj.rect.bottom_right_point.x_coordinate]
                 
-                rect = dict()
-                rect['x_topleft'] = int(obj_rect['top_left_point']['x_coordinate'] / self.ratio)
-                rect['y_topleft'] = int(obj_rect['top_left_point']['y_coordinate'] / self.ratio)
-                rect['x_bottomright'] = int(obj_rect['bottom_right_point']['x_coordinate'] / self.ratio)
-                rect['y_bottomright'] =int(obj_rect['bottom_right_point']['y_coordinate'] / self.ratio)
-                
-                
-                points = []
-                for obj_p in obj_points:
-                    points.append([obj_p['x_coordinate']/self.ratio, obj_p['y_coordinate'] / self.ratio, obj_p['properties']['tag']])
-                    
-                obj_dict['pid'] = obj_serialized['pid']
-                obj_dict['rect'] = rect
-                obj_dict['points'] = points
+                obj_dict = self.__rescale_object(obj)
                 obj_list_serialized.append(obj_dict)
                 crops.append(np.ascontiguousarray(crop, dtype=np.uint8))
 
@@ -232,6 +217,26 @@ class ObjectsProvider(Process):
         stats = self.stats_maker.create_stats()
         stats_dict = {self.__class__.__name__:stats}
         send_data(self.monitor_stats_sender,None,0,False,**stats_dict)
+
+    def __rescale_object(self,obj):
+
+        obj_dict = dict()
+                
+        rect = dict()
+        rect['x_topleft'] = int(obj.rect.top_left_point.x_coordinate / self.ratio)
+        rect['y_topleft'] = int(obj.rect.top_left_point.y_coordinate / self.ratio)
+        rect['x_bottomright'] = int(obj.rect.bottom_right_point.x_coordinate / self.ratio)
+        rect['y_bottomright'] =int(obj.rect.bottom_right_point.y_coordinate / self.ratio)
+        
+        
+        points = []
+        for obj_p in obj.points:
+            points.append([int(obj_p.x_coordinate / self.ratio), int(obj_p.y_coordinate / self.ratio), obj_p.properties['tag']])
+            
+        obj_dict['pid'] = str(obj.pid)
+        obj_dict['rect'] = rect
+        obj_dict['points'] = points
+        return obj_dict
 
 
             

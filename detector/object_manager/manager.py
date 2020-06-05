@@ -30,7 +30,7 @@ class Object:
 class ObjectManager:
     def __init__(self):
 
-        self.objects_list = [] # list of people present in video
+        self.objects_list = [] # list of objects present in video
 
 
 

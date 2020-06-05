@@ -24,7 +24,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 import time
-from mtcnn_caffe import mtcnn_utils as face_caffe
+from face_detection.mtcnn_caffe import mtcnn_utils as face_caffe
 #from face_detection_constants import *
 from utils.features import Point,Rect
 
@@ -107,7 +107,7 @@ class FaceNet_vcaffe:
 
         return formatted
 
-    def detect_face(self, img):
+    def detect(self, img):
         
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         
