@@ -5,10 +5,8 @@ import numpy as np
 #from face_detection.face_detection_constants import *
 from face_detection_constants import *
 import imutils
-from tracker import DeepSortTracker
-#from face_detection.face_detector import FaceNet_vcaffe
-#from tracking.tracker import Tracker,TrackerCV
-#from detector import VisdroneDectector
+from face_detector import FaceNet_vcaffe
+from tracking.tracker import Tracker,TrackerCV
 from object_manager.manager import ObjectManager
 from utils.geometric_functions import resize_image
 from utils.socket_commons import send_data, recv_data
@@ -24,20 +22,20 @@ import sys
 
 
 
-class ObjectsProvider():
+class FaceProvider(Process):
 
     def __init__(self, configuration):
 
-        #Process.__init__(self)
+        Process.__init__(self)
         self.stats_maker = StatsMaker()
         self.pub_port = configuration['out']
         self.col_port = configuration['out_col']
         self.rec_port = configuration['in']
 
 
-        #self.tracker = Tracker(**LK_PARAMS) # method for points tracking
+        self.tracker = Tracker(**LK_PARAMS) # method for points tracking
         #self.tracker = TrackerCV() # method for points tracking
-        self.tracker = DeepSortTracker()
+        
         self.features = dict()
         self.tracking_success = False
         self.features_by_detector = False
@@ -58,35 +56,28 @@ class ObjectsProvider():
         caffe.set_device(0)
         """
        
-        #self.detector = FaceNet_vcaffe(**FACENET_PARAMS) # method for face detection.
-        print('run')
-        try:
-            #pass
-            from detector import VisdroneDectector
-
-            self.detector = VisdroneDectector() # method for face detection.
-        except Exception as e:
-            print('exc: ',e)
-            raise e
+        self.detector = FaceNet_vcaffe(**FACENET_PARAMS) # method for face detection.
+        
         object_manager = ObjectManager()
         context = zmq.Context()
-        print('try1')
 
 
-        # subscribes to VideoCapture
+        # subscribes to Stream Manager
         vc_socket = context.socket(zmq.SUB)
         vc_socket.setsockopt_string(zmq.SUBSCRIBE, "",encoding='ascii')
         vc_socket.connect(PROT+VIDEOSRC_ADDRESS+':'+self.rec_port)
+        
         # configure output
         publisher = context.socket(zmq.PUB)
+        
         #if publisher detects slow subscribers, skips frames
         publisher.sndhwm = 1
         publisher.bind(PROT+'*:'+self.pub_port)
 
         # PAIR connection to collector
         col_socket = context.socket(zmq.PAIR)
-        #col_socket.bind(PROT+'*:'+self.col_port)
         col_socket.connect(PROT+COLLECTOR_ADDRESS+':'+self.col_port)
+        
         # connection to monitor for stats
         self.monitor_stats_sender= context.socket(zmq.PUB)
         self.monitor_stats_sender.connect(PROT+MONITOR_ADDRESS+':'+MONITOR_STATS_IN)
@@ -113,6 +104,8 @@ class ObjectsProvider():
             if time.time() - vc_time > MAX_ALLOWED_DELAY:
                 self.stats_maker.skipped_frames += 1
                 continue
+
+            #algorithm start
 
             try:
                 self.ratio = FACE_IMAGE_WIDTH/float(current_frame.shape[1])
@@ -148,7 +141,8 @@ class ObjectsProvider():
 
 
             # creating / updating / removing objects
-            object_list = object_manager.manage_object_list(self.features, current_frame.shape[1],current_frame.shape[0],'RECTS')
+            object_list = object_manager.manage_object_list(self.features, current_frame.shape[1],current_frame.shape[0],'POINTS')
+            
             """
             try:
 
@@ -248,13 +242,8 @@ if __name__ == '__main__':
     
 
     
-    prod = ObjectsProvider({'in':VC_OUT,'out': FP_OUT,'out_col': FP_OUT_TO_COL })
-    print('si')
-    try:
-        prod.run()
-        print('stART_prod')
-    except Exception as e:
-        raise e
+    prod = FaceProvider({'in':VC_OUT,'out': FP_OUT,'out_col': FP_OUT_TO_COL })
+    prod.start()
     
 
             

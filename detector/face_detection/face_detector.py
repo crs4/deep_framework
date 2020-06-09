@@ -24,7 +24,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 import time
-from face_detection.mtcnn_caffe import mtcnn_utils as face_caffe
+from mtcnn_caffe import mtcnn_utils as face_caffe
 #from face_detection_constants import *
 from utils.features import Point,Rect
 
