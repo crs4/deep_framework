@@ -16,7 +16,7 @@ FACENET_PARAMS = dict( minsize = 20, # minimum size of face
 
 #TRACKING PARAMS
 
-DETECTION_INTERVAL = 10 # number of frames between keypoints detection
+DETECTION_INTERVAL = 1 # number of frames between keypoints detection
 LOST_THR = 5 # number of points min
 
 FACE_DETECTION_THR=0.95

@@ -8,7 +8,7 @@ import imutils
 from tracker import DeepSortTracker
 #from face_detection.face_detector import FaceNet_vcaffe
 #from tracking.tracker import Tracker,TrackerCV
-from detector import VisdroneDectector
+#from detector import VisdroneDectector
 from object_manager.manager import ObjectManager
 from utils.geometric_functions import resize_image
 from utils.socket_commons import send_data, recv_data
@@ -24,12 +24,11 @@ import sys
 
 
 
-
-class ObjectsProvider(Process):
+class ObjectsProvider():
 
     def __init__(self, configuration):
 
-        Process.__init__(self)
+        #Process.__init__(self)
         self.stats_maker = StatsMaker()
         self.pub_port = configuration['out']
         self.col_port = configuration['out_col']
@@ -60,28 +59,34 @@ class ObjectsProvider(Process):
         """
        
         #self.detector = FaceNet_vcaffe(**FACENET_PARAMS) # method for face detection.
-        self.detector = VisdroneDectector() # method for face detection.
+        print('run')
+        try:
+            #pass
+            from detector import VisdroneDectector
+
+            self.detector = VisdroneDectector() # method for face detection.
+        except Exception as e:
+            print('exc: ',e)
+            raise e
         object_manager = ObjectManager()
         context = zmq.Context()
+        print('try1')
 
 
         # subscribes to VideoCapture
         vc_socket = context.socket(zmq.SUB)
         vc_socket.setsockopt_string(zmq.SUBSCRIBE, "",encoding='ascii')
         vc_socket.connect(PROT+VIDEOSRC_ADDRESS+':'+self.rec_port)
-
         # configure output
         publisher = context.socket(zmq.PUB)
-        #if publisher detetcts slow subscribers, skips frames
+        #if publisher detects slow subscribers, skips frames
         publisher.sndhwm = 1
         publisher.bind(PROT+'*:'+self.pub_port)
-
 
         # PAIR connection to collector
         col_socket = context.socket(zmq.PAIR)
         #col_socket.bind(PROT+'*:'+self.col_port)
         col_socket.connect(PROT+COLLECTOR_ADDRESS+':'+self.col_port)
-
         # connection to monitor for stats
         self.monitor_stats_sender= context.socket(zmq.PUB)
         self.monitor_stats_sender.connect(PROT+MONITOR_ADDRESS+':'+MONITOR_STATS_IN)
@@ -89,21 +94,19 @@ class ObjectsProvider(Process):
         # manage sending stats to monitor
         self.stats_maker.run_stats_timer(INTERVAL_STATS,self.__send_stats)
         self.stats_maker.run_fps_timer()
-
         
         
         current_frame = None
         frame_counter = 0
+        
 
         while True:
-
             object_list = []
 
-
             rec_dict,imgs = recv_data(vc_socket,0,False)
+
             self.stats_maker.received_frames += 1
             current_frame = imgs[0]
-            
             vc_frame_idx = rec_dict['frame_idx']
             vc_time = rec_dict['vc_time']
 
@@ -128,24 +131,24 @@ class ObjectsProvider(Process):
                     print(str(e),'tracks')
                     self.reset_app()
                 """
-                #print('tr')
+                print('tr')
                 self.tracking_success, new_features = self.tracker.update_features(current_frame,self.features, **{'features_by_detector':self.features_by_detector})   
 
                 if self.tracking_success:
                     self.features = new_features
                     self.features_by_detector = False
+
                 
 
             # computation of detector features
             if frame_counter % DETECTION_INTERVAL == 0 or not self.tracking_success:
-                #print('det')
+                print('det')
                 self.features = self.detector.detect(current_frame)
                 self.features_by_detector = True
 
 
-
             # creating / updating / removing objects
-            object_list = object_manager.manage_object_list(self.features, current_frame.shape[1],current_frame.shape[0],'POINTS')
+            object_list = object_manager.manage_object_list(self.features, current_frame.shape[1],current_frame.shape[0],'RECTS')
             """
             try:
 
@@ -186,7 +189,7 @@ class ObjectsProvider(Process):
             res['fp_time'] = time.time()
             res['vc_time'] = vc_time
 
-            print('det res: ',obj_list_serialized)
+            #print('det res: ',obj_list_serialized)
             
             # send images to descriptors only if objects are detected
             if len(crops) > 0:
@@ -246,7 +249,13 @@ if __name__ == '__main__':
 
     
     prod = ObjectsProvider({'in':VC_OUT,'out': FP_OUT,'out_col': FP_OUT_TO_COL })
-    prod.start() 
+    print('si')
+    try:
+        prod.run()
+        print('stART_prod')
+    except Exception as e:
+        raise e
+    
 
             
             

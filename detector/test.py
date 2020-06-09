@@ -6,8 +6,7 @@ import numpy as np
 
 
 from detector import VisdroneDectector
-from tracker import Tracker
-
+from tracker import DeepSortTracker
 
 
 from object_manager.manager import ObjectManager
@@ -22,20 +21,19 @@ frame = cv2.imread('/tmp/sauron_image.jpg')
 
 det = VisdroneDectector()
 obj_man = ObjectManager()
-tracker = Tracker()
+tracker = DeepSortTracker()
 
 features = det.detect(frame)
 rects = features['boxes']
 
-tracker_outputs = tracker.update(rects, frame)
-tracked_boxes = tracker_outputs['boxes']
 
-#outputs = det.predict(frame)
 for i in range(4):
-	tracker_outputs = tracker.update(rects, frame)
+	__,tracker_outputs = tracker.update_features(frame,features)
+	if len(tracker_outputs['boxes']) == 0:
+		continue
 	tracked_boxes = tracker_outputs['boxes']
+
 	for i,rect in enumerate(tracked_boxes):
-		print(rect.serialize())
 		centroid = rect.centroid
 		x,y = int(centroid.x_coordinate) , int(centroid.y_coordinate)
 		cv2.circle(frame,(x,y), 3, (50,255,0) , -1)

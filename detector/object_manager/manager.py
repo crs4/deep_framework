@@ -85,7 +85,7 @@ class ObjectManager:
                 created = self.create_objects(boxes, points, indices_used)
                 
                 if len(created) != diff:
-                    a = input('error creating')
+                    print('error creating')
                 self.objects_list = updated + created
                 return self.objects_list
             if diff == 0:

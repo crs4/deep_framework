@@ -72,7 +72,7 @@ if __name__ == "__main__":
 
 	if not args.run:
 
-		config_question = 'Do you want to change default configuration? y/n: \n'
+		config_question = 'Do you want to change default algorithms configuration? y/n: \n'
 		if not os.path.isfile('./'+ALGS_CONFIG_FILE) or q.get_acceptable_answer(config_question,['y','n']).lower() == 'y':		
 			conf.configure()
 
