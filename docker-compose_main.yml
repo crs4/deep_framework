@@ -7,13 +7,6 @@ services:
             'ALGS=pitch:6004:6054:7004']
         image: 192.168.195.224:5000/collector:deep
         networks: [net_deep]
-    face_detector:
-        env_file: [env_params.list, env_ports.list]
-        environment: [COLLECTOR_ADDRESS=face_collector, VIDEOSRC_ADDRESS=stream_manager]
-        image: 192.168.195.224:5000/face_detector:deep
-        networks: [net_deep]
-        ports: ['5559:5559', '5556:5556', '5555:5555']
-        tty: true
     monitor:
         env_file: [env_params.list, env_ports.list]
         environment: ['ALGS=pitch']
@@ -33,6 +26,20 @@ services:
         networks: [net_deep]
         depends_on:
         - server
+    detector:
+        environment:
+        - COLLECTOR_ADDRESS=face_collector
+        - VIDEOSRC_ADDRESS=stream_manager
+        env_file:
+        - env_params.list
+        - env_ports.list
+        image: 192.168.195.224:5000/drone_object_detector:deep
+        networks:
+        - net_deep
+        ports:
+        - 5559:5559
+        - 5556:5556
+        - 5555:5555
     stream_capture_0:
         environment:
         - STREAM_CAPTURE_ID=5

@@ -143,9 +143,9 @@ class Configurator:
 
 	def __create_broker_service(self):
 		broker_dict = dict()
-		broker_dict['depends_on'] = ['face_detector']
+		broker_dict['depends_on'] = ['detector']
 		broker_dict['env_file'] = ['env_params.list', 'env_ports.list']
-		broker_dict['environment'] = ['FP_ADDRESS=face_detector']
+		broker_dict['environment'] = ['FP_ADDRESS=detector']
 		broker_dict['networks'] = ['net_deep']
 		broker_dict['image'] = self.reg.insecure_addr+'/broker:deep'
 
@@ -153,7 +153,7 @@ class Configurator:
 
 	def __create_sub_collector_service(self):
 		sub_col_dict = dict()
-		sub_col_dict['depends_on'] = ['face_detector']
+		sub_col_dict['depends_on'] = ['detector']
 		sub_col_dict['env_file'] = ['env_params.list', 'env_ports.list']
 		sub_col_dict['environment'] = ['COLLECTOR_ADDRESS=face_collector']
 		sub_col_dict['networks'] = ['net_deep']
@@ -164,7 +164,7 @@ class Configurator:
 	def __create_descritptor_service(self,alg_name):
 
 		descriptor_dict = dict()
-		descriptor_dict['depends_on'] = ['face_detector']
+		descriptor_dict['depends_on'] = ['detector']
 		descriptor_dict['env_file'] = ['env_params.list', 'env_ports.list']
 		descriptor_dict['environment'] = ['BROKER_ADDRESS='+alg_name+'_broker', 'SUB_COLLECTOR_ADDRESS='+alg_name+'_collector']
 		descriptor_dict['networks'] = ['net_deep']
@@ -237,10 +237,34 @@ class Configurator:
 		stream_capture['volumes'] = ['/Users/alessandro/Desktop/temp/:/mnt/remote_media']
 		return stream_capture
 
+	def set_detector(self, image_name):
+		detector = dict()
+
+		detector['environment'] = ['COLLECTOR_ADDRESS=face_collector', 'VIDEOSRC_ADDRESS=stream_manager']
+		detector['env_file'] = ['env_params.list', 'env_ports.list']
+		detector['image'] = self.reg.insecure_addr+'/'+image_name+':deep'
+		detector['networks'] = ['net_deep']
+		detector['ports'] = ['5559:5559', '5556:5556', '5555:5555']
+		# stream_capture['devices'] = ['/dev/video0:/dev/video0']
+		return detector
+
+	def ask_detector(self,inter):
+		#set detector
+		detectors_list = next(os.walk('detector'))[1]
+		for det in detectors_list:
+			answer_det = inter.get_acceptable_answer('Do you want to execute '+det+'? y/n: \n',['y','n']).lower()
+			if answer_det == 'y':
+				return det
+		return detectors_list[0]
+				
+				
+
+        
 
 
 
-	def set_compose_images(self,s_compose_file, sources):
+
+	def set_compose_images(self,s_compose_file, sources, detector= None):
 	
 		path = Path(s_compose_file)
 		with open(str(path)) as fp:
@@ -250,7 +274,10 @@ class Configurator:
 
 				raise e
 			
-			
+			if detector is not None:
+				detector_dict = self.set_detector(detector)
+				compose['services']['detector'] = detector_dict
+
 			for service, val in compose['services'].items():
 				image = val['image']
 				image_name = image.split('/')[1] 
@@ -345,6 +372,8 @@ class Configurator:
 		exec_config = ConfigParser()
 		installed_algs = dict()
 		inter = Interviewer()
+
+		
 
 		#compose_dir = os.path.join(MAIN_DIR,'compose-files')
 		compose_dir = 'compose-files'
