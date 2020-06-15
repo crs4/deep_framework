@@ -200,7 +200,7 @@ class ImageManager:
 		build_face_detector  = base_com + '-t '+self.registry+'/face_detection:deep detector/face_detection'
 		build_person_detector  = base_com + '-t '+self.registry+'/person_detection:deep detector/person_detection'
 		build_object_detector_cpu  = base_com +'-f detector/drone_object_detector/cpu.Dockerfile '+  '-t '+self.registry+'/drone_object_detector:deep_cpu detector/drone_object_detector'
-		build_object_detector_gpu  = base_com + +'-f detector/drone_object_detector/gpu.Dockerfile '+ '-t '+self.registry+'/drone_object_detector:deep_gpu detector/drone_object_detector'
+		build_object_detector_gpu  = base_com  +'-f detector/drone_object_detector/gpu.Dockerfile '+ '-t '+self.registry+'/drone_object_detector:deep_gpu detector/drone_object_detector'
 		
 
 
