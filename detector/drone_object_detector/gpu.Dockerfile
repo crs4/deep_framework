@@ -67,7 +67,7 @@ RUN cp ./models/deep_sort_ckpt.t7 ./deep_sort/deep_sort/deep/checkpoint/ckpt.t7
 ADD src /home/appuser/AdelaiDet/src/
 ENV DEVICE_TYPE="cuda"
 RUN mv deep_sort/utils/ deep_sort/sort_utils/
-COPY --from=utils:deep /home/deepframework/utils /detector/src/utils
+COPY --from=utils:deep /home/deepframework/utils /home/appuser/AdelaiDet/src/utils
 
 
 WORKDIR /home/appuser/AdelaiDet/src

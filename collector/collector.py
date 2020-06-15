@@ -175,13 +175,15 @@ class Collector(Process):
 
 if __name__ == '__main__':
     
-    
-    alg_list=ALGS.split(',')
-
     subs = []
-    for i, alg in enumerate(alg_list):
-        alg_name, broker_port, sub_col_port, col_port = alg.split(':')
-        subs.append({'send_port':col_port,'alg':alg_name})
+
+    alg_list=ALGS.split(',')
+    
+    if len(alg_list) > 0 and ':' in alg_list:
+
+        for i, alg in enumerate(alg_list):
+            alg_name, broker_port, sub_col_port, col_port = alg.split(':')
+            subs.append({'send_port':col_port,'alg':alg_name})
 
 
     collector = Collector(subs, {'fp_in': PROV_OUT_TO_COL,'out_stream_port':OUT_STREAM_PORT,'out_server_port':OUT_SERVER_PORT} )
