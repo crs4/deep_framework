@@ -285,7 +285,7 @@ class Configurator:
 
 				raise e
 			
-			if detector is not None:
+			if detector[0] is not None:
 				detector_dict = self.set_detector(detector)
 				compose['services']['detector'] = detector_dict
 
