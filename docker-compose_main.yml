@@ -33,7 +33,7 @@ services:
         env_file:
         - env_params.list
         - env_ports.list
-        image: 192.168.195.224:5000/drone_object_detector:deep
+        image: 192.168.195.224:5000/drone_object_detector:deep_cpu
         networks:
         - net_deep
         ports:

@@ -30,7 +30,7 @@ if __name__ == "__main__":
 	registry = Registry()
 	conf = Configurator(registry)
 	starter = Starter(machine,registry,cluster_manager,use_last_settings=args.run)
-	detector = None
+	detector = (None,None)
 	nodes_data = starter.get_nodes()
 	
 	print(nodes_data)

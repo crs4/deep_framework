@@ -237,12 +237,12 @@ class Configurator:
 		stream_capture['volumes'] = ['/Users/alessandro/Desktop/temp/:/mnt/remote_media']
 		return stream_capture
 
-	def set_detector(self, image_name):
+	def set_detector(self, detector_tuple):
 		detector = dict()
-
+		image_name,det_mode = detector_tuple
 		detector['environment'] = ['COLLECTOR_ADDRESS=face_collector', 'VIDEOSRC_ADDRESS=stream_manager']
 		detector['env_file'] = ['env_params.list', 'env_ports.list']
-		detector['image'] = self.reg.insecure_addr+'/'+image_name+':deep'
+		detector['image'] = self.reg.insecure_addr+'/'+image_name+':deep_'+det_mode
 		detector['networks'] = ['net_deep']
 		detector['ports'] = ['5559:5559', '5556:5556', '5555:5555']
 		# stream_capture['devices'] = ['/dev/video0:/dev/video0']
@@ -250,12 +250,23 @@ class Configurator:
 
 	def ask_detector(self,inter):
 		#set detector
-		detectors_list = next(os.walk('detector'))[1]
+		detectors_folders = next(os.walk('detector'))
+		detectors_list = detectors_folders[1]
+
 		for det in detectors_list:
+			det_files = next(os.walk('detector/'+det))[2]
+			gpu_dockerfile_bool = any([True for f in det_files if 'gpu' in f.lower()])
 			answer_det = inter.get_acceptable_answer('Do you want to execute '+det+'? y/n: \n',['y','n']).lower()
 			if answer_det == 'y':
-				return det
-		return detectors_list[0]
+				if gpu_dockerfile_bool:
+					det_mode = inter.get_acceptable_answer('Select mode of execution of '+det+' ? cpu/gpu: \n',['cpu','gpu']).lower()
+					return (det,det_mode)
+				else:
+					return (det,'cpu')
+
+
+				
+		return (detectors_list[0],'cpu')
 				
 				
 

@@ -199,8 +199,8 @@ class ImageManager:
 
 		build_face_detector  = base_com + '-t '+self.registry+'/face_detection:deep detector/face_detection'
 		build_person_detector  = base_com + '-t '+self.registry+'/person_detection:deep detector/person_detection'
-		build_object_detector_cpu  = base_com +'-f detector/drone_object_detector/cpu.Dockerfile '+  '-t '+self.registry+'/drone_object_detector:deep detector/drone_object_detector'
-		#build_object_detector_gpu  = base_com + +'-f detector/drone_object_detector/gpu.Dockerfile '+ '-t '+self.registry+'/drone_object_detector:deep detector/drone_object_detector'
+		build_object_detector_cpu  = base_com +'-f detector/drone_object_detector/cpu.Dockerfile '+  '-t '+self.registry+'/drone_object_detector:deep_cpu detector/drone_object_detector'
+		build_object_detector_gpu  = base_com + +'-f detector/drone_object_detector/gpu.Dockerfile '+ '-t '+self.registry+'/drone_object_detector:deep_gpu detector/drone_object_detector'
 		
 
 
@@ -229,7 +229,7 @@ class ImageManager:
 		build_server = base_com + ' -t '+self.registry+'/server:deep server/'
 		build_stream_capture = base_com + ' -t '+self.registry+'/stream_capture:deep stream_capture/'
 		build_stream_manager = base_com + ' -t '+self.registry+'/stream_manager:deep stream_manager/'
-		build_commands = [build_utils,build_agent,build_recog_setup,build_face_detector,build_collector,build_broker,build_sub_col,build_monitor,build_yaw_gpu,build_recog_gpu,build_age_gpu,build_emotion_gpu,build_gender_gpu,build_glasses_gpu,build_pitch_gpu,build_yaw_cpu,build_recog_cpu,build_age_cpu,build_emotion_cpu,build_gender_cpu,build_glasses_cpu,build_pitch_cpu,build_server,build_stream_capture,build_stream_manager,build_person_detector,build_object_detector_cpu ]
+		build_commands = [build_utils,build_agent,build_recog_setup,build_face_detector,build_collector,build_broker,build_sub_col,build_monitor,build_yaw_gpu,build_recog_gpu,build_age_gpu,build_emotion_gpu,build_gender_gpu,build_glasses_gpu,build_pitch_gpu,build_yaw_cpu,build_recog_cpu,build_age_cpu,build_emotion_cpu,build_gender_cpu,build_glasses_cpu,build_pitch_cpu,build_server,build_stream_capture,build_stream_manager,build_person_detector,build_object_detector_cpu,build_object_detector_gpu]
 		for i,build in enumerate(build_commands):
 			
 			if 'cpu' in build:
@@ -257,7 +257,8 @@ class ImageManager:
 		base_com = 'docker push '
 		push_face_detector = base_com  +self.registry+'/face_detection:deep'
 		push_person_detector = base_com  +self.registry+'/person_detection:deep'
-		push_obj_detector = base_com  +self.registry+'/drone_object_detector:deep'
+		push_obj_detector_cpu = base_com  +self.registry+'/drone_object_detector:deep_cpu'
+		push_obj_detector_gpu = base_com  +self.registry+'/drone_object_detector:deep_gpu'
 		push_collector = base_com  +self.registry+'/collector:deep'
 		push_broker = base_com  +self.registry+'/broker:deep'
 		push_sub_collector = base_com  +self.registry+'/sub_collector:deep'
@@ -280,7 +281,7 @@ class ImageManager:
 		push_stream_capture = base_com  +self.registry+'/stream_capture:deep'
 		push_stream_manager = base_com  +self.registry+'/stream_manager:deep'
 		
-		push_commands = [push_face_detector,push_person_detector,push_obj_detector,push_collector,push_broker,push_sub_collector,push_monitor,push_yaw_cpu,push_face_recognition_cpu,push_age_cpu,push_emotion_cpu,push_gender_cpu,push_glasses_cpu,push_pitch_cpu,push_yaw_gpu,push_face_recognition_gpu,push_age_gpu,push_emotion_gpu,push_gender_gpu,push_glasses_gpu ,push_pitch_gpu,push_server,push_stream_capture ,push_stream_manager]
+		push_commands = [push_face_detector,push_person_detector,push_obj_detector_cpu,push_obj_detector_gpu,push_collector,push_broker,push_sub_collector,push_monitor,push_yaw_cpu,push_face_recognition_cpu,push_age_cpu,push_emotion_cpu,push_gender_cpu,push_glasses_cpu,push_pitch_cpu,push_yaw_gpu,push_face_recognition_gpu,push_age_gpu,push_emotion_gpu,push_gender_gpu,push_glasses_gpu ,push_pitch_gpu,push_server,push_stream_capture ,push_stream_manager]
 		
 		for i,push in enumerate(push_commands):
 
