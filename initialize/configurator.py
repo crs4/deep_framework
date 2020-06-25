@@ -242,7 +242,10 @@ class Configurator:
 		image_name,det_mode = detector_tuple
 		detector['environment'] = ['COLLECTOR_ADDRESS=face_collector', 'VIDEOSRC_ADDRESS=stream_manager']
 		detector['env_file'] = ['env_params.list', 'env_ports.list']
-		detector['image'] = self.reg.insecure_addr+'/'+image_name+':deep_'+det_mode
+		if det_mode != '':
+			detector['image'] = self.reg.insecure_addr+'/'+image_name+':deep_'+det_mode
+		else:
+			detector['image'] = self.reg.insecure_addr+'/'+image_name+':deep'
 		detector['networks'] = ['net_deep']
 		detector['ports'] = ['5559:5559', '5556:5556', '5555:5555']
 		# stream_capture['devices'] = ['/dev/video0:/dev/video0']
@@ -262,11 +265,11 @@ class Configurator:
 					det_mode = inter.get_acceptable_answer('Select mode of execution of '+det+' ? cpu/gpu: \n',['cpu','gpu']).lower()
 					return (det,det_mode)
 				else:
-					return (det,'cpu')
+					return (det,'')
 
 
 				
-		return (detectors_list[0],'cpu')
+		return (detectors_list[0],'')
 				
 				
 
@@ -331,6 +334,7 @@ class Configurator:
 			compose_command_string =compose_command_string +' -c '+ alg_config['compose_path']
 			alg_compose_file = alg_config['compose_path']
 			env_filename = 'compose-files/env_'+alg_name+'.list'
+			docker_image_name = alg_config['docker_image']
 
 			with open(env_filename, 'w') as out_env:
 				out_env.write('FRAMEWORK=' + alg_config['framework'] + '\n')
@@ -356,7 +360,7 @@ class Configurator:
 
 					v['deploy']= {'placement':{'constraints': ['node.hostname=='+node['node_name'] ]}}
 					if 'descriptor' in k:
-						v['image'] = self.reg.insecure_addr+'/'+alg_name +':deep_'+mode
+						v['image'] = self.reg.insecure_addr+'/'+docker_image_name +':deep_'+mode
 
 			outf_comp = Path(alg_compose_file)
 			try:
@@ -404,6 +408,9 @@ class Configurator:
 			alg_config_dict['ports'] = (broker_port+index, sub_col_port+index, col_port+index)
 			compose_path = os.path.join(compose_dir,'docker-compose_'+alg_name+'.yml')
 			alg_config_dict['compose_path'] = compose_path
+			temp = config_file.split('/')[-2:][0]
+			print(temp)
+			alg_config_dict['docker_image'] = config_file.split('/')[-2:][0]
 			installed_algs[alg_name] = alg_config_dict
 			self.__create_alg_services(compose_path,alg_name)
 
@@ -422,7 +429,7 @@ class Configurator:
 				exec_config[alg_name]['compose_path'] = alg_config['compose_path']
 				exec_config[alg_name]['framework'] = alg_config['framework']
 				exec_config[alg_name]['ports'] = ",".join([str(i) for i in alg_config['ports']])
-
+				exec_config[alg_name]['docker_image'] = alg_config['docker_image']
 
 		with open(os.path.join(MAIN_DIR, ALGS_CONFIG_FILE), 'w') as defaultconfigfile:
 			exec_config.write(defaultconfigfile)

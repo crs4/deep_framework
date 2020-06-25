@@ -19,7 +19,7 @@ RUN pip3 install \
 COPY . /home/deepframework/detector/person_detection
 
 
-COPY --from=utils:deep /home/deepframework/utils /home/deepframework/detector/person_detection/utils
+COPY --from=utils:deep_setup /home/deepframework/utils /home/deepframework/detector/person_detection/utils
 
 WORKDIR /home/deepframework/detector/person_detection
 

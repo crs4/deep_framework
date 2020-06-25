@@ -1,5 +1,5 @@
 
-FROM tensorflow/tensorflow:1.12.3-py3
+FROM tensorflow/tensorflow:1.12.0-gpu-py3
 
 
 RUN apt-get update && apt-get install -y \ 
@@ -18,10 +18,9 @@ RUN pip3 install \
     keras==2.2.4
 
 COPY . /home/deepframework/descriptor/glasses_detection
-COPY --from=utils:deep /home/deepframework/utils/. /home/deepframework/descriptor/utils
-COPY --from=agent:deep /home/deepframework/agent/. /home/deepframework/descriptor
+COPY --from=utils:deep_setup /home/deepframework/utils /home/deepframework/descriptor/utils
+COPY --from=agent:deep_setup /home/deepframework/agent/. /home/deepframework/descriptor
 WORKDIR /home/deepframework/descriptor
-
 
 
 CMD python3 sub_agent.py

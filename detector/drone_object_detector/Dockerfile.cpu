@@ -38,7 +38,7 @@ RUN cp ./models/deep_sort_ckpt.t7 ./deep_sort/deep_sort/deep/checkpoint/ckpt.t7
 # Copy source code
 ADD src /detector/src/
 RUN mv deep_sort/utils/ deep_sort/sort_utils/
-COPY --from=utils:deep /home/deepframework/utils /detector/src/utils
+COPY --from=utils:deep_setup /home/deepframework/utils /detector/src/utils
 
 
 ENV DEVICE_TYPE="cpu"

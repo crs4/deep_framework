@@ -15,7 +15,7 @@ RUN pip3 install \
     pyzmq==18.0.1
 
 COPY . /home/deepframework/monitor
-COPY --from=utils:deep /home/deepframework/utils /home/deepframework/monitor/utils
+COPY --from=utils:deep_setup /home/deepframework/utils /home/deepframework/monitor/utils
 
 WORKDIR /home/deepframework/monitor
 

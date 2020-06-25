@@ -14,7 +14,7 @@ RUN pip3 install \
 
 COPY . /home/deepframework/detector/face_detection
 
-COPY --from=utils:deep /home/deepframework/utils /home/deepframework/detector/face_detection/utils
+COPY --from=utils:deep_setup /home/deepframework/utils /home/deepframework/detector/face_detection/utils
 
 
 WORKDIR /home/deepframework/detector/face_detection
