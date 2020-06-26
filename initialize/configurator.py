@@ -265,11 +265,11 @@ class Configurator:
 					det_mode = inter.get_acceptable_answer('Select mode of execution of '+det+' ? cpu/gpu: \n',['cpu','gpu']).lower()
 					return (det,det_mode)
 				else:
-					return (det,'')
+					return (det,'cpu')
 
 
 				
-		return (detectors_list[0],'')
+		return (detectors_list[0],'cpu')
 				
 				
 
@@ -409,7 +409,6 @@ class Configurator:
 			compose_path = os.path.join(compose_dir,'docker-compose_'+alg_name+'.yml')
 			alg_config_dict['compose_path'] = compose_path
 			temp = config_file.split('/')[-2:][0]
-			print(temp)
 			alg_config_dict['docker_image'] = config_file.split('/')[-2:][0]
 			installed_algs[alg_name] = alg_config_dict
 			self.__create_alg_services(compose_path,alg_name)
