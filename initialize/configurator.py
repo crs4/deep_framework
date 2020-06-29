@@ -228,6 +228,7 @@ class Configurator:
 
 
 	def set_stream_capture(self, id):
+		#path,video = source.rsplit('/', 1)
 		stream_capture = dict()
 		stream_capture['environment'] = [f'STREAM_CAPTURE_ID={id}']
 		stream_capture['env_file'] = ['env_params.list', 'env_ports.list']
