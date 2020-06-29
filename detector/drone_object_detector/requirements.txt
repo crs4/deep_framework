@@ -1,0 +1,10 @@
+opencv-python
+IPython
+numpy 
+scipy
+sklearn
+pillow
+vizer
+edict
+PyYAML
+easydict

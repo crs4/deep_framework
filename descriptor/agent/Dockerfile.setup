@@ -7,7 +7,6 @@ RUN pip3 install \
 RUN mkdir -p /home/deepframework/agent
 
 COPY . /home/deepframework/agent
-COPY --from=utils:deep /home/deepframework/utils/. /home/deepframework/agent/utils
 
 
 WORKDIR /home/deepframework/agent

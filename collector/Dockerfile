@@ -15,7 +15,7 @@ RUN pip3 install \
     pyzmq==18.0.1
 
 COPY . /home/deepframework/collector
-COPY --from=utils:deep /home/deepframework/utils /home/deepframework/collector/utils
+COPY --from=utils:deep_setup /home/deepframework/utils /home/deepframework/collector/utils
 
 WORKDIR /home/deepframework/collector
 

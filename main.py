@@ -30,7 +30,7 @@ if __name__ == "__main__":
 	registry = Registry()
 	conf = Configurator(registry)
 	starter = Starter(machine,registry,cluster_manager,use_last_settings=args.run)
-
+	detector = (None,None)
 	nodes_data = starter.get_nodes()
 	
 	print(nodes_data)
@@ -72,8 +72,9 @@ if __name__ == "__main__":
 
 	if not args.run:
 
-		config_question = 'Do you want to change default configuration? y/n: \n'
+		config_question = 'Do you want to change default algorithms configuration? y/n: \n'
 		if not os.path.isfile('./'+ALGS_CONFIG_FILE) or q.get_acceptable_answer(config_question,['y','n']).lower() == 'y':		
+			detector = conf.ask_detector(q)
 			conf.configure()
 
 	
@@ -82,7 +83,7 @@ if __name__ == "__main__":
 
 	conf.set_main_compose_variables(execution_algs)
 
-	conf.set_compose_images(MAIN_COMPOSE_FILE, sources)
+	conf.set_compose_images(MAIN_COMPOSE_FILE, sources, detector)
 
 
 	gpu_alloc = GPUallocator(nodes_data,execution_algs)

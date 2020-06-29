@@ -186,18 +186,74 @@ class ImageManager:
 	def __init__(self,machine,registry):
 		self.machine = machine
 		self.registry = registry.insecure_addr
+		self.images_list = []
+	
+	def __find_dockerfiles(self):
+		dockerfiles_path = []
+		for root, dirs, files in os.walk(MAIN_DIR):
+			for file in files:
+				if 'Dockerfile' in file:
+					if 'clothing' in file:
+						continue
+					dockerfile_path = os.path.join(root, file)
+					dockerfiles_path.append(dockerfile_path)
+		return dockerfiles_path
 
 
+	def __create_push_commands(self):
+
+		base_com = 'docker push '
+		commands = list(map(lambda img: base_com + img , self.images_list))
+		return commands
+
+	def __create_build_commands(self,dockerfiles_path):
+		build_commands = []
+		images_list = []
+		base_com = 'docker build '
+		for path in dockerfiles_path:
+			f_flag = '-f ' + path
+			data_split = path.split('/')[-2:]
+			temp_image_name = data_split[0]
+			docker_file = data_split[1]
+			mode = docker_file.split('.')
+			context = ' ' +path.replace(docker_file,'')
+			tag = ':deep'
+			if len(mode) > 1:
+				tag = tag + '_' + mode[1]
+			if 'setup' in tag:
+				image_name = temp_image_name + tag
+			else:
+				image_name = self.registry + '/' + temp_image_name + tag
+			t_flag = ' -t ' + image_name
+			self.images_list.append(image_name)
+
+			build_command = base_com + f_flag + t_flag + context
+			if 'setup' in t_flag:
+				build_commands = [build_command] + build_commands
+			else:
+				build_commands.append(build_command)
+		return build_commands
 
 	def build_images(self):
+		paths = self.__find_dockerfiles()
+		build_commands = self.__create_build_commands(paths)
+		
 
+		"""
 		base_com = 'docker build '
 		build_utils = base_com + '-t utils:deep utils/'
 		build_agent = base_com + '-t agent:deep descriptor/agent'
 		build_recog_setup = base_com + '-f descriptor/feature_extractors/face_recognition/Dockerfile.recognition_setup' + ' -t face_recognition_setup:deep descriptor/feature_extractors/face_recognition/'
 
 
-		build_face_detector  = base_com + '-t '+self.registry+'/face_detector:deep detector/face_detection'
+		build_face_detector  = base_com + '-t '+self.registry+'/face_detection:deep detector/face_detection'
+		build_person_detector  = base_com + '-t '+self.registry+'/person_detection:deep detector/person_detection'
+		build_object_detector_cpu  = base_com +'-f detector/drone_object_detector/cpu.Dockerfile '+  '-t '+self.registry+'/drone_object_detector:deep_cpu detector/drone_object_detector'
+		build_object_detector_gpu  = base_com  +'-f detector/drone_object_detector/gpu.Dockerfile '+ '-t '+self.registry+'/drone_object_detector:deep_gpu detector/drone_object_detector'
+		
+
+
+
 		build_collector = base_com + '-t '+self.registry+'/collector:deep collector/'
 		build_broker = base_com + ' -t '+self.registry+'/broker:deep descriptor/broker'
 		build_sub_col = base_com + ' -t '+self.registry+'/sub_collector:deep descriptor/sub_collector'
@@ -222,7 +278,8 @@ class ImageManager:
 		build_server = base_com + ' -t '+self.registry+'/server:deep server/'
 		build_stream_capture = base_com + ' -t '+self.registry+'/stream_capture:deep stream_capture/'
 		build_stream_manager = base_com + ' -t '+self.registry+'/stream_manager:deep stream_manager/'
-		build_commands = [build_utils,build_agent,build_recog_setup,build_face_detector,build_collector,build_broker,build_sub_col,build_monitor,build_yaw_gpu,build_recog_gpu,build_age_gpu,build_emotion_gpu,build_gender_gpu,build_glasses_gpu,build_pitch_gpu,build_yaw_cpu,build_recog_cpu,build_age_cpu,build_emotion_cpu,build_gender_cpu,build_glasses_cpu,build_pitch_cpu,build_server,build_stream_capture,build_stream_manager ]
+		build_commands = [build_utils,build_agent,build_recog_setup,build_face_detector,build_collector,build_broker,build_sub_col,build_monitor,build_yaw_gpu,build_recog_gpu,build_age_gpu,build_emotion_gpu,build_gender_gpu,build_glasses_gpu,build_pitch_gpu,build_yaw_cpu,build_recog_cpu,build_age_cpu,build_emotion_cpu,build_gender_cpu,build_glasses_cpu,build_pitch_cpu,build_server,build_stream_capture,build_stream_manager,build_person_detector,build_object_detector_cpu,build_object_detector_gpu]
+		"""
 		for i,build in enumerate(build_commands):
 			
 			if 'cpu' in build:
@@ -246,9 +303,12 @@ class ImageManager:
 			self.machine.exec_shell_command(build,ignore_err = False)
 
 	def push_images(self):
-
+		"""
 		base_com = 'docker push '
-		push_face_detector = base_com  +self.registry+'/face_detector:deep'
+		push_face_detector = base_com  +self.registry+'/face_detection:deep'
+		push_person_detector = base_com  +self.registry+'/person_detection:deep'
+		push_obj_detector_cpu = base_com  +self.registry+'/drone_object_detector:deep_cpu'
+		push_obj_detector_gpu = base_com  +self.registry+'/drone_object_detector:deep_gpu'
 		push_collector = base_com  +self.registry+'/collector:deep'
 		push_broker = base_com  +self.registry+'/broker:deep'
 		push_sub_collector = base_com  +self.registry+'/sub_collector:deep'
@@ -271,10 +331,13 @@ class ImageManager:
 		push_stream_capture = base_com  +self.registry+'/stream_capture:deep'
 		push_stream_manager = base_com  +self.registry+'/stream_manager:deep'
 		
-		push_commands = [push_face_detector,push_collector,push_broker,push_sub_collector,push_monitor,push_yaw_cpu,push_face_recognition_cpu,push_age_cpu,push_emotion_cpu,push_gender_cpu,push_glasses_cpu,push_pitch_cpu,push_yaw_gpu,push_face_recognition_gpu,push_age_gpu,push_emotion_gpu,push_gender_gpu,push_glasses_gpu ,push_pitch_gpu,push_server,push_stream_capture ,push_stream_manager]
-		
+		push_commands = [push_face_detector,push_person_detector,push_obj_detector_cpu,push_obj_detector_gpu,push_collector,push_broker,push_sub_collector,push_monitor,push_yaw_cpu,push_face_recognition_cpu,push_age_cpu,push_emotion_cpu,push_gender_cpu,push_glasses_cpu,push_pitch_cpu,push_yaw_gpu,push_face_recognition_gpu,push_age_gpu,push_emotion_gpu,push_gender_gpu,push_glasses_gpu ,push_pitch_gpu,push_server,push_stream_capture ,push_stream_manager]
+		"""
+		push_commands = self.__create_push_commands()
 		for i,push in enumerate(push_commands):
 
+			if 'setup' in push:
+				continue
 			if 'cpu' in push:
 				mode = 'cpu'
 			elif 'gpu' in push:

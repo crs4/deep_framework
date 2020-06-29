@@ -14,7 +14,7 @@ WORKDIR /app
 
 # Copy the current directory contents into the container at /app
 ADD . /app
-COPY --from=utils:deep /home/deepframework/utils /app/utils
+COPY --from=utils:deep_setup /home/deepframework/utils /app/utils
 
 # Install any needed packages specified in requirements.txt
 RUN pip install --trusted-host pypi.python.org -r requirements.txt

@@ -4,51 +4,53 @@ services:
         env_file: [env_params.list, env_ports.list]
         environment: [PROV_OUT_TO_COL=5555, OUT_STREAM_PORT=9999, OUT_SERVER_PORT=9990,
             SERVER_ADDRESS=server, STREAM_MANAGER_ADDRESS=stream_manager, STAT=Face,
-            'ALGS=emotion:6000:6050:7000,face_recognition:6005:6055:7005']
-        image: 156.148.132.108:5000/collector:deep
-        networks: [net_deep]
-    face_detector:
-        env_file: [env_params.list, env_ports.list]
-        environment: [COLLECTOR_ADDRESS=face_collector, VIDEOSRC_ADDRESS=stream_manager]
-        image: 156.148.132.108:5000/face_detector:deep
+            'ALGS=gender:6000:6050:7000,glasses:6001:6051:7001,emotion:6002:6052:7002,face_recognition:6003:6053:7003,pitch:6004:6054:7004,age:6005:6055:7005,yaw:6006:6056:7006']
+        image: 192.168.195.224:5000/collector:deep
         networks: [net_deep]
         ports: ['5559:5559', '5556:5556', '5555:5555']
         tty: true
     monitor:
         env_file: [env_params.list, env_ports.list]
-        environment: ['ALGS=emotion,face_recognition']
-        image: 156.148.132.108:5000/monitor:deep
+        environment: ['ALGS=gender,glasses,emotion,face_recognition,pitch,age,yaw']
+        image: 192.168.195.224:5000/monitor:deep
         networks: [net_deep]
         ports: ['5001:5001', '5002:5002']
     server:
         env_file: [env_params.list, env_ports.list]
-        environment: [FACE_PORT=9990, 'ALGS=emotion,face_recognition']
-        image: 156.148.132.108:5000/server:deep
+        environment: [FACE_PORT=9990, 'ALGS=gender,glasses,emotion,face_recognition,pitch,age,yaw']
+        image: 192.168.195.224:5000/server:deep
         networks: [net_deep]
         ports: ['8000:8000']
     stream_manager:
         env_file: [env_params.list, env_ports.list]
         environment: ['SERVER_IN_PORTS=FACE:9999']
-        image: 156.148.132.108:5000/stream_manager:deep
+        image: 192.168.195.224:5000/stream_manager:deep
         networks: [net_deep]
         depends_on:
         - server
+    detector:
+        environment:
+        - COLLECTOR_ADDRESS=face_collector
+        - VIDEOSRC_ADDRESS=stream_manager
+        env_file:
+        - env_params.list
+        - env_ports.list
+        image: 192.168.195.224:5000/face_detection:deep_cpu
+        networks:
+        - net_deep
+        ports:
+        - 5559:5559
+        - 5556:5556
+        - 5555:5555
     stream_capture_0:
         environment:
-        - STREAM_CAPTURE_ID=lab_entry
+        - STREAM_CAPTURE_ID=
         env_file:
         - env_params.list
         - env_ports.list
-        image: 156.148.132.108:5000/stream_capture:deep
+        image: 192.168.195.224:5000/stream_capture:deep
         networks:
         - net_deep
-    stream_capture_1:
-        environment:
-        - STREAM_CAPTURE_ID=lab_wall
-        env_file:
-        - env_params.list
-        - env_ports.list
-        image: 156.148.132.108:5000/stream_capture:deep
-        networks:
-        - net_deep
+        volumes:
+        - /Users/alessandro/Desktop/temp/:/mnt/remote_media
 version: '3'

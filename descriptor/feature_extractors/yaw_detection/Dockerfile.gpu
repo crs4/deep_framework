@@ -1,5 +1,5 @@
 
-FROM tensorflow/tensorflow:1.12.3-py3
+FROM tensorflow/tensorflow:1.12.0-gpu-py3
 
 
 RUN apt-get update && apt-get install -y \ 
@@ -15,10 +15,11 @@ RUN pip3 install \
     opencv-python==4.1.0.25
 
 COPY . /home/deepframework/descriptor/yaw_detection
-COPY --from=utils:deep /home/deepframework/utils/. /home/deepframework/descriptor/utils/
-COPY --from=agent:deep /home/deepframework/agent/. /home/deepframework/descriptor
+COPY --from=utils:deep_setup /home/deepframework/utils /home/deepframework/descriptor/utils
+COPY --from=agent:deep_setup /home/deepframework/agent/. /home/deepframework/descriptor
 
 
 WORKDIR /home/deepframework/descriptor
+
 
 CMD python3 sub_agent.py

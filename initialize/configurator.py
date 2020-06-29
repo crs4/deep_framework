@@ -143,9 +143,9 @@ class Configurator:
 
 	def __create_broker_service(self):
 		broker_dict = dict()
-		broker_dict['depends_on'] = ['face_detector']
+		broker_dict['depends_on'] = ['detector']
 		broker_dict['env_file'] = ['env_params.list', 'env_ports.list']
-		broker_dict['environment'] = ['FP_ADDRESS=face_detector']
+		broker_dict['environment'] = ['FP_ADDRESS=detector']
 		broker_dict['networks'] = ['net_deep']
 		broker_dict['image'] = self.reg.insecure_addr+'/broker:deep'
 
@@ -153,7 +153,7 @@ class Configurator:
 
 	def __create_sub_collector_service(self):
 		sub_col_dict = dict()
-		sub_col_dict['depends_on'] = ['face_detector']
+		sub_col_dict['depends_on'] = ['detector']
 		sub_col_dict['env_file'] = ['env_params.list', 'env_ports.list']
 		sub_col_dict['environment'] = ['COLLECTOR_ADDRESS=face_collector']
 		sub_col_dict['networks'] = ['net_deep']
@@ -164,7 +164,7 @@ class Configurator:
 	def __create_descritptor_service(self,alg_name):
 
 		descriptor_dict = dict()
-		descriptor_dict['depends_on'] = ['face_detector']
+		descriptor_dict['depends_on'] = ['detector']
 		descriptor_dict['env_file'] = ['env_params.list', 'env_ports.list']
 		descriptor_dict['environment'] = ['BROKER_ADDRESS='+alg_name+'_broker', 'SUB_COLLECTOR_ADDRESS='+alg_name+'_collector']
 		descriptor_dict['networks'] = ['net_deep']
@@ -228,19 +228,58 @@ class Configurator:
 
 
 	def set_stream_capture(self, id):
+		#path,video = source.rsplit('/', 1)
 		stream_capture = dict()
 		stream_capture['environment'] = [f'STREAM_CAPTURE_ID={id}']
 		stream_capture['env_file'] = ['env_params.list', 'env_ports.list']
 		stream_capture['image'] = self.reg.insecure_addr+'/stream_capture:deep'
 		stream_capture['networks'] = ['net_deep']
 		# stream_capture['devices'] = ['/dev/video0:/dev/video0']
-		# stream_capture['volumes'] = ['/mnt/remote_media:/mnt/remote_media']
+		stream_capture['volumes'] = ['/Users/alessandro/Desktop/temp/:/mnt/remote_media']
 		return stream_capture
 
+	def set_detector(self, detector_tuple):
+		detector = dict()
+		image_name,det_mode = detector_tuple
+		detector['environment'] = ['COLLECTOR_ADDRESS=face_collector', 'VIDEOSRC_ADDRESS=stream_manager']
+		detector['env_file'] = ['env_params.list', 'env_ports.list']
+		if det_mode != '':
+			detector['image'] = self.reg.insecure_addr+'/'+image_name+':deep_'+det_mode
+		else:
+			detector['image'] = self.reg.insecure_addr+'/'+image_name+':deep'
+		detector['networks'] = ['net_deep']
+		detector['ports'] = ['5559:5559', '5556:5556', '5555:5555']
+		# stream_capture['devices'] = ['/dev/video0:/dev/video0']
+		return detector
+
+	def ask_detector(self,inter):
+		#set detector
+		detectors_folders = next(os.walk('detector'))
+		detectors_list = detectors_folders[1]
+
+		for det in detectors_list:
+			det_files = next(os.walk('detector/'+det))[2]
+			gpu_dockerfile_bool = any([True for f in det_files if 'gpu' in f.lower()])
+			answer_det = inter.get_acceptable_answer('Do you want to execute '+det+'? y/n: \n',['y','n']).lower()
+			if answer_det == 'y':
+				if gpu_dockerfile_bool:
+					det_mode = inter.get_acceptable_answer('Select mode of execution of '+det+' ? cpu/gpu: \n',['cpu','gpu']).lower()
+					return (det,det_mode)
+				else:
+					return (det,'cpu')
+
+
+				
+		return (detectors_list[0],'cpu')
+				
+				
+
+        
 
 
 
-	def set_compose_images(self,s_compose_file, sources):
+
+	def set_compose_images(self,s_compose_file, sources, detector= None):
 	
 		path = Path(s_compose_file)
 		with open(str(path)) as fp:
@@ -250,7 +289,10 @@ class Configurator:
 
 				raise e
 			
-			
+			if detector[0] is not None:
+				detector_dict = self.set_detector(detector)
+				compose['services']['detector'] = detector_dict
+
 			for service, val in compose['services'].items():
 				image = val['image']
 				image_name = image.split('/')[1] 
@@ -293,6 +335,7 @@ class Configurator:
 			compose_command_string =compose_command_string +' -c '+ alg_config['compose_path']
 			alg_compose_file = alg_config['compose_path']
 			env_filename = 'compose-files/env_'+alg_name+'.list'
+			docker_image_name = alg_config['docker_image']
 
 			with open(env_filename, 'w') as out_env:
 				out_env.write('FRAMEWORK=' + alg_config['framework'] + '\n')
@@ -318,7 +361,7 @@ class Configurator:
 
 					v['deploy']= {'placement':{'constraints': ['node.hostname=='+node['node_name'] ]}}
 					if 'descriptor' in k:
-						v['image'] = self.reg.insecure_addr+'/'+alg_name +':deep_'+mode
+						v['image'] = self.reg.insecure_addr+'/'+docker_image_name +':deep_'+mode
 
 			outf_comp = Path(alg_compose_file)
 			try:
@@ -346,6 +389,8 @@ class Configurator:
 		installed_algs = dict()
 		inter = Interviewer()
 
+		
+
 		#compose_dir = os.path.join(MAIN_DIR,'compose-files')
 		compose_dir = 'compose-files'
 		if not os.path.exists(compose_dir):
@@ -364,6 +409,8 @@ class Configurator:
 			alg_config_dict['ports'] = (broker_port+index, sub_col_port+index, col_port+index)
 			compose_path = os.path.join(compose_dir,'docker-compose_'+alg_name+'.yml')
 			alg_config_dict['compose_path'] = compose_path
+			temp = config_file.split('/')[-2:][0]
+			alg_config_dict['docker_image'] = config_file.split('/')[-2:][0]
 			installed_algs[alg_name] = alg_config_dict
 			self.__create_alg_services(compose_path,alg_name)
 
@@ -382,7 +429,7 @@ class Configurator:
 				exec_config[alg_name]['compose_path'] = alg_config['compose_path']
 				exec_config[alg_name]['framework'] = alg_config['framework']
 				exec_config[alg_name]['ports'] = ",".join([str(i) for i in alg_config['ports']])
-
+				exec_config[alg_name]['docker_image'] = alg_config['docker_image']
 
 		with open(os.path.join(MAIN_DIR, ALGS_CONFIG_FILE), 'w') as defaultconfigfile:
 			exec_config.write(defaultconfigfile)

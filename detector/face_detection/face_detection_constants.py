@@ -20,7 +20,7 @@ DETECTION_INTERVAL = 10 # number of frames between keypoints detection
 LOST_THR = 5 # number of points min
 
 FACE_DETECTION_THR=0.95
-DELTA_FACERECT=1.2
+DELTA_RECT=1.2
 DELTA_EYE_W=0.3
 DELTA_EYE_H=0.22
 

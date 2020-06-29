@@ -1,13 +1,11 @@
 
-from multiprocessing import Process
 import numpy as np
 
-#from face_detection.face_detection_constants import *
-from face_detection_constants import *
+from detection_constants import *
 import imutils
-from face_detector import FaceNet_vcaffe
-from tracking.tracker import Tracker,TrackerCV
-from object_manager.manager import ObjectManager
+from tracker import DeepSortTracker
+
+from detector import VisdroneDectector
 from utils.geometric_functions import resize_image
 from utils.socket_commons import send_data, recv_data
 from utils.stats_maker import StatsMaker
@@ -22,20 +20,20 @@ import sys
 
 
 
-class FaceProvider(Process):
+class ObjectsProvider():
 
     def __init__(self, configuration):
 
-        Process.__init__(self)
+        #Process.__init__(self)
         self.stats_maker = StatsMaker()
         self.pub_port = configuration['out']
         self.col_port = configuration['out_col']
         self.rec_port = configuration['in']
 
 
-        self.tracker = Tracker(**LK_PARAMS) # method for points tracking
+        #self.tracker = Tracker(**LK_PARAMS) # method for points tracking
         #self.tracker = TrackerCV() # method for points tracking
-        
+        self.tracker = DeepSortTracker()
         self.features = dict()
         self.tracking_success = False
         self.features_by_detector = False
@@ -56,13 +54,13 @@ class FaceProvider(Process):
         caffe.set_device(0)
         """
        
-        self.detector = FaceNet_vcaffe(**FACENET_PARAMS) # method for face detection.
         
-        object_manager = ObjectManager()
+        self.detector = VisdroneDectector() # method for face detection.
+        
         context = zmq.Context()
 
 
-        # subscribes to Stream Manager
+        # subscribes to VideoCapture
         vc_socket = context.socket(zmq.SUB)
         vc_socket.setsockopt_string(zmq.SUBSCRIBE, "",encoding='ascii')
         vc_socket.connect(PROT+VIDEOSRC_ADDRESS+':'+self.rec_port)
@@ -115,69 +113,30 @@ class FaceProvider(Process):
 
             current_frame = imutils.resize(current_frame, width=FACE_IMAGE_WIDTH)
 
-            #computation of tracking features
-            if any(self.features.values()) and  (self.tracking_success or self.features_by_detector):
-                """
-                try:
-                    self.tracking_success, new_features = self.tracker.update_features(current_frame,self.features, **{'features_by_detector':self.features_by_detector})   
-                except Exception as e:
-                    print(str(e),'tracks')
-                    self.reset_app()
-                """
-                print('tr')
-                self.tracking_success, new_features = self.tracker.update_features(current_frame,self.features, **{'features_by_detector':self.features_by_detector})   
-
-                if self.tracking_success:
-                    self.features = new_features
-                    self.features_by_detector = False
-
-                
-
             # computation of detector features
-            if frame_counter % DETECTION_INTERVAL == 0 or not self.tracking_success:
+            if frame_counter % DETECTION_INTERVAL == 0:
                 print('det')
-                self.features = self.detector.detect(current_frame)
-                self.features_by_detector = True
-
-
-            # creating / updating / removing objects
-            object_list = object_manager.manage_object_list(self.features, current_frame.shape[1],current_frame.shape[0],'POINTS')
+                detector_features = self.detector.detect(current_frame)
+                features = self.tracker.update_features(current_frame,detector_features)
+                rects = features['boxes']
             
-            """
-            try:
-
-                object_list = object_manager.manage_object_list(self.features, current_frame.shape[1],current_frame.shape[0])
-
-            except Exception as e:
-                print(str(e),'updating')
-                self.reset_app()
-            """
-
-        
-            
-            
-            self.tracker.set_last_frame(current_frame)
-
-
-
-
+            else:
+                continue
 
 
             res = dict()
             crops = []
             obj_list_serialized = []
 
-
-            for obj in object_list:
+            for i,rect in enumerate(rects):
                 
-                crop = current_frame[obj.rect.top_left_point.y_coordinate:obj.rect.bottom_right_point.y_coordinate, obj.rect.top_left_point.x_coordinate:obj.rect.bottom_right_point.x_coordinate]
+                crop = current_frame[rect.top_left_point.y_coordinate:rect.bottom_right_point.y_coordinate,rect.top_left_point.x_coordinate:rect.bottom_right_point.x_coordinate]
                 
-                obj_dict = self.__rescale_object(obj)
+                obj_dict = self.__rescale_object(rect)
                 obj_list_serialized.append(obj_dict)
                 crops.append(np.ascontiguousarray(crop, dtype=np.uint8))
 
                 
-            
             res['frame_idx'] = vc_frame_idx
             res['objects'] = obj_list_serialized
             res['fp_time'] = time.time()
@@ -215,24 +174,19 @@ class FaceProvider(Process):
         stats_dict = {self.__class__.__name__:stats}
         send_data(self.monitor_stats_sender,None,0,False,**stats_dict)
 
-    def __rescale_object(self,obj):
+    def __rescale_object(self,rect):
 
         obj_dict = dict()
                 
-        rect = dict()
-        rect['x_topleft'] = int(obj.rect.top_left_point.x_coordinate / self.ratio)
-        rect['y_topleft'] = int(obj.rect.top_left_point.y_coordinate / self.ratio)
-        rect['x_bottomright'] = int(obj.rect.bottom_right_point.x_coordinate / self.ratio)
-        rect['y_bottomright'] =int(obj.rect.bottom_right_point.y_coordinate / self.ratio)
+        rect_dict = dict()
+        rect_dict['x_topleft'] = int(rect.top_left_point.x_coordinate / self.ratio)
+        rect_dict['y_topleft'] = int(rect.top_left_point.y_coordinate / self.ratio)
+        rect_dict['x_bottomright'] = int(rect.bottom_right_point.x_coordinate / self.ratio)
+        rect_dict['y_bottomright'] =int(rect.bottom_right_point.y_coordinate / self.ratio)
         
         
-        points = []
-        for obj_p in obj.points:
-            points.append([int(obj_p.x_coordinate / self.ratio), int(obj_p.y_coordinate / self.ratio), obj_p.properties['tag']])
-            
-        obj_dict['pid'] = str(obj.pid)
-        obj_dict['rect'] = rect
-        obj_dict['points'] = points
+        obj_dict['pid'] = str(rect.properties['pid'])
+        obj_dict['rect'] = rect_dict
         return obj_dict
 
 
@@ -242,9 +196,8 @@ if __name__ == '__main__':
     
 
     
-    prod = FaceProvider({'in':VC_OUT,'out': FP_OUT,'out_col': FP_OUT_TO_COL })
-    prod.start()
-    
+    prod = ObjectsProvider({'in':VC_OUT,'out': FP_OUT,'out_col': FP_OUT_TO_COL })
+    prod.run()
 
             
             

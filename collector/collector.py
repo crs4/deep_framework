@@ -85,7 +85,7 @@ class Collector(Process):
             # receive frame and data from frame provider
             fp_dict,__= recv_data(fp_socket,0,False)
             frame_id = fp_dict['frame_idx']
-            fp_people = fp_dict['people']
+            fp_people = fp_dict['objects']
             vc_time = fp_dict['vc_time']
 
 
@@ -140,6 +140,7 @@ class Collector(Process):
             r['collector_time'] = time.time()
             r['data'] = people_res
             r['vc_time'] = vc_time
+            print(people_res)
             
             send_data(sender,None,0,False,**r)
             send_data(server_sender,None,0,False,**r)
@@ -174,15 +175,17 @@ class Collector(Process):
 
 if __name__ == '__main__':
     
-    
+    subs = []
     alg_list=ALGS.split(',')
 
-    subs = []
-    for i, alg in enumerate(alg_list):
-        alg_name, broker_port, sub_col_port, col_port = alg.split(':')
-        subs.append({'send_port':col_port,'alg':alg_name})
+    if len(alg_list) > 0 and alg_list[0] != '':
+
+        for i, alg in enumerate(alg_list):
+            alg_name, broker_port, sub_col_port, col_port = alg.split(':')
+            subs.append({'send_port':col_port,'alg':alg_name})
 
 
+    print(subs)
     collector = Collector(subs, {'fp_in': PROV_OUT_TO_COL,'out_stream_port':OUT_STREAM_PORT,'out_server_port':OUT_SERVER_PORT} )
     collector.start()
 
