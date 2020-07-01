@@ -9,6 +9,7 @@ from detector import VisdroneDectector
 from utils.geometric_functions import resize_image
 from utils.socket_commons import send_data, recv_data
 from utils.stats_maker import StatsMaker
+from utils.features import Object
 
 import copy
 import zmq
@@ -31,18 +32,18 @@ class ObjectsProvider():
         self.rec_port = configuration['in']
 
 
-        #self.tracker = Tracker(**LK_PARAMS) # method for points tracking
-        #self.tracker = TrackerCV() # method for points tracking
         self.tracker = DeepSortTracker()
-        self.features = dict()
-        self.tracking_success = False
-        self.features_by_detector = False
-    
+        self.detector = VisdroneDectector() # method for detection.
+        
+    def __setup(self):
+        self.ratio = 1
+        
+    """
     def reset_app(self):
         self.features = []
         self.tracking_success = False
         self.features_by_detector = False
-
+    """
 
 
 
@@ -55,7 +56,6 @@ class ObjectsProvider():
         """
        
         
-        self.detector = VisdroneDectector() # method for face detection.
         
         context = zmq.Context()
 
@@ -105,34 +105,19 @@ class ObjectsProvider():
 
             #algorithm start
 
-            try:
-                self.ratio = FACE_IMAGE_WIDTH/float(current_frame.shape[1])
-            except Exception as e:
-                print('exception in rec frame ',e)
-                continue
-
-            current_frame = imutils.resize(current_frame, width=FACE_IMAGE_WIDTH)
-
-            # computation of detector features
-            if frame_counter % DETECTION_INTERVAL == 0:
-                print('det')
-                detector_features = self.detector.detect(current_frame)
-                features = self.tracker.update_features(current_frame,detector_features)
-                rects = features['boxes']
-            
-            else:
-                continue
-
+            object_list = self.extract_features(current_frame,(frame_counter))
 
             res = dict()
             crops = []
             obj_list_serialized = []
 
-            for i,rect in enumerate(rects):
+            for i,obj in enumerate(object_list):
+                print(obj)
                 
-                crop = current_frame[rect.top_left_point.y_coordinate:rect.bottom_right_point.y_coordinate,rect.top_left_point.x_coordinate:rect.bottom_right_point.x_coordinate]
-                
-                obj_dict = self.__rescale_object(rect)
+                crop = current_frame[obj.rect.top_left_point.y_coordinate:obj.rect.bottom_right_point.y_coordinate, obj.rect.top_left_point.x_coordinate:obj.rect.bottom_right_point.x_coordinate]
+
+                obj_dict = self.__rescale_object(obj)
+                print('dict ',obj_dict)
                 obj_list_serialized.append(obj_dict)
                 crops.append(np.ascontiguousarray(crop, dtype=np.uint8))
 
@@ -142,7 +127,7 @@ class ObjectsProvider():
             res['fp_time'] = time.time()
             res['vc_time'] = vc_time
 
-            #print('det res: ',obj_list_serialized)
+            print('det res: ',obj_list_serialized)
             
             # send images to descriptors only if objects are detected
             if len(crops) > 0:
@@ -168,25 +153,65 @@ class ObjectsProvider():
         publisher.close()
         context.term()
 
+
+    def extract_features(self, current_frame, *args):
+
+        obj_list = [] 
+        frame_counter = args[0]
+
+        try:
+            self.ratio = IMAGE_WIDTH/float(current_frame.shape[1])
+        except Exception as e:
+            print('exception resizing frame ',e)
+
+        current_frame = imutils.resize(current_frame, width=IMAGE_WIDTH)
+
+        interval = frame_counter % DETECTION_INTERVAL
+        # computation of detector features
+        if interval == 0:
+            print('in')
+            detector_features = self.detector.detect(current_frame)
+            features = self.tracker.update_features(current_frame,detector_features)
+            rects = features['boxes']
+            for rect in rects:
+                obj = Object(rect, pid = rect.properties['pid'])
+                obj_list.append(obj)
+        return obj_list
+        
+
+
     def __send_stats(self):
         
         stats = self.stats_maker.create_stats()
         stats_dict = {self.__class__.__name__:stats}
         send_data(self.monitor_stats_sender,None,0,False,**stats_dict)
 
-    def __rescale_object(self,rect):
-
+    def __rescale_object(self,obj):
         obj_dict = dict()
                 
         rect_dict = dict()
-        rect_dict['x_topleft'] = int(rect.top_left_point.x_coordinate / self.ratio)
-        rect_dict['y_topleft'] = int(rect.top_left_point.y_coordinate / self.ratio)
-        rect_dict['x_bottomright'] = int(rect.bottom_right_point.x_coordinate / self.ratio)
-        rect_dict['y_bottomright'] =int(rect.bottom_right_point.y_coordinate / self.ratio)
+        rect_dict['x_topleft'] = int(obj.rect.top_left_point.x_coordinate / self.ratio)
+        rect_dict['y_topleft'] = int(obj.rect.top_left_point.y_coordinate / self.ratio)
+        rect_dict['x_bottomright'] = int(obj.rect.bottom_right_point.x_coordinate / self.ratio)
+        rect_dict['y_bottomright'] =int(obj.rect.bottom_right_point.y_coordinate / self.ratio)
         
-        
-        obj_dict['pid'] = str(rect.properties['pid'])
+        points = []
+        for obj_p in obj.points:
+            points.append([int(obj_p.x_coordinate / self.ratio), int(obj_p.y_coordinate / self.ratio), obj_p.properties['tag']])
+        """
+        try:
+            print('len',len(points))
+            print(str(obj.pid))
+            obj_dict['pid'] = str(obj.pid)
+            obj_dict['rect'] = rect_dict
+            obj_dict['points'] = points
+            print(obj_dict)
+        except Exception as e:
+            raise e
+        """
+        obj_dict['pid'] = str(obj.pid)
         obj_dict['rect'] = rect_dict
+        obj_dict['points'] = points
         return obj_dict
 
 
