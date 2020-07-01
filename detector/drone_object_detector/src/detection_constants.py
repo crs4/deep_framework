@@ -5,7 +5,7 @@ import os
 
 DETECTION_INTERVAL = 1 # number of frames between keypoints detection
 
-FACE_IMAGE_WIDTH = 640
+IMAGE_WIDTH = 320
 
 
 PROT= os.environ['PROT']

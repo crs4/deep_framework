@@ -1,4 +1,25 @@
 
+import uuid
+
+class Object:
+    def __init__(self, rect, points = [], pid = None, whole_image = False):
+        self.pid = pid if pid is not None else None if whole_image else uuid.uuid4()
+        self.rect = rect
+        self.points = points
+
+    def serialize(self):
+        obj_dict = dict()
+        points = []
+        for point in self.points:
+            p_ser = point.serialize()
+            points.append(p_ser)
+
+        obj_dict['points'] = points
+        obj_dict['rect'] = self.rect.serialize()
+        obj_dict['pid'] = str(self.pid)
+        return obj_dict
+
+
 
 class Feature:
 	def serialize(self):
