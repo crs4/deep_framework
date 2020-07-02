@@ -104,20 +104,22 @@ class ObjectsProvider():
                 continue
 
             #algorithm start
-
+            alg_start = time.time()
             object_list = self.extract_features(current_frame,(frame_counter))
+            alg_end = time.time()
 
+            print('Total alg time: ', alg_end - alg_start)
             res = dict()
             crops = []
             obj_list_serialized = []
 
             for i,obj in enumerate(object_list):
-                print(obj)
+                #print(obj)
                 
                 crop = current_frame[obj.rect.top_left_point.y_coordinate:obj.rect.bottom_right_point.y_coordinate, obj.rect.top_left_point.x_coordinate:obj.rect.bottom_right_point.x_coordinate]
 
                 obj_dict = self.__rescale_object(obj)
-                print('dict ',obj_dict)
+                #print('dict ',obj_dict)
                 obj_list_serialized.append(obj_dict)
                 crops.append(np.ascontiguousarray(crop, dtype=np.uint8))
 
@@ -127,8 +129,8 @@ class ObjectsProvider():
             res['fp_time'] = time.time()
             res['vc_time'] = vc_time
 
-            print('det res: ',obj_list_serialized)
-            
+            #print('det res: ',obj_list_serialized)
+            print('Total provider time: ', time.time() - alg_start, ' for frame ', frame_counter, 'with ', len(object_list), ' objects')
             # send images to descriptors only if objects are detected
             if len(crops) > 0:
                 send_data(publisher,crops,0,False,**res)
@@ -170,8 +172,15 @@ class ObjectsProvider():
         # computation of detector features
         if interval == 0:
             print('in')
+            det_start = time.time()
             detector_features = self.detector.detect(current_frame)
+            det_end = time.time()
+            print('Det time: ', det_end - det_start)
+            
+            tr_start = time.time()
             features = self.tracker.update_features(current_frame,detector_features)
+            tr_end = time.time()
+            print('Det time: ', tr_end - tr_start)
             rects = features['boxes']
             for rect in rects:
                 obj = Object(rect, pid = rect.properties['pid'])
