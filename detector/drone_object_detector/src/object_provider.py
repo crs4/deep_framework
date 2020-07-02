@@ -101,6 +101,7 @@ class ObjectsProvider():
 
             if time.time() - vc_time > MAX_ALLOWED_DELAY:
                 self.stats_maker.skipped_frames += 1
+                self.vc_socket.setsockopt(zmq.LINGER, 0)   
                 continue
 
             #algorithm start
@@ -157,7 +158,6 @@ class ObjectsProvider():
 
 
     def extract_features(self, current_frame, *args):
-
         obj_list = [] 
         frame_counter = args[0]
 
