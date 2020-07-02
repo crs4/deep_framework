@@ -101,7 +101,13 @@ class ObjectsProvider():
 
             if time.time() - vc_time > MAX_ALLOWED_DELAY:
                 self.stats_maker.skipped_frames += 1
-                self.vc_socket.setsockopt(zmq.LINGER, 0)   
+                temp = True
+                while temp:
+                     rec_dict,imgs = recv_data(vc_socket,0,False)
+                     vc_time = rec_dict['vc_time']
+                     if time.time() - vc_time < 0.3:
+                        temp = False
+
                 continue
 
             #algorithm start
