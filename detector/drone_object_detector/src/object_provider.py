@@ -180,7 +180,7 @@ class ObjectsProvider():
             tr_start = time.time()
             features = self.tracker.update_features(current_frame,detector_features)
             tr_end = time.time()
-            print('Det time: ', tr_end - tr_start)
+            print('Track time: ', tr_end - tr_start)
             rects = features['boxes']
             for rect in rects:
                 obj = Object(rect, pid = rect.properties['pid'])
