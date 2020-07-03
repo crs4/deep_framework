@@ -102,11 +102,14 @@ class ObjectsProvider():
             if time.time() - vc_time > MAX_ALLOWED_DELAY:
                 self.stats_maker.skipped_frames += 1
                 temp = True
+                count = 0
                 while temp:
                      rec_dict,imgs = recv_data(vc_socket,0,False)
+                     count+=1
                      vc_time = rec_dict['vc_time']
-                     if time.time() - vc_time < 0.3:
+                     if time.time() - vc_time < 0.1:
                         temp = False
+                        print('Buffer frame flushed: ',count)
 
                 continue
 
