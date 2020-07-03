@@ -3,7 +3,7 @@ import numpy as np
 
 from detection_constants import *
 import imutils
-from tracker import DeepSortTracker
+from tracker import DeepSortTracker,Tracker
 
 from detector import VisdroneDectector
 from utils.geometric_functions import resize_image
@@ -32,10 +32,10 @@ class ObjectsProvider():
         self.rec_port = configuration['in']
 
 
-        self.tracker = DeepSortTracker()
+        self.ds_tracker = DeepSortTracker()
+        self.tracker = Tracker()
         self.detector = VisdroneDectector() # method for detection.
         
-    def __setup(self):
         self.ratio = 1
         
     """
@@ -107,7 +107,7 @@ class ObjectsProvider():
                      rec_dict,imgs = recv_data(vc_socket,0,False)
                      count+=1
                      vc_time = rec_dict['vc_time']
-                     if time.time() - vc_time < 0.1:
+                     if time.time() - vc_time < 0.5:
                         temp = False
                         print('Buffer frame flushed: ',count)
 
@@ -182,18 +182,25 @@ class ObjectsProvider():
         if interval == 0:
             print('in')
             det_start = time.time()
-            detector_features = self.detector.detect(current_frame)
+            self.features = self.detector.detect(current_frame)
             det_end = time.time()
-            print('Det time: ', det_end - det_start)
+            print('Det time: ', det_end - det_start, ' counter ', frame_counter)
+            print('det ',self.features)
+            #points = [ [box.centroid] for box in detector_features['boxes']]
             
-            tr_start = time.time()
-            features = self.tracker.update_features(current_frame,detector_features)
-            tr_end = time.time()
-            print('Track time: ', tr_end - tr_start)
-            rects = features['boxes']
-            for rect in rects:
-                obj = Object(rect, pid = rect.properties['pid'])
-                obj_list.append(obj)
+        if len(self.features) == 0:
+            print('empty')
+            return obj_list
+
+        tr_start = time.time()
+        self.features = self.ds_tracker.update_features(current_frame,self.features)
+        tr_end = time.time()
+        print('Track time: ', tr_end - tr_start,' counter ', frame_counter)
+        print('track ',self.features)
+        rects = self.features['boxes']
+        for rect in rects:
+            obj = Object(rect, pid = rect.properties['pid'])
+            obj_list.append(obj)
         return obj_list
         
 

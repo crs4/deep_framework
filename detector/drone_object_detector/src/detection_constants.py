@@ -3,7 +3,7 @@ import cv2
 import os
 
 
-DETECTION_INTERVAL = 1 # number of frames between keypoints detection
+DETECTION_INTERVAL = 5 # number of frames between keypoints detection
 
 IMAGE_WIDTH = 1280
 
