@@ -183,27 +183,21 @@ class ObjectsProvider():
         if interval == 0:
             print('in')
             det_start = time.time()
-            self.features = self.detector.detect(current_frame)
+            det_features = self.detector.detect(current_frame)
             det_end = time.time()
             print('Det time: ', det_end - det_start, ' counter ', frame_counter)
-            print('det ',self.features)
             #points = [ [box.centroid] for box in detector_features['boxes']]
-            
-        if len(self.features) == 0:
-            print('empty')
-            return obj_list
+        
 
-        tr_start = time.time()
-        print('pre')
-        self.features = self.ds_tracker.update_features(current_frame,self.features)
-        print('post')
-        tr_end = time.time()
-        print('Track time: ', tr_end - tr_start,' counter ', frame_counter)
-        print('track ',self.features)
-        rects = self.features['boxes']
-        for rect in rects:
-            obj = Object(rect, pid = rect.properties['pid'])
-            obj_list.append(obj)
+            tr_start = time.time()
+            tr_features = self.ds_tracker.update_features(current_frame,det_features)
+            tr_end = time.time()
+            print('Track time: ', tr_end - tr_start,' counter ', frame_counter)
+            rects = tr_features['boxes']
+            for rect in rects:
+                obj = Object(rect, pid = rect.properties['pid'])
+                obj_list.append(obj)
+        
         return obj_list
         
 
