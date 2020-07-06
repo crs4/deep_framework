@@ -108,7 +108,7 @@ class ObjectsProvider():
                     rec_dict,imgs = recv_data(vc_socket,0,False)
                     count+=1
                     vc_time = rec_dict['vc_time']
-                    if time.time() - vc_time > 0.5:
+                    if time.time() - vc_time < 0.3:
                         temp = False
                         print('Buffer frame flushed: ',count)
 
