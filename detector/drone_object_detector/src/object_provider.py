@@ -104,10 +104,11 @@ class ObjectsProvider():
                 temp = True
                 count = 0
                 while temp:
-                     rec_dict,imgs = recv_data(vc_socket,0,False)
-                     count+=1
-                     vc_time = rec_dict['vc_time']
-                     if time.time() - vc_time < 0.5:
+                    print('flushing')
+                    rec_dict,imgs = recv_data(vc_socket,0,False)
+                    count+=1
+                    vc_time = rec_dict['vc_time']
+                    if time.time() - vc_time > 0.5:
                         temp = False
                         print('Buffer frame flushed: ',count)
 
@@ -193,7 +194,9 @@ class ObjectsProvider():
             return obj_list
 
         tr_start = time.time()
+        print('pre')
         self.features = self.ds_tracker.update_features(current_frame,self.features)
+        print('post')
         tr_end = time.time()
         print('Track time: ', tr_end - tr_start,' counter ', frame_counter)
         print('track ',self.features)
