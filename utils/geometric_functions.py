@@ -43,40 +43,33 @@ def get_int_over_union(rect1, rect2):
 
 
 
-
-def compute_rect(img_w,img_h,rect = None,points=None, delta_rect=1):
+def get_rect_around_points(img_w,img_h,points, delta_facerect=1,delta_eye_w=1,delta_eye_h=1, de=None):
     """
     This function computes rectangle around points in a dynamic way related to keypoints distances
-
     """
-    if points is not None:
-        points = [ [[p.x_coordinate,p.y_coordinate]] for p in points ]
-        (x,y,w,h) = cv2.boundingRect(np.array(points, np.float32) )
-        dx = int(delta_rect*w) #80
-        dy = int(delta_rect*h) #80
-    else:
-        w = rect.bottom_right_point.x_coordinate - rect.top_left_point.x_coordinate
-        h = rect.bottom_right_point.y_coordinate - rect.top_left_point.y_coordinate
-        x = rect.top_left_point.x_coordinate
-        y = rect.top_left_point.y_coordinate
-        dx = int(delta_rect*w) #80
-        dy = int(delta_rect*h) #80
-
     
+    
+    if len(points) > 1:
+        points = list(points.values())
+        (x,y,w,h) = cv2.boundingRect(np.array(points, np.float32) )
+        dx = int(delta_facerect*w) #80
+        dy = int(delta_facerect*h) #80
+    else:
+        (x,y,w,h) = (points[0][0], points[0][1],0,0)
+        dx = int(delta_eye_w * de) 
+        dy = int(delta_eye_h * de)
 
     # dx e dy servono per regolare l'ampiezza del rettangolo attorno alla faccia in maniera dinamica
     # in base ai keypoints calcolati dall'algoritmo. Sono stati calcolati in maniera euristica
     
+   
     x_topleft = (x-dx) if (x-dx) > 0 else 0
     y_topleft = (y-dy) if (y-dy) > 0 else 0
     x_bottomright = (x+w+dx) if (x+w+dx) < img_w else img_w
     y_bottomright = (y+h+int(dy)) if (y+h+int(dy)) < img_h else img_h
-    p_top_left = Point(x_topleft,y_topleft)
-    p_bottom_right = Point(x_bottomright,y_bottomright)
-    rect = Rect(p_top_left,p_bottom_right)
+    rect = {'x_topleft':x_topleft,'y_topleft':y_topleft, 'x_bottomright':x_bottomright, 'y_bottomright':y_bottomright}#(x_topleft,y_topleft, x_bottomright, y_bottomright)
 
     return rect
-
 
 
 
@@ -95,28 +88,6 @@ def crop_img(img,crop_factor):
 
     crop = img[y_topleft:y_bottomright,x_topleft:x_bottomright]
     return crop
-
-
-
-
-def get_nearest_person_index(center,people):
-    """
-    Returns the index of person in people nearest to center
-    """
-
-    min_dist = sys.maxsize
-    min_person_ind = None
-    for j,person in enumerate(people):
-
-        #if len(person['center']) == 0:
-        #   continue 
-
-        dst = distance.euclidean(center, person.center)#['center'])
-        if dst < min_dist:
-            min_dist = dst
-            min_person_ind = j
-
-    return min_person_ind
 
 
 

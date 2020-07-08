@@ -3,7 +3,7 @@ from scipy.spatial import distance
 
 
 
-def check_points_similarity(old_points,new_points):
+def check_points_similarity(old_points,new_points,dist_thr):
 	if len(old_points.keys()) != len(new_points.keys()):
 		return False
 	acc_dist = 0
@@ -11,7 +11,7 @@ def check_points_similarity(old_points,new_points):
 		new_value = new_points[old_name]
 		dist = distance.euclidean(tuple(new_value[0]),tuple(old_value[0]))
 		acc_dist = acc_dist + dist
-	if acc_dist < 15:
+	if acc_dist < dist_thr:
 		return True
 	else:
 		return False
