@@ -258,6 +258,8 @@ class Configurator:
 		detectors_list = detectors_folders[1]
 
 		for det in detectors_list:
+			if 'sample' in det:
+				continue
 			det_files = next(os.walk('detector/'+det))[2]
 			gpu_dockerfile_bool = any([True for f in det_files if 'gpu' in f.lower()])
 			answer_det = inter.get_acceptable_answer('Do you want to execute '+det+'? y/n: \n',['y','n']).lower()

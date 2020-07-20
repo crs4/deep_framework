@@ -197,7 +197,7 @@ class ImageManager:
 		for root, dirs, files in os.walk(MAIN_DIR):
 			for file in files:
 				if 'Dockerfile' in file:
-					if 'clothing' in file:
+					if 'clothing' in file or 'sample' in file:
 						continue
 					dockerfile_path = os.path.join(root, file)
 					dockerfiles_path.append(dockerfile_path)

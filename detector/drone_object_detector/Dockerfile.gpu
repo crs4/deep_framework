@@ -25,17 +25,6 @@ RUN pip install --user tensorboard cython
 RUN pip install --user torch==1.5+cu101 torchvision==0.6+cu101 -f https://download.pytorch.org/whl/torch_stable.html
 RUN pip install --user 'git+https://github.com/cocodataset/cocoapi.git#subdirectory=PythonAPI'
 
-
-RUN pip install \
-	IPython \
-    scipy \
-    imutils==0.5.2 \
-    pyzmq==18.0.1 \
-    opencv-python==4.1.0.25 \
-    opencv-contrib-python==4.2.0.34
-
-
-
 # install detectron2 (detector depencency)  
 RUN pip install --user 'git+https://github.com/facebookresearch/fvcore'
 RUN git clone https://github.com/facebookresearch/detectron2 detectron2_repo
@@ -51,24 +40,36 @@ RUN pip install --user -e detectron2_repo
 # Set a fixed model cache directory.
 ENV FVCORE_CACHE="/tmp"
 
-# FCOS detector installation
-RUN pip install --user opencv-python IPython
-RUN git clone https://github.com/aim-uofa/AdelaiDet.git
-WORKDIR /home/appuser/AdelaiDet
-RUN python3 setup.py build develop -d ./dist
-ADD models /home/appuser/AdelaiDet/models/
 
-# Deep sort tracker installation
-RUN pip install numpy scipy opencv-python sklearn pillow vizer edict PyYAML easydict
-RUN git clone https://github.com/ZQPei/deep_sort_pytorch.git ./deep_sort
-RUN cp ./models/deep_sort_ckpt.t7 ./deep_sort/deep_sort/deep/checkpoint/ckpt.t7
+RUN pip install \
+    opencv-python==4.1.0.25 \
+    opencv-contrib-python==4.2.0.34 \
+    tensorflow==1.13.2 \
+    keras==2.3.1 \
+    scipy==1.4.1 \
+    Pillow\
+    scikit-learn==0.21.2 \
+    vizer \
+    edict \
+    PyYAML \
+    easydict \
+    lapsolver \
+    imutils==0.5.2 \
+    pyzmq==18.0.1
 
+WORKDIR /home/appuser/detector
 # Copy source code
-ADD src /home/appuser/AdelaiDet/src/
+ADD . /home/appuser/detector
+COPY --from=utils:deep_setup /home/deepframework/utils /home/appuser/detector/utils
+
+RUN pip install numpy==1.16
+
+
+
+# Build Adelaidet -> FCOS
+# RUN python3 setup.py build develop -d ./dist
+
 ENV DEVICE_TYPE="cuda"
-RUN mv deep_sort/utils/ deep_sort/sort_utils/
-COPY --from=utils:deep_setup /home/deepframework/utils /home/appuser/AdelaiDet/src/utils
 
-
-WORKDIR /home/appuser/AdelaiDet/src
+WORKDIR /home/appuser/detector
 CMD python3 object_provider.py

@@ -1,10 +1,19 @@
-opencv-python
-IPython
-numpy 
-scipy
-sklearn
-pillow
+# FCOS requirements
+opencv-python==4.1.0.25
+opencv-contrib-python==4.2.0.34
+tensorflow==1.13.2
+# Deep sort requirements
+numpy>=1.14
+keras==2.3.1
+scipy==1.4.1
+Pillow
+scikit-learn==0.21.2
 vizer
 edict
 PyYAML
 easydict
+# sauron detector requirements
+lapsolver
+imutils==0.5.2
+pyzmq==18.0.1
+
