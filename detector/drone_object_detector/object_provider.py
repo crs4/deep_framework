@@ -216,7 +216,7 @@ class ObjectsProvider():
                 crop = current_frame[obj.rect.top_left_point.y_coordinate:obj.rect.bottom_right_point.y_coordinate, obj.rect.top_left_point.x_coordinate:obj.rect.bottom_right_point.x_coordinate]
 
                 obj_dict = self.__rescale_object(obj)
-                #print('dict ',obj_dict)
+                print('dict ',obj_dict)
                 obj_list_serialized.append(obj_dict)
                 crops.append(np.ascontiguousarray(crop, dtype=np.uint8))
 
@@ -368,6 +368,7 @@ class ObjectsProvider():
         rect_dict['y_topleft'] = int(obj.rect.top_left_point.y_coordinate / self.ratio)
         rect_dict['x_bottomright'] = int(obj.rect.bottom_right_point.x_coordinate / self.ratio)
         rect_dict['y_bottomright'] =int(obj.rect.bottom_right_point.y_coordinate / self.ratio)
+        rect_dict['class'] = obj.rect.properties['class']
         
         points = []
         for obj_p in obj.points:

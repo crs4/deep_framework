@@ -14,7 +14,7 @@ config.read('configuration.ini')
 model_type = os.environ.get('MODEL_TYPE', 'DEFAULT')
 config_file = config[model_type]['model_config']
 model_weights = config[model_type]['model_weights']
-confidence_threshold = 0.2
+confidence_threshold = 0.27
 visdrone_objects = ["ignored_regions", "pedestrian", "people", "bicycle", "car", "van", "truck", "tricycle", "awning_tricycle", "bus", "motor", "others"]
 
 class VisdroneDetector():

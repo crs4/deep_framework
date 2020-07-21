@@ -235,7 +235,7 @@ class Configurator:
 		stream_capture['image'] = self.reg.insecure_addr+'/stream_capture:deep'
 		stream_capture['networks'] = ['net_deep']
 		# stream_capture['devices'] = ['/dev/video0:/dev/video0']
-		stream_capture['volumes'] = ['/Users/alessandro/Desktop/temp/:/mnt/remote_media']
+		stream_capture['volumes'] = ['/home/alessandro/Video/:/mnt/remote_media']
 		return stream_capture
 
 	def set_detector(self, detector_tuple):

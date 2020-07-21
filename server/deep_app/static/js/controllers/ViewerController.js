@@ -101,6 +101,8 @@ class EnhancedFacesVideoCanvas extends EnhancedVideoCanvas{
         super(...args)
         this.facesData = {}
         this.boxColors = ['yellow', 'red', 'blue', 'lime', 'orange', 'magenta', 'cyan', 'gold', 'purple', 'green']
+        //this.boxColors = [];
+        
         this.availableBoxColors = this.boxColors.map(c => c)
         this.faceColorMap = new Map()
     }
@@ -115,7 +117,7 @@ class EnhancedFacesVideoCanvas extends EnhancedVideoCanvas{
                 pid: face.pid,
                 bbox: face.rect,
                 name: !face.face_recognition || face.face_recognition == 'Unknown' ?
-                    `Person ${face.pid.slice(-4)}` : face.face_recognition,
+                    `${face.rect.class} ${face.pid.slice(-4)}` : face.face_recognition,
                 pitch: face.pitch,
                 yaw: face.yaw,
                 gender: face.gender ? face.gender : '-',

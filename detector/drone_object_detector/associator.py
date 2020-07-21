@@ -18,7 +18,7 @@ def associate(tracks, detections, sigma_iou=0.9):
     for row, track in enumerate(tracks):
         for col, detection in enumerate(detections):
             iou_tr_box = iou(track[0:4], detection)
-            print('iou',iou_tr_box)
+            #print('iou',iou_tr_box)
             costs[row, col] = 1 - iou_tr_box
 
     np.nan_to_num(costs)
