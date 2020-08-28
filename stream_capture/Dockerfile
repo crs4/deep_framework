@@ -6,7 +6,7 @@ FROM 156.148.14.162/hyperpeer-py:latest
 WORKDIR /app
 
 # Copy the current directory contents into the container at /app
-ADD . /app
+COPY stream_capture.py /app/stream_capture.py
 
 RUN mkdir /mnt/remote_media
 

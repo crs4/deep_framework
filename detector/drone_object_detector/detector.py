@@ -31,12 +31,30 @@ class VisdroneDetector():
         cfg.freeze()
         self.cfg = cfg
         self.predictor = DefaultPredictor(self.cfg)
+        self.predictor_labels = ["ignored_regions", "pedestrian", "people", "bicycle", "car", "van", "truck", "tricycle", "awning_tricycle", "bus", "motor", "others"]
+        self.labels = ["person", "two_wheeled_vehicle", "small_vehicle", "big_vehicle", "other"]
+
 
     def predict(self, frame):    
         object_instances = self.predictor(frame)['instances'].to('cpu')
         object_boxes = object_instances.get('pred_boxes').tensor.tolist()
         object_classes = object_instances.get('pred_classes').tolist()
-        class_names = [ visdrone_objects[index] for index in object_classes]
+        class_names = self.map_classes(object_classes)
         classification_scores = object_instances.get('scores').tolist()
         return object_boxes,classification_scores,class_names
 
+    def map_classes(self, object_classes):
+        new_classes = []
+        for cl in object_classes:
+            object_type = self.predictor_labels[cl]
+            if object_type in ('pedestrian', 'people'):
+                new_classes.append('person')
+            elif object_type in ('bicycle', 'motor'):
+                new_classes.append('two_wheeled_vehicle')
+            elif object_type in ('car', 'van', 'tricycle', 'awning_tricycle'):
+                new_classes.append('small_vehicle')
+            elif object_type in ('truck', 'bus'):
+                new_classes.append('big_vehicle')
+            else:
+                new_classes.append('other')
+        return new_classes
