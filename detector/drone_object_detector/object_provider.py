@@ -12,7 +12,7 @@ from deep_sort.detection import Detection as ddet
 from deep_sort.tracker import Tracker
 from deep_sort.tools import generate_detections as gdet
 
-from detector import VisdroneDetector
+from yolo_detector import YoloDetector
 
 from associator import associate
 
@@ -49,7 +49,7 @@ class ObjectsProvider():
         self.encoder = gdet.create_box_encoder(model_filename,batch_size=1,to_xywh = True)
         metric = nn_matching.NearestNeighborDistanceMetric("cosine", max_cosine_distance, nn_budget)
         self.ds_tracker = Tracker(metric)
-        self.detector = VisdroneDetector() # method for detection.
+        self.detector = YoloDetector() # method for detection.
         
         self.ratio = 1
         
@@ -257,26 +257,19 @@ class ObjectsProvider():
         obj_list = [] 
         frame_counter = args[0]
 
-        try:
-            self.ratio = IMAGE_WIDTH/float(current_frame.shape[1])
-        except Exception as e:
-            print('exception resizing frame ',e)
-
-        current_frame = imutils.resize(current_frame, width=IMAGE_WIDTH)
 
         
         print('in')
         det_start = time.time()
-        boxs, confidences, class_names = self.detector.predict(current_frame) #boxs x,y,b,r
+        class_names,confidences,boxs = self.detector.detect(current_frame) #boxs x,y,b,r
+        #print(boxs, confidences, class_names)
         det_end = time.time()
         print('Det time: ', det_end - det_start, ' counter ', frame_counter)
         #points = [ [box.centroid] for box in detector_features['boxes']]
         tr_start = time.time()
-        features = self.encoder(current_frame,boxs)
-        #print('features',features)
         # score to 1.0 here).
+        features = self.encoder(current_frame,boxs)
         detections = [Detection(bbox, confidence, feature,obj_class) for bbox, feature,confidence,obj_class in zip(boxs, features,confidences,class_names)]
-        #print('det',detections)
 
         # Run non-maxima suppression.
         boxes = np.array([d.tlwh for d in detections])
