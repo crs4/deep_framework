@@ -201,7 +201,6 @@ class ObjectsProvider():
             #algorithm start
             alg_start = time.time()
             object_list = self.extract_features(current_frame,(frame_counter))
-            print(object_list)
             alg_end = time.time()
 
             last_alg_time = alg_end - alg_start
@@ -216,7 +215,6 @@ class ObjectsProvider():
                 crop = current_frame[obj.rect.top_left_point.y_coordinate:obj.rect.bottom_right_point.y_coordinate, obj.rect.top_left_point.x_coordinate:obj.rect.bottom_right_point.x_coordinate]
 
                 obj_dict = self.__rescale_object(obj)
-                print('dict ',obj_dict)
                 obj_list_serialized.append(obj_dict)
                 crops.append(np.ascontiguousarray(crop, dtype=np.uint8))
 
@@ -268,7 +266,9 @@ class ObjectsProvider():
         #points = [ [box.centroid] for box in detector_features['boxes']]
         tr_start = time.time()
         # score to 1.0 here).
+        enc_time = time.time()
         features = self.encoder(current_frame,boxs)
+        print('enc time: ',time.time() - enc_time,' counter ', frame_counter)
         detections = [Detection(bbox, confidence, feature,obj_class) for bbox, feature,confidence,obj_class in zip(boxs, features,confidences,class_names)]
 
         # Run non-maxima suppression.
@@ -276,7 +276,9 @@ class ObjectsProvider():
         #print('boxes',boxes)
         scores = np.array([d.confidence for d in detections])
         #print('scores',scores)
+        max_time = time.time()
         indices = preprocessing.non_max_suppression(boxes, nms_max_overlap, scores)
+        print('nmax time: ',time.time() - max_time,' counter ', frame_counter)
         detections = [detections[i] for i in indices]
         boxes_det = [box.to_tlbr() for box in detections]
         """
@@ -290,10 +292,11 @@ class ObjectsProvider():
         """
         #print('det2',detections)
         # Call the tracker
-        
+        t_f_tr = time.time() 
         self.ds_tracker.predict()
         self.ds_tracker.update(detections)
         tr_end = time.time()
+        print('Track predict time: ',tr_end - t_f_tr,' counter ', frame_counter)
         print('Track time: ', tr_end - tr_start,' counter ', frame_counter)
         
         tracker_boxes = []
@@ -321,8 +324,6 @@ class ObjectsProvider():
         #print('tracked',tracker_boxes)
         #print('boxes',boxes_det)
         track_indexes, det_indexes = associate(tracker_boxes, boxes_det, 0.8)
-        print('ass tr', len(track_indexes))
-        print('ass det', len(det_indexes))
         try:
         
             bboxes = [tracker_boxes[i] for i in track_indexes]

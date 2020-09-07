@@ -1,4 +1,5 @@
-FROM nvidia/cuda:9.0-cudnn7-devel
+#FROM nvidia/cuda:9.0-cudnn7-devel
+FROM tensorflow/tensorflow:1.12.0-gpu-py3
 
 RUN apt-get update && apt-get install -y software-properties-common && add-apt-repository ppa:deadsnakes/ppa
 
@@ -36,7 +37,7 @@ RUN wget https://bootstrap.pypa.io/get-pip.py && \
 RUN pip install \
     opencv-python==4.1.0.25 \
     opencv-contrib-python==4.2.0.34 \
-    tensorflow==1.13.2 \
+    tensorflow-gpu==1.13.1 \
     scipy==1.4.1 \
     Pillow\
     scikit-learn==0.21.2 \
@@ -54,4 +55,4 @@ RUN pip install numpy==1.16
 COPY --from=utils:deep_setup /home/deepframework/utils /yolo4_deep_sort/utils
 
 
-CMD python3 object_provider.py
+CMD python3.5 object_provider.py
