@@ -257,7 +257,6 @@ class ObjectsProvider():
 
 
         
-        print('in')
         det_start = time.time()
         class_names,confidences,boxs = self.detector.detect(current_frame) #boxs x,y,b,r
         #print(boxs, confidences, class_names)
@@ -268,7 +267,6 @@ class ObjectsProvider():
         # score to 1.0 here).
         enc_time = time.time()
         features = self.encoder(current_frame,boxs)
-        print('enc time: ',time.time() - enc_time,' counter ', frame_counter)
         detections = [Detection(bbox, confidence, feature,obj_class) for bbox, feature,confidence,obj_class in zip(boxs, features,confidences,class_names)]
 
         # Run non-maxima suppression.
@@ -278,7 +276,6 @@ class ObjectsProvider():
         #print('scores',scores)
         max_time = time.time()
         indices = preprocessing.non_max_suppression(boxes, nms_max_overlap, scores)
-        print('nmax time: ',time.time() - max_time,' counter ', frame_counter)
         detections = [detections[i] for i in indices]
         boxes_det = [box.to_tlbr() for box in detections]
         """

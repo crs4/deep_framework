@@ -76,7 +76,7 @@ class ImageEncoder(object):
         #config = tf.ConfigProto(device_count = {'GPU': 1})
         config = tf.ConfigProto()
         config.gpu_options.allow_growth = True
-        os.environ['CUDA_VISIBLE_DEVICES'] = '1' 
+        os.environ['CUDA_VISIBLE_DEVICES'] = '0' 
         self.session = tf.Session(config=config)
         with tf.gfile.GFile(checkpoint_filename, "rb") as file_handle:
             graph_def = tf.GraphDef()
