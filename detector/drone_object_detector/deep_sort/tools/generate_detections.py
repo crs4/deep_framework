@@ -1,3 +1,4 @@
+
 import os
 import errno
 import argparse
@@ -70,9 +71,13 @@ def extract_image_patch(image, bbox, patch_shape, to_xywh):
 
 class ImageEncoder(object):
 
-    def __init__(self, checkpoint_filename, input_name="images",
-                 output_name="features"):
-        self.session = tf.Session()
+    def __init__(self, checkpoint_filename, input_name="images", output_name="features"):
+
+        #config = tf.ConfigProto(device_count = {'GPU': 1})
+        config = tf.ConfigProto()
+        config.gpu_options.allow_growth = True
+        os.environ['CUDA_VISIBLE_DEVICES'] = '0' 
+        self.session = tf.Session(config=config)
         with tf.gfile.GFile(checkpoint_filename, "rb") as file_handle:
             graph_def = tf.GraphDef()
             graph_def.ParseFromString(file_handle.read())

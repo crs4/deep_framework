@@ -12,7 +12,7 @@ from deep_sort.detection import Detection as ddet
 from deep_sort.tracker import Tracker
 from deep_sort.tools import generate_detections as gdet
 
-from detector import VisdroneDetector
+from yolo_detector import YoloDetector
 
 from associator import associate
 
@@ -49,7 +49,7 @@ class ObjectsProvider():
         self.encoder = gdet.create_box_encoder(model_filename,batch_size=1,to_xywh = True)
         metric = nn_matching.NearestNeighborDistanceMetric("cosine", max_cosine_distance, nn_budget)
         self.ds_tracker = Tracker(metric)
-        self.detector = VisdroneDetector() # method for detection.
+        self.detector = YoloDetector() # method for detection.
         
         self.ratio = 1
         
@@ -201,7 +201,6 @@ class ObjectsProvider():
             #algorithm start
             alg_start = time.time()
             object_list = self.extract_features(current_frame,(frame_counter))
-            print(object_list)
             alg_end = time.time()
 
             last_alg_time = alg_end - alg_start
@@ -216,7 +215,6 @@ class ObjectsProvider():
                 crop = current_frame[obj.rect.top_left_point.y_coordinate:obj.rect.bottom_right_point.y_coordinate, obj.rect.top_left_point.x_coordinate:obj.rect.bottom_right_point.x_coordinate]
 
                 obj_dict = self.__rescale_object(obj)
-                print('dict ',obj_dict)
                 obj_list_serialized.append(obj_dict)
                 crops.append(np.ascontiguousarray(crop, dtype=np.uint8))
 
@@ -257,32 +255,26 @@ class ObjectsProvider():
         obj_list = [] 
         frame_counter = args[0]
 
-        try:
-            self.ratio = IMAGE_WIDTH/float(current_frame.shape[1])
-        except Exception as e:
-            print('exception resizing frame ',e)
-
-        current_frame = imutils.resize(current_frame, width=IMAGE_WIDTH)
 
         
-        print('in')
         det_start = time.time()
-        boxs, confidences, class_names = self.detector.predict(current_frame) #boxs x,y,b,r
+        class_names,confidences,boxs = self.detector.detect(current_frame) #boxs x,y,b,r
+        #print(boxs, confidences, class_names)
         det_end = time.time()
         print('Det time: ', det_end - det_start, ' counter ', frame_counter)
         #points = [ [box.centroid] for box in detector_features['boxes']]
         tr_start = time.time()
-        features = self.encoder(current_frame,boxs)
-        #print('features',features)
         # score to 1.0 here).
+        enc_time = time.time()
+        features = self.encoder(current_frame,boxs)
         detections = [Detection(bbox, confidence, feature,obj_class) for bbox, feature,confidence,obj_class in zip(boxs, features,confidences,class_names)]
-        #print('det',detections)
 
         # Run non-maxima suppression.
         boxes = np.array([d.tlwh for d in detections])
         #print('boxes',boxes)
         scores = np.array([d.confidence for d in detections])
         #print('scores',scores)
+        max_time = time.time()
         indices = preprocessing.non_max_suppression(boxes, nms_max_overlap, scores)
         detections = [detections[i] for i in indices]
         boxes_det = [box.to_tlbr() for box in detections]
@@ -297,10 +289,11 @@ class ObjectsProvider():
         """
         #print('det2',detections)
         # Call the tracker
-        
+        t_f_tr = time.time() 
         self.ds_tracker.predict()
         self.ds_tracker.update(detections)
         tr_end = time.time()
+        print('Track predict time: ',tr_end - t_f_tr,' counter ', frame_counter)
         print('Track time: ', tr_end - tr_start,' counter ', frame_counter)
         
         tracker_boxes = []
@@ -328,8 +321,6 @@ class ObjectsProvider():
         #print('tracked',tracker_boxes)
         #print('boxes',boxes_det)
         track_indexes, det_indexes = associate(tracker_boxes, boxes_det, 0.8)
-        print('ass tr', len(track_indexes))
-        print('ass det', len(det_indexes))
         try:
         
             bboxes = [tracker_boxes[i] for i in track_indexes]
