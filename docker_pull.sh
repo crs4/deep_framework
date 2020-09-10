@@ -21,7 +21,6 @@ docker pull $registry/broker:deep
 docker pull $registry/stream_capture:deep
 docker pull $registry/face_detection:deep_cpu
 docker pull $registry/person_detection:deep
-docker pull $registry/drone_object_detector:deep_cpu
 docker pull $registry/drone_object_detector:deep_gpu
 docker pull $registry/server:deep
 docker pull $registry/collector:deep
