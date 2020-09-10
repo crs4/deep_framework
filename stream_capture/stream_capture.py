@@ -9,11 +9,12 @@ import logging
 import os
 import time
 import urllib.request
+from pathlib import Path
 
 ROOT = os.path.dirname(__file__)
 logging.basicConfig(level=logging.INFO)
 
-logging.info('*** STREAM CAPTURE v0.6 ***')
+logging.info('*** STREAM CAPTURE v0.7 ***')
 #ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
 #ssl_context.load_verify_locations('cert.pem')
 
@@ -78,7 +79,7 @@ class StreamCapture:
                 await asyncio.sleep(1)
                 self.remotePeerId = None
         except Exception as err:
-            logging.info(f'[{self.id}]: Execution error: {err}')
+            logging.error(f'[{self.id}]: Execution error: {err}')
             #raise err
         finally:
             await self.peer.close()
@@ -103,9 +104,9 @@ class StreamCapture:
             loop.run_until_complete(self.stop())
 
 if __name__ == '__main__':
-    source_id = os.environ["STREAM_CAPTURE_ID"]
+    source_id = os.environ["STREAM_CAPTURE_ID"].rstrip()
     logging.info('STREAM_CAPTURE_ID: ' + source_id)
-    source_url = os.environ[f'SOURCE_{source_id}']
+    source_url = os.environ[f'SOURCE_{source_id}'].rstrip()
     logging.info('Source URL: ' + source_url)
     #source_format = os.environ.get("SOURCE_FORMAT", 'mpjpeg')
     source_metadata = os.environ.get("STREAM_METADATA", {'url': source_url})
@@ -115,7 +116,13 @@ if __name__ == '__main__':
         req = urllib.request.Request(source_url)
         urllib.request.urlopen(req)
     except (ValueError, urllib.error.URLError) as e:
-        print(f'Invalid source url ({source_url}): {str(e)}')
+        logging.info(f'source is not a standard url...')
+        if not source_url.startswith('rtsp:'):
+            logging.info(f'source is neither a rtsp url ...')
+            if not Path(source_url).is_file():
+                logging.error(f'source is neither a file ...')
+                # raise Exception(f'Invalid source ({source_url}): {str(e)}')
+        
         #sys.exit()
 
     if source_url.endswith('mjpg'):
@@ -124,8 +131,22 @@ if __name__ == '__main__':
         source_format = 'v4l2'
     else:
         source_format = None
-        
-    stream_capture = StreamCapture(source=source_url, peer_id=source_id, peer_type='stream_capture', format=source_format, metadata=source_metadata, remotePeerType=remote_peer_type)
-    stream_capture.add_data_handler(lambda data: logging.info(f'Remote message: {str(data)}'))
-    stream_capture.run()
+    
+    import json
+    output_file_path = os.environ.get('OUTPUT_FILE', "messages.txt")
+
+    with  open(output_file_path, 'w') as output_file:
+        def print_to_file(data):
+            if data['type'] == 'data':
+                data_to_save = {
+                    'vc_time': data['vc_time'],
+                    'last_frame_shape': data['last_frame_shape'],
+                    'data': data['data']
+                }
+                output_json = json.dumps(data_to_save)
+                output_file.write(output_json + '\n')
+        stream_capture = StreamCapture(source=source_url, peer_id=source_id, peer_type='stream_capture', format=source_format, metadata=source_metadata, remotePeerType=remote_peer_type)
+        # stream_capture.add_data_handler(lambda data: logging.info(f'*** Remote message: {str(data)}'))
+        stream_capture.add_data_handler(print_to_file)
+        stream_capture.run()
 

@@ -12,6 +12,10 @@
 
 
 
+.vscode/
+
+*.png
+*.jpg
 
 *.pyc
 *~

@@ -18,22 +18,18 @@ class Tracker:
 
     #This function take points that will be tracked and reshape them in the correct format
     #The parameter 'points' must be in the following format points = [[[x0,y0]],...,[[xn,yn]]]
-    def __create_track_points(self,points):
+    def create_track_points(self,points):
         # formats mtcnn_points in order to be tracked
 
-        kpoints = []
-        tags = []
-        for obj_points in points:
-            for p in obj_points:
-                kpoints.append([[p.x_coordinate, p.y_coordinate]])
-                tags.append(p.properties['tag'])
+        # formats mtcnn_points in order to be tracked
+        kpoints = [list(p.values()) for p in points]
 
         points_to_track = []
         if points is not None:
             for x,y in np.float32(kpoints).reshape(-1, 2):
                 points_to_track.append([[x, y]])
 
-        return tags,np.array(points_to_track, np.float32)
+        return np.array(points_to_track, np.float32)
 
     def __convert_to_grayscale(self,image):
         gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -58,15 +54,15 @@ class Tracker:
     
     #This function checks tracked points between frames and add other good points if present and returns them
     #Frames must be in gray scale. 'tracked_points' must be in the current format tracked_points = [[[x0,y0]],...,[[xn,yn]]]
-    def update_features(self, current_frame, features,**settings):
+    def update_features(self, current_frame, tracked_points):
 
         current_frame = self.__convert_to_grayscale(current_frame) # gray frame required by tracking system
         
-        points_obj = features['points']
 
-        num_obj = len(points_obj)
+        num_obj = int((len(tracked_points) / LOST_THR))
 
-        tags,tracked_points = self.__create_track_points(points_obj)
+        print('obj',num_obj)
+
        
         new_tracks = []
         tracks_split = []
@@ -80,24 +76,18 @@ class Tracker:
         good = d < 1
 
 
-        for (x, y), good_flag,tag in zip( p1.reshape(-1, 2), good,tags):
+        for (x, y), good_flag in zip( p1.reshape(-1, 2), good):
 
             if not good_flag:
                 continue
 
+            new_tracks.append([[x,y]])
 
-            #point = Point(x,y)
-            point = Point(x,y,**{'tag':tag})
-            new_tracks.append(point)
 
         success = self.check_tracking_success(num_obj, len(new_tracks), LOST_THR)
-        if success:
-            tracks_split = [new_tracks[i:i+LOST_THR] for i in range(0,len(new_tracks),LOST_THR)]
-        else:
-            print('no succ')
+       
 
-        new_features = {'boxes': [],'points': tracks_split}
-        return success, new_features
+        return success, new_tracks
 
 
 

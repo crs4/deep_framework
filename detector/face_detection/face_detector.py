@@ -25,8 +25,9 @@ from __future__ import division
 from __future__ import print_function
 import time
 from mtcnn_caffe import mtcnn_utils as face_caffe
-#from face_detection_constants import *
-from utils.features import Point,Rect
+from mtcnn_caffe.utils import format_points,format_bbox
+
+from face_detection_constants import *
 
 import caffe
 from imutils import face_utils
@@ -69,7 +70,7 @@ class FaceNet_vcaffe:
         points = features['points']
         filtered_features = {'boxes':[],'points':[]}
         for face,point in zip(faces,points):
-            if face.properties['accuracy'] > thr:
+            if face['accuracy'] > thr:
                 filtered_features['boxes'].append(face)
                 filtered_features['points'].append(point)
         
@@ -77,35 +78,6 @@ class FaceNet_vcaffe:
 
 
 
-
-
-    def format_points(self,points):
-        formatted = []
-        
-        for face_points in points:
-            point_list = []
-            num_points = len(face_points)
-            keypoints = ['right_eye','left_eye','nose','right_mouth','left_mouth']
-            for px, py,key in zip(face_points[:int(num_points / 2)], face_points[int(num_points / 2):],keypoints):
-                #cv2.circle(img, (px, py), 5, (255, 0, 0), -1)
-                point = Point(px,py, **{'tag':key})
-                point_list.append(point)
-
-            formatted.append(point_list)
-
-        return formatted
-
-
-    def format_bbox(self,rects):
-        formatted = []
-        
-        for rect in rects:
-            top_left_point = Point(rect[0],rect[1])
-            bottom_right_point = Point(rect[2],rect[3])
-            rect = Rect(top_left_point,bottom_right_point,**{'accuracy':rect[4]})            
-            formatted.append(rect)
-
-        return formatted
 
     def detect(self, img):
         
@@ -116,9 +88,9 @@ class FaceNet_vcaffe:
         onet = self.models['oNet']
         
         bounding_boxes, points = face_caffe.detect_face(img, self.minsize, pnet, rnet, onet, self.threshold, False, self.factor)
-        features = {'points': self.format_points(points), 'boxes': self.format_bbox(bounding_boxes)}
+        features =  {'points': format_points(points), 'boxes': format_bbox(bounding_boxes)}
         
-        filtered_features = self.__check_faces_accuracy(features, 0.95)
+        filtered_features = self.__check_faces_accuracy(features, FACE_DETECTION_THR)
         
 
         return filtered_features
