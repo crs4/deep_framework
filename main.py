@@ -49,8 +49,16 @@ if __name__ == "__main__":
 			#	timezone = 'Europe/Rome'
 			add_video_source = 'Do you want to add a video source? (y/n): \n'
 			sources = []
+			source_folder = None
 			while q.get_acceptable_answer(add_video_source,['y','n']).lower() == 'y':
-				source = input('Insert video source address/url/path: \n')
+				source_type = q.get_acceptable_answer('Please enter the video source type (url/stored). \n',['url','stored']).lower()
+				if source_type == 'stored':
+					if source_folder is None:
+						source_folder = input('Please, insert the absolute path of your local video folder.\n(It will be used for every stored video source.)\n')
+						starter.create_volume(source_folder)
+					source = input('Please, insert the video name with its extension.\n')
+				else:
+					source = input('Insert video source address/url: \n')
 				id = input('Give a unique name/ID to this video source: \n')
 				sources.append((id, source))
 
@@ -59,7 +67,7 @@ if __name__ == "__main__":
 				out.write('INTERVAL_STATS=' + str(interval_stats) + '\n')
 				#out.write('TZ=' + timezone + '\n')
 				for id, source  in sources:
-					out.write('\nSOURCE_' + id + '=' + source + '\n')
+					out.write('\nSOURCE_' + id + '=' + '/mnt/remote_media/'+source + '\n')
 	if args.run or change_params_answer == 'n':
 		sources = []
 		with open(filename) as f:

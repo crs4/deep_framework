@@ -68,6 +68,25 @@ class Starter:
 		execution_algs = {s:dict(reader_alg_config.items(s)) for s in reader_alg_config.sections()}
 		return execution_algs
 
+	def __rm_volume(self):
+		try:
+			rm_volume_command = "docker volume rm deep_media_volume"
+			print('Removing deep_media_volume...')
+			self.machine.exec_shell_command(rm_volume_command)
+		except Exception as e:
+			print(e)
+
+	def create_volume(self,path):
+		try:
+			self.__rm_volume()
+			print('Creating deep_media_volume...')
+			create_volume_command = "docker volume create --name deep_media_volume --opt type=none --opt o=bind --opt device="
+			self.machine.exec_shell_command(create_volume_command+path)
+		except Exception as e:
+			print(e)
+
+	
+
 
 
 	def __load_nodes_data(self,nodes_config):

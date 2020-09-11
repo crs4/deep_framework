@@ -210,6 +210,7 @@ class Node(Machine):
 			self.token = self.cluster.get_token(self.role)
 			self.join_command = "docker swarm join --token %s %s:2377" % (self.token, self.cluster.main_cluster_manager_node.ip)
 		self.leave_command = "docker swarm leave --force"
+		
 
 
 	def join_swarm(self):
@@ -223,6 +224,8 @@ class Node(Machine):
 			self.machine.exec_shell_command(self.leave_command)
 		except Exception as e:
 			print(e)
+
+
 
 	
 
