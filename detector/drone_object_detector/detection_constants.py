@@ -29,8 +29,5 @@ MONITOR_ADDRESS = os.environ['MONITOR_ADDRESS']
 MONITOR_STATS_IN = os.environ['MONITOR_STATS_IN']
 INTERVAL_STATS = float(os.environ['INTERVAL_STATS'])
 
-DET_MODE = os.environ['DET_MODE']
-
-
 
 
