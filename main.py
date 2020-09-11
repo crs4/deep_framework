@@ -57,6 +57,7 @@ if __name__ == "__main__":
 						source_folder = input('Please, insert the absolute path of your local video folder.\n(It will be used for every stored video source.)\n')
 						starter.create_volume(source_folder)
 					source = input('Please, insert the video name with its extension.\n')
+					source='/mnt/remote_media/'+source
 				else:
 					source = input('Insert video source address/url: \n')
 				id = input('Give a unique name/ID to this video source: \n')
@@ -67,7 +68,7 @@ if __name__ == "__main__":
 				out.write('INTERVAL_STATS=' + str(interval_stats) + '\n')
 				#out.write('TZ=' + timezone + '\n')
 				for id, source  in sources:
-					out.write('\nSOURCE_' + id + '=' + '/mnt/remote_media/'+source + '\n')
+					out.write('\nSOURCE_' + id + '=' + source + '\n')
 	if args.run or change_params_answer == 'n':
 		sources = []
 		with open(filename) as f:

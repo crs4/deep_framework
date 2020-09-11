@@ -43,7 +43,7 @@ services:
         - 5555:5555
     stream_capture_0:
         environment:
-        - STREAM_CAPTURE_ID=5
+        - STREAM_CAPTURE_ID=3
         env_file:
         - env_params.list
         - env_ports.list
@@ -54,7 +54,7 @@ services:
         - deep_media_volume:/mnt/remote_media
     stream_capture_1:
         environment:
-        - STREAM_CAPTURE_ID=8
+        - STREAM_CAPTURE_ID=6
         env_file:
         - env_params.list
         - env_ports.list
