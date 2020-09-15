@@ -253,7 +253,7 @@ class LocalNode(Node):
 
 class RemoteNode(Node):
 
-	def __init__(self, ip, user, role, pull, ssh_port = 22, cluster = None):
+	def __init__(self, ip, user, role, ssh_port = 22, cluster = None):
 		Node.__init__(self,role,cluster)
 		self.machine = super(Node,self)
 		self.machine.push_key(ssh_port,user,ip)
@@ -262,7 +262,7 @@ class RemoteNode(Node):
 		self.ip = ip
 		self.ssh_port = str(ssh_port)
 		self.hostname = Machine.get_hostname(self)
-		self.pull = True if pull == 'y' else False
+		#self.pull = True if pull == 'y' else False
 		self.leave_swarm()
 		self.dest_folder = None
 		self.registry = Registry()
@@ -275,8 +275,8 @@ class RemoteNode(Node):
 		self.__prepare_working_env()
 		self.__mod_insecure_registry()
  
-		if self.pull:
-			self.__pull_images()
+		#if self.pull:
+			#self.__pull_images()
 	
 		self.__install_GPUtil()
 
@@ -289,9 +289,9 @@ class RemoteNode(Node):
 		if not exist:
 			print('Creating folder deep_framework on remote node...')
 			command = "ssh %s@%s mkdir -p %s" % (self.user, self.ip, self.working_path)
-			copy_pull_com = "scp -q -p docker_pull.sh %s@%s:%s" %(self.user,self.ip,self.working_path)
+			#copy_pull_com = "scp -q -p docker_pull.sh %s@%s:%s" %(self.user,self.ip,self.working_path)
 			self.machine.exec_shell_command(command) ##### CHECK IF SENDCOMMAND
-			self.machine.exec_shell_command(copy_pull_com)
+			#self.machine.exec_shell_command(copy_pull_com)
 			
 			
 

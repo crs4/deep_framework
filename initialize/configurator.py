@@ -262,17 +262,20 @@ class Configurator:
 				continue
 			det_files = next(os.walk('detector/'+det))[2]
 			gpu_dockerfile_bool = any([True for f in det_files if 'gpu' in f.lower()])
-			answer_det = inter.get_acceptable_answer('Do you want to execute '+det+'? y/n: \n',['y','n']).lower()
+			answer_det = inter.get_acceptable_answer('Do you want to execute '+det+'? (y/n): \n',['y','n']).lower()
 			if answer_det == 'y':
 				if gpu_dockerfile_bool:
-					det_mode = inter.get_acceptable_answer('Select mode of execution of '+det+' ? cpu/gpu: \n',['cpu','gpu']).lower()
-					return (det,det_mode)
+					det_mode = inter.get_acceptable_answer('Select mode of execution of '+det+'? (cpu/gpu): \n',['cpu','gpu']).lower()
 				else:
-					return (det,'cpu')
+					det_mode = 'cpu'
+
+				build = inter.get_acceptable_answer('Do you want to build relative docker image? (y/n) \n',['y','n']).lower()
+
+				return ((det,det_mode),build)
 
 
 				
-		return (detectors_list[0],'cpu')
+		return ((detectors_list[0],'cpu'),'n')
 				
 				
 
@@ -386,6 +389,8 @@ class Configurator:
 
 	def configure(self):
 
+		algs_to_build = []
+
 		broker_port, sub_col_port, col_port = 6000,6050,7000
 		alg_config = ConfigParser()
 		exec_config = ConfigParser()
@@ -422,11 +427,13 @@ class Configurator:
 
 		for alg_name,alg_config in installed_algs.items():
 
-			answer_alg = inter.get_acceptable_answer('Do you want to execute '+alg_name+' algorythm? y/n: \n',['y','n']).lower()
+			answer_alg = inter.get_acceptable_answer('Do you want to execute '+alg_name+' algorythm? (y/n): \n',['y','n']).lower()
 			if answer_alg == 'y':
 
-				alg_mode = inter.get_acceptable_answer('Select mode of execution of '+alg_name+' algorithm? cpu/gpu: \n',['cpu','gpu']).upper()
-
+				alg_mode = inter.get_acceptable_answer('Select mode of execution of '+alg_name+' algorithm? (cpu/gpu): \n',['cpu','gpu']).upper()
+				alg_build = inter.get_acceptable_answer('Do you want to build relative docker image? (y/n): \n',['y','n']).lower()
+				if alg_build == 'y':
+					algs_to_build.append((alg_name,alg_mode))
 				exec_config[alg_name] = {}
 				exec_config[alg_name]['alg_mode'] = alg_mode
 				exec_config[alg_name]['compose_path'] = alg_config['compose_path']
@@ -436,6 +443,8 @@ class Configurator:
 
 		with open(os.path.join(MAIN_DIR, ALGS_CONFIG_FILE), 'w') as defaultconfigfile:
 			exec_config.write(defaultconfigfile)
+
+		return algs_to_build
 
 
 

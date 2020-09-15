@@ -31,42 +31,38 @@ class Starter:
 
 
 
-	def build_and_push(self):
+	def build_and_push(self,list_to_build):
+		build_standard_question = 'Do you want to build standard framework docker images? (y/n): \n'
+		build_standard_images = q.get_acceptable_answer(build_standard_question,['y','n']).lower()
+
 		print('The building process will take several time...')
-		self.image_manager.build_images()
+		
+		self.image_manager.build_images(list_to_build,build_standard_images)
 		self.image_manager.create_pull_file()
 
 		self.image_manager.push_images()
-
-
-
-	def manage_registry(self):
+		self.__pull_images()
 		
-		running = self.registry.check_registry_running()
-		 
-		if not running:
-			self.registry.start_registry()
-		self.registry.manage_docker_daemon_json()
-		
-		if not self.use_last_settings:	 
-			building = q.get_acceptable_answer("Do you want to build docker images?: (y/n): ", ['y', 'n'])
-			if building == 'y':
-				self.build_and_push()
 
+	def __pull_images(self):
+		for node_name,node_values in self.nodes.items():
+			user = node_values['user']
+			ip = node_values['ip']
+			path = node_values['path']
+			node_type = node_values['type']
+			if node_type == 'RemoteNode':
+				print(node_name,' is pulling docker images...')
 
-	def __get_top_manager(self):
-		nodes_list = list(self.nodes.keys())
-		top_manager_node = [self.nodes[node] for node in nodes_list if self.nodes[node]['role'] == 'manager'][0]
-		return top_manager_node
+				try:
+					copy_pull_com = "scp -q -p docker_pull.sh %s@%s:%s" %(user,ip,path)
+					self.machine.exec_shell_command(copy_pull_com)
 
-	def get_nodes(self):
-		return self.nodes
+					sub_command = "'cd %s && ./docker_pull.sh %s'" % (path, self.registry.insecure_addr)
+					command = "ssh -t %s@%s %s" % (user, ip, sub_command)
+					output = self.machine.exec_shell_command(command)
+				except Exception as e:
+					raise e
 
-	def get_execution_algs(self):
-		reader_alg_config = ConfigParser()
-		reader_alg_config.read(ALGS_CONFIG_FILE)
-		execution_algs = {s:dict(reader_alg_config.items(s)) for s in reader_alg_config.sections()}
-		return execution_algs
 
 	def __rm_volume(self):
 		try:
@@ -84,6 +80,111 @@ class Starter:
 			self.machine.exec_shell_command(create_volume_command+path)
 		except Exception as e:
 			print(e)
+
+	def manage_sources(self,args):
+		sources = []
+
+		filename = 'env_params.list'
+		change_params_answer =  'y'
+		if not args.run:
+			if os.path.isfile('./'+filename):
+				change_params_question = 'Do you want to change streaming params? (y/n): \n'
+				change_params_answer = q.get_acceptable_answer(change_params_question,['y','n']).lower()
+			if  change_params_answer == 'y':
+				max_delay = q.get_number('Insert max delay in seconds you consider acceptable for getting algorithms results (default: 1s): \n','float',1)
+				interval_stats = q.get_number('How often do you want to generate statics of execution in seconds? (default: 1s): \n','float',1)
+				#timezone = q.get_answer('Please, insert your timezone (default Europe/Rome): \n')
+				#if timezone=='':
+				#	timezone = 'Europe/Rome'
+				add_video_source = 'Do you want to add a video source? (y/n): \n'
+				source_folder = None
+				while q.get_acceptable_answer(add_video_source,['y','n']).lower() == 'y':
+					source_type = q.get_acceptable_answer('Please enter the video source type (url/stored). \n',['url','stored']).lower()
+					if source_type == 'stored':
+						if source_folder is None:
+							source_folder = input('Please, insert the absolute path of your local video folder.\n(It will be used for every stored video source.)\n')
+							self.create_volume(source_folder)
+						source = input('Please, insert the video name with its extension.\n')
+						source='/mnt/remote_media/'+source
+					else:
+						source = input('Insert video source address/url: \n')
+					id = input('Give a unique name/ID to this video source: \n')
+					sources.append((id, source))
+
+				with open(filename, 'w') as out:
+					out.write('MAX_ALLOWED_DELAY=' + str(max_delay) + '\n')
+					out.write('INTERVAL_STATS=' + str(interval_stats) + '\n')
+					#out.write('TZ=' + timezone + '\n')
+					for id, source  in sources:
+						out.write('\nSOURCE_' + id + '=' + source + '\n')
+		if args.run or change_params_answer == 'n':
+			with open(filename) as f:
+				content = f.read().splitlines()
+				for line in content:
+					if line.startswith('SOURCE_'):
+						id = line.split('=')[0][7:]
+						source = line[len(id) + 1:]
+						sources.append((id, source))
+
+		return sources
+
+
+
+	def manage_algs(self,args,conf):
+		detector = (None,None)
+
+		if not args.run:
+
+			config_question = 'Do you want to change default algorithms configuration? (y/n): \n'
+			if not os.path.isfile('./'+ALGS_CONFIG_FILE) or q.get_acceptable_answer(config_question,['y','n']).lower() == 'y':		
+				detector,det_build = conf.ask_detector(q)
+				algs_to_build = conf.configure()
+				list_build = algs_to_build
+				if det_build == 'y':
+					list_build.append(detector)
+				
+					
+				self.build_and_push(list_build)
+
+
+		return detector
+
+
+	"""
+	def manage_docker_images(self, exec_algs):
+
+		if not self.use_last_settings:	 
+			building = q.get_acceptable_answer("Do you want to build docker images?: (y/n): ", ['y', 'n'])
+			if building == 'y':
+				self.build_and_push()
+	"""
+
+
+	def manage_registry(self):
+		
+		running = self.registry.check_registry_running()
+		 
+		if not running:
+			self.registry.start_registry()
+		self.registry.manage_docker_daemon_json()
+		
+
+
+	def __get_top_manager(self):
+		nodes_list = list(self.nodes.keys())
+		top_manager_node = [self.nodes[node] for node in nodes_list if self.nodes[node]['role'] == 'manager'][0]
+		return top_manager_node
+
+	def get_nodes(self):
+		return self.nodes
+
+	def get_execution_algs(self):
+		reader_alg_config = ConfigParser()
+		reader_alg_config.read(ALGS_CONFIG_FILE)
+		execution_algs = {s:dict(reader_alg_config.items(s)) for s in reader_alg_config.sections()}
+		return execution_algs
+
+	
 
 	
 
@@ -259,8 +360,21 @@ class ImageManager:
 				build_commands.append(build_command)
 		return build_commands
 
-	def build_images(self):
-		paths = self.__find_dockerfiles()
+	def build_images(self,list_to_build, build_standard_images):
+		temp_paths = self.__find_dockerfiles()
+		paths = []
+		for p in temp_paths:
+			if build_standard_images == 'y':
+				if '.' not in p:
+					paths.append(p)
+					continue
+
+			for (alg,mode) in list_to_build:
+				if alg in p and mode.lower() in p:
+					paths.append(p)
+		
+
+
 		build_commands = self.__create_build_commands(paths)
 		
 		for i,build in enumerate(build_commands):
@@ -317,6 +431,8 @@ class ImageManager:
 			pull_file.write('registry="$1"\n')
 			for img in self.__pull_images:
 				pull_file.write(base_com + img +'\n')
+
+		os.chmod(filename, 0o777)
 
 
 

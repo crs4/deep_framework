@@ -4,19 +4,19 @@ services:
         env_file: [env_params.list, env_ports.list]
         environment: [PROV_OUT_TO_COL=5555, OUT_STREAM_PORT=9999, OUT_SERVER_PORT=9990,
             SERVER_ADDRESS=server, STREAM_MANAGER_ADDRESS=stream_manager, STAT=Face,
-            'ALGS=']
+            'ALGS=gender:6000:6050:7000,glasses:6001:6051:7001,emotion:6002:6052:7002,face_recognition:6003:6053:7003,pitch:6004:6054:7004,age:6005:6055:7005,yaw:6006:6056:7006']
         image: 192.168.195.224:5000/collector:deep
         networks: [net_deep]
         tty: true
     monitor:
         env_file: [env_params.list, env_ports.list]
-        environment: ['ALGS=']
+        environment: ['ALGS=gender,glasses,emotion,face_recognition,pitch,age,yaw']
         image: 192.168.195.224:5000/monitor:deep
         networks: [net_deep]
         ports: ['5001:5001', '5002:5002']
     server:
         env_file: [env_params.list, env_ports.list]
-        environment: [FACE_PORT=9990, 'ALGS=']
+        environment: [FACE_PORT=9990, 'ALGS=gender,glasses,emotion,face_recognition,pitch,age,yaw']
         image: 192.168.195.224:5000/server:deep
         networks: [net_deep]
         ports: ['8000:8000']
@@ -34,7 +34,7 @@ services:
         env_file:
         - env_params.list
         - env_ports.list
-        image: 192.168.195.224:5000/drone_object_detector:deep_cpu
+        image: 192.168.195.224:5000/face_detection:deep_cpu
         networks:
         - net_deep
         ports:
@@ -43,7 +43,7 @@ services:
         - 5555:5555
     stream_capture_0:
         environment:
-        - STREAM_CAPTURE_ID=3
+        - STREAM_CAPTURE_ID=7
         env_file:
         - env_params.list
         - env_ports.list
@@ -54,7 +54,7 @@ services:
         - deep_media_volume:/mnt/remote_media
     stream_capture_1:
         environment:
-        - STREAM_CAPTURE_ID=6
+        - STREAM_CAPTURE_ID=9
         env_file:
         - env_params.list
         - env_ports.list
