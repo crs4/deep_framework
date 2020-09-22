@@ -21,6 +21,7 @@ class Starter:
 		self.registry = registry
 		self.use_last_settings = use_last_settings
 		self.image_manager = ImageManager(machine,registry)
+
 		self.__setup()
 
 	def __setup(self):
@@ -28,16 +29,41 @@ class Starter:
 		nodes_config = self.cluster_manager.manage_cluster(use_last_config=self.use_last_settings)
 		self.nodes = self.__load_nodes_data(nodes_config)
 		self.top_manager_node = self.__get_top_manager()
+		self.temp_building_list = {'detector': None, 'algs': [], 'standard': None}
 
 
 
-	def build_and_push(self,list_to_build):
-		build_standard_question = 'Do you want to build standard framework docker images? (y/n): \n'
-		build_standard_images = q.get_acceptable_answer(build_standard_question,['y','n']).lower()
-
-		print('The building process will take several time...')
+	def build_and_push(self,alg_gpu_matches):
 		
-		self.image_manager.build_images(list_to_build,build_standard_images)
+		print('The building process will take several time...')
+		build_list = []
+
+		print(self.temp_building_list['algs'])
+		print(self.temp_building_list['detector'])
+
+		if self.temp_building_list['detector'] != None:
+			det_name = self.temp_building_list['detector'][0]
+			det_dict = alg_gpu_matches.pop(det_name)
+			mode = det_dict['gpu_id']
+			mode = 'gpu' if mode is not None else 'cpu'
+			print((det_name,mode))
+			build_list.append((det_name,mode))
+
+
+		a = input('stop')
+		
+		algs_requested = [ alg for alg,mode in self.temp_building_list['algs']]
+		for component, node_dict in alg_gpu_matches.items():
+			if component in algs_requested:
+				if node_dict['gpu_id'] != None:
+					build_list.append((component,'gpu'))
+				else:
+					build_list.append((component,'cpu'))
+
+
+		print('list',build_list)
+		a  =input('si')
+		self.image_manager.build_images(build_list,self.temp_building_list['standard'])
 		self.image_manager.create_pull_file()
 
 		self.image_manager.push_images()
@@ -64,29 +90,30 @@ class Starter:
 					raise e
 
 
-	def __rm_volume(self):
-		try:
-			rm_volume_command = "docker volume rm deep_media_volume"
-			print('Removing deep_media_volume...')
-			self.machine.exec_shell_command(rm_volume_command)
-		except Exception as e:
-			print(e)
-
 	def create_volume(self,path):
+		top_manager_node = self.top_manager_node
+		#inspect_command = 'docker service ps --format "{{.CurrentState}}" '
+		
 		try:
-			self.__rm_volume()
 			print('Creating deep_media_volume...')
 			create_volume_command = "docker volume create --name deep_media_volume --opt type=none --opt o=bind --opt device="
+			rm_volume_command = "docker volume rm deep_media_volume"
+			if top_manager_node['type'] == 'RemoteNode':
+				create_volume_command = "ssh %s@%s '%s'" % (top_manager_node['user'], top_manager_node['ip'], create_volume_command)
+				rm_volume_command = "ssh %s@%s '%s'" % (top_manager_node['user'], top_manager_node['ip'], rm_volume_command)
+
+			self.machine.exec_shell_command(rm_volume_command)
+
 			self.machine.exec_shell_command(create_volume_command+path)
 		except Exception as e:
 			print(e)
 
-	def manage_sources(self,args):
+	def manage_sources(self):
 		sources = []
 
 		filename = 'env_params.list'
 		change_params_answer =  'y'
-		if not args.run:
+		if not self.use_last_settings:
 			if os.path.isfile('./'+filename):
 				change_params_question = 'Do you want to change streaming params? (y/n): \n'
 				change_params_answer = q.get_acceptable_answer(change_params_question,['y','n']).lower()
@@ -102,7 +129,7 @@ class Starter:
 					source_type = q.get_acceptable_answer('Please enter the video source type (url/stored). \n',['url','stored']).lower()
 					if source_type == 'stored':
 						if source_folder is None:
-							source_folder = input('Please, insert the absolute path of your local video folder.\n(It will be used for every stored video source.)\n')
+							source_folder = input('Please, insert the absolute path of the cluster manager video folder.\n(It will be used for every stored video source.)\n')
 							self.create_volume(source_folder)
 						source = input('Please, insert the video name with its extension.\n')
 						source='/mnt/remote_media/'+source
@@ -117,7 +144,7 @@ class Starter:
 					#out.write('TZ=' + timezone + '\n')
 					for id, source  in sources:
 						out.write('\nSOURCE_' + id + '=' + source + '\n')
-		if args.run or change_params_answer == 'n':
+		if self.use_last_settings or change_params_answer == 'n':
 			with open(filename) as f:
 				content = f.read().splitlines()
 				for line in content:
@@ -128,36 +155,63 @@ class Starter:
 
 		return sources
 
+	def manage_standard_images(self):
+		if not self.use_last_settings:
+			build_standard_question = 'Do you want to build standard framework docker images? (y/n): \n'
+			build_standard_images = q.get_acceptable_answer(build_standard_question,['y','n']).lower()
+			self.temp_building_list['standard'] = build_standard_images
 
+	def manage_detector(self,conf):
 
-	def manage_algs(self,args,conf):
-		detector = (None,None)
+		if not self.use_last_settings:
 
-		if not args.run:
-
-			config_question = 'Do you want to change default algorithms configuration? (y/n): \n'
-			if not os.path.isfile('./'+ALGS_CONFIG_FILE) or q.get_acceptable_answer(config_question,['y','n']).lower() == 'y':		
-				detector,det_build = conf.ask_detector(q)
-				algs_to_build = conf.configure()
-				list_build = algs_to_build
-				if det_build == 'y':
-					list_build.append(detector)
-				
-					
-				self.build_and_push(list_build)
-
+			exec_config = ConfigParser()
+			detector,det_build = conf.ask_detector(q)
+			det,det_mode,det_framework = detector
+			exec_config[det] = {}
+			exec_config[det]['detector_mode'] = det_mode
+			exec_config[det]['framework'] = str(det_framework) if det_framework != '' else str(None)
+			if det_build == 'y':
+				self.temp_building_list['detector'] = det_build
+			with open(os.path.join(MAIN_DIR, DETECTOR_CONFIG_FILE), 'w') as defaultconfigfile:
+				exec_config.write(defaultconfigfile)
+		else:
+			temp_detector = []
+			reader_det_config = ConfigParser()
+			reader_det_config.read(DETECTOR_CONFIG_FILE)
+			det_name = reader_det_config.sections()[0]
+			detector = [det_name]
+			for key in reader_det_config[det_name]:
+				val = reader_det_config[det_name][key]
+				detector.append(val)
+			detector = tuple(detector)
 
 		return detector
 
+	def set_detector(self,alg_gpu_matches):
+		det = list(alg_gpu_matches)[0]
+		det_value = alg_gpu_matches[det]
+		det_node_name = det_value['node_name']
+		if det_value['gpu_id'] != None:
+			mode = 'gpu'
+		else:
+			mode = 'cpu'
 
-	"""
-	def manage_docker_images(self, exec_algs):
+		if self.temp_building_list['detector'] == 'y':
+			self.temp_building_list['detector'] = (det,mode)
 
-		if not self.use_last_settings:	 
-			building = q.get_acceptable_answer("Do you want to build docker images?: (y/n): ", ['y', 'n'])
-			if building == 'y':
-				self.build_and_push()
-	"""
+		return det,mode,det_node_name,det_value['gpu_id']
+
+	def manage_algs(self,conf):
+
+		if not self.use_last_settings:
+
+			config_question = 'Do you want to change default algorithms configuration? (y/n): \n'
+			if not os.path.isfile('./'+ALGS_CONFIG_FILE) or q.get_acceptable_answer(config_question,['y','n']).lower() == 'y':		
+				algs_to_build = conf.configure()
+				self.temp_building_list['algs'] = algs_to_build
+
+
 
 
 	def manage_registry(self):
@@ -249,7 +303,7 @@ class Starter:
 	def find_stream_manager(self):
 		top_manager_node = self.top_manager_node
 		#inspect_command = 'docker service ps --format "{{.CurrentState}}" '
-		inspect_command = 'docker service ps --format "{{.Node}}" deepframework_stream_manager'
+		inspect_command = 'docker service ps --format "{{.Node}}" deepframework_server'
 		if top_manager_node['type'] == 'RemoteNode':
 			inspect_command = "ssh %s@%s '%s'" % (top_manager_node['user'], top_manager_node['ip'], inspect_command)
 
@@ -272,7 +326,7 @@ class Starter:
 
 		if top_manager_node['type'] == 'RemoteNode':
 			start_command = "ssh %s@%s 'cd %s && %s'" % (top_manager_node['user'], top_manager_node['ip'], top_manager_node['path'], start_command)
-			copy_command = 'scp -q -p -r env_params.list env_ports.list ' + MAIN_COMPOSE_FILE+' '+ALGS_CONFIG_FILE+' compose-files '+ top_manager_node['user']+'@'+top_manager_node['ip']+':'+top_manager_node['path']
+			copy_command = 'scp -q -p -r env_params.list env_ports.list ' + MAIN_COMPOSE_FILE+' '+ALGS_CONFIG_FILE+' '+DETECTOR_CONFIG_FILE+' compose-files '+ top_manager_node['user']+'@'+top_manager_node['ip']+':'+top_manager_node['path']
 			try:
 				result = subprocess.Popen([copy_command], shell=True)
 			except Exception as e:

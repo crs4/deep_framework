@@ -5,6 +5,8 @@ import getpass
 from ast import literal_eval
 import re
 import math
+import collections
+
 from initialize.nodes_utils import SSHConnector,Machine
 
 
@@ -13,12 +15,29 @@ class GPUallocator(Machine):
 
 
 
-	def __init__(self,nodes,algorithms):
+	def __init__(self,nodes,algorithms,detector):
 		Machine.__init__(self)
 		self.nodes = nodes
-		self.algs = algorithms
+		self.algs = collections.OrderedDict()
 		self.memory_thr = 2000
 		self.driver_version_thr = 384.0
+		self.__set_algs(detector,algorithms)
+
+	def __set_algs(self,detector,algorithms):
+		"""
+		This method creates an ordered dict with detector on the top.
+		In this way, detector has higher priority in GPU allocation.
+		"""
+		det_name, mode, framework = detector
+		framework = str(framework)
+		
+		if framework != 'None':
+			self.detector_framework = [framework]
+		else:
+			self.detector_framework = []
+
+		self.algs[det_name] = {'alg_mode': mode.upper(), 'framework': framework}
+		self.algs.update(algorithms)
 
 
 	def __check_gpu_exists_and_suitable(self,node_name):
@@ -122,15 +141,19 @@ class GPUallocator(Machine):
 		if len(cpu_elegibles) == 0:
 			cpu_elegibles = list(nodes_gpu.keys())
 
+		if len(self.detector_framework) > 0:
+			temp_gpu_frameworks = list(set([ v_alg['framework'] for v_alg in self.algs.values() if v_alg['alg_mode'] == 'GPU' and v_alg['framework'] != self.detector_framework[0]]))
+		else:
+			temp_gpu_frameworks = list(set([ v_alg['framework'] for v_alg in self.algs.values() if v_alg['alg_mode'] == 'GPU']))
 
-		gpu_frameworks = list(set([ v_alg['framework'] for v_alg in self.algs.values() if v_alg['alg_mode'] == 'GPU']))
 		
-
+		gpu_frameworks = self.detector_framework + temp_gpu_frameworks
+		
+		
 		if len(gpu_frameworks) > 0:
 			gpu_order = self.__create_gpu_order(gpu_elegibles,gpu_frameworks)
-		
-		
-		matches = dict()
+
+		matches = collections.OrderedDict()
 		cpu_node_index = 0
 		for k_alg, v_alg in self.algs.items():
 

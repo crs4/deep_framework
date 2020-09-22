@@ -37,25 +37,34 @@ if __name__ == "__main__":
 	print(nodes_data)
 
 
-	sources = starter.manage_sources(args)
-	detector = starter.manage_algs(args,conf)
+	sources = starter.manage_sources()
+	detector = starter.manage_detector(conf)
+	starter.manage_algs(conf)
+	starter.manage_standard_images()
+
 	execution_algs = starter.get_execution_algs()
 
-	#starter.manage_docker_images(execution_algs)
 
-	print(execution_algs)
-
-
-
-	conf.set_main_compose_variables(execution_algs)
-	conf.set_compose_images(MAIN_COMPOSE_FILE, sources, detector)
-
-
-	gpu_alloc = GPUallocator(nodes_data,execution_algs)
+	gpu_alloc = GPUallocator(nodes_data,execution_algs,detector)
 	alg_gpu_matches = gpu_alloc.match_algs_gpus()
 	print(alg_gpu_matches)
 
+	det = starter.set_detector(alg_gpu_matches)
+
+	conf.set_main_compose_variables(execution_algs)
+	conf.set_compose_images(MAIN_COMPOSE_FILE, sources, nodes_data, det)
+
+	"""
+	gpu_alloc = GPUallocator(nodes_data,execution_algs)
+	alg_gpu_matches = gpu_alloc.match_algs_gpus()
+	print(alg_gpu_matches)
+	"""
+
 	compose_command_string = conf.set_compose_algs_variables(execution_algs,alg_gpu_matches)
+	if not args.run:
+		starter.build_and_push(alg_gpu_matches)
+
+	
 
 	starter.start_framework(compose_command_string)
 	

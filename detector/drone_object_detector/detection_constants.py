@@ -28,6 +28,7 @@ VIDEOSRC_ADDRESS = os.environ['VIDEOSRC_ADDRESS']
 MONITOR_ADDRESS = os.environ['MONITOR_ADDRESS']
 MONITOR_STATS_IN = os.environ['MONITOR_STATS_IN']
 INTERVAL_STATS = float(os.environ['INTERVAL_STATS'])
+GPU_ID = os.environ['GPU_ID']
 
 
 

@@ -324,7 +324,7 @@ class RemoteNode(Node):
 		except Exception as e:
 			raise e
 
-
+	"""
 	def __pull_images(self):
 
 		print('Pulling docker images...')
@@ -335,6 +335,7 @@ class RemoteNode(Node):
 			print(output)
 		except Exception as e:
 			raise e
+	"""
 
 	def __check_platform(self):
 		command_platform = 'echo -e "import sys\nprint(sys.platform)" | python3'
@@ -400,11 +401,14 @@ class RemoteNode(Node):
 		output = self.connection.send_remote_command(self.join_command)
 
 	def leave_swarm(self):
+		
 		check_swarm_command = "docker info --format '{{.Swarm.LocalNodeState}}'"
 
 		check_output = self.connection.send_remote_command(check_swarm_command)
 		if check_output == 'active':
 			output = self.connection.send_remote_command(self.leave_command)
+		
+		#output = self.connection.send_remote_command(self.leave_command)
 		
 
 class Cluster:
