@@ -38,19 +38,16 @@ class Starter:
 		print('The building process will take several time...')
 		build_list = []
 
-		print(self.temp_building_list['algs'])
-		print(self.temp_building_list['detector'])
+		
 
 		if self.temp_building_list['detector'] != None:
 			det_name = self.temp_building_list['detector'][0]
 			det_dict = alg_gpu_matches.pop(det_name)
 			mode = det_dict['gpu_id']
 			mode = 'gpu' if mode is not None else 'cpu'
-			print((det_name,mode))
 			build_list.append((det_name,mode))
 
 
-		a = input('stop')
 		
 		algs_requested = [ alg for alg,mode in self.temp_building_list['algs']]
 		for component, node_dict in alg_gpu_matches.items():
@@ -61,8 +58,7 @@ class Starter:
 					build_list.append((component,'cpu'))
 
 
-		print('list',build_list)
-		a  =input('si')
+		
 		self.image_manager.build_images(build_list,self.temp_building_list['standard'])
 		self.image_manager.create_pull_file()
 
