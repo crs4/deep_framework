@@ -162,11 +162,26 @@ class Starter:
 		if not self.use_last_settings:
 
 			exec_config = ConfigParser()
+			read_config = ConfigParser()
+
 			detector,det_build = conf.ask_detector(q)
-			det,det_mode,det_framework = detector
+			det,det_mode = detector
+			det_framework = None
+			detector_path = os.path.join(MAIN_DIR,'detector/'+det)
+
+			for file in os.listdir(detector_path):
+				if file.endswith(".ini"):
+					ini_file = os.path.join(detector_path,file)
+					read_config.read(ini_file)
+					det_framework  = read_config['CONFIGURATION']['FRAMEWORK']
+				
+			det_framework = str(det_framework)
+
+			detector = (det,det_mode,det_framework)
+
 			exec_config[det] = {}
 			exec_config[det]['detector_mode'] = det_mode
-			exec_config[det]['framework'] = str(det_framework) if det_framework != '' else str(None)
+			exec_config[det]['framework'] = det_framework
 			if det_build == 'y':
 				self.temp_building_list['detector'] = det_build
 			with open(os.path.join(MAIN_DIR, DETECTOR_CONFIG_FILE), 'w') as defaultconfigfile:

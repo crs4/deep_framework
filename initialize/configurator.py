@@ -272,18 +272,14 @@ class Configurator:
 				else:
 					det_mode = 'cpu'
 
-				if det_mode == 'gpu':
-					det_framework = input('Please, type the framework used by your detector if any. \n').lower()
-
-
 
 				build = inter.get_acceptable_answer('Do you want to build relative docker image? (y/n) \n',['y','n']).lower()
 
-				return ((det,det_mode,det_framework),build)
+				return ((det,det_mode),build)
 
 
 				
-		return ((detectors_list[0],'cpu', None),'n')
+		return ((detectors_list[0],'cpu'),'n')
 				
 				
 
