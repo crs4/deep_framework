@@ -24,12 +24,11 @@ Every class must have:
 
 class PitchNet(AbstractDescriptor):
 
-    
+    win_size = PITCH_WIN_SIZE
     def __init__(self):
       """
       Load pose model.
       """
-      self.win_size = PITCH_WIN_SIZE
       
       self.__setup_net()
 

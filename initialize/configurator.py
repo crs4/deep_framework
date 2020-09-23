@@ -435,7 +435,7 @@ class Configurator:
 
 
 
-
+		
 		for alg_name,alg_config in installed_algs.items():
 
 			answer_alg = inter.get_acceptable_answer('Do you want to execute '+alg_name+' algorythm? (y/n): \n',['y','n']).lower()

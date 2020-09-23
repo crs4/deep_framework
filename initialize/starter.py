@@ -308,7 +308,7 @@ class Starter:
 
 		config_app.read(CLUSTER_CONFIG_FILE)
 		node_ip = config_app[node_name]['ip']
-		app_address = 'https://'+node_ip+':8000'
+		app_address = 'https://'+node_ip+':'+str(APP_PORT)
 		return app_address
 
 
@@ -361,14 +361,16 @@ class ImageManager:
 		self.registry = registry.insecure_addr
 		self.images_list = []
 		self.__pull_images=[]
+		self.excluded = ['clothing','sample','generic']
 	
 	def __find_dockerfiles(self):
+
 		dockerfiles_path = []
 		for root, dirs, files in os.walk(MAIN_DIR):
 			for file in files:
 				if 'Dockerfile' in file:
 					dockerfile_path = os.path.join(root, file)
-					if 'clothing' in dockerfile_path or 'sample' in dockerfile_path:
+					if any(exc in dockerfile_path for exc in self.excluded):
 						continue
 					
 					dockerfiles_path.append(dockerfile_path)

@@ -28,14 +28,13 @@ Every class must have:
 
 class GenderNet(AbstractDescriptor):
 
-
+	win_size = GEN_WIN_SIZE
 	def __init__(self):
 		"""
 		Load gender model
 		"""
 		self.categories = ['Female','Male']
 		self.__setup_net(GENDER_MODEL)
-		self.win_size = GEN_WIN_SIZE
 
 	def __setup_net(self,model):
 		self.mean = load_mean()
