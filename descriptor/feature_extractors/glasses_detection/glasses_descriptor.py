@@ -20,13 +20,12 @@ from .glasses_constants import *
 
 class GlassesDescriptor(AbstractDescriptor):
 
-
+	win_size = WIN_SIZE	
 	def __init__(self):
 		"""
 		Create descriptor network
 		"""
 		self.__setup_net()
-		self.win_size = WIN_SIZE	
 		
 
 

@@ -1,0 +1,10 @@
+
+
+
+
+[CONFIGURATION]
+
+NAME = generic
+PATH = generic_descriptor.generic_desc
+CLASS = GenericDescriptor
+FRAMEWORK = tensorflow

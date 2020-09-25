@@ -25,12 +25,12 @@ Every class must have:
 
 class FaceRecognition(AbstractDescriptor):
 
-    
+    win_size = RECOG_WIN_SIZE
     def __init__(self):
       """
       Load face recognition model.
       """
-      self.win_size = RECOG_WIN_SIZE
+      
       self.template_models = load_models()
       self.tags = get_tags()
       self.probabilities = load_probabilities()

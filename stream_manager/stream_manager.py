@@ -16,7 +16,7 @@ from utils.socket_commons import send_data, recv_data
 ROOT = os.path.dirname(__file__)
 logging.basicConfig(level=logging.INFO)
 
-logging.info('*** DEEP STREAM MANAGER v0.5 ***')
+logging.info('*** DEEP STREAM MANAGER v0.8 ***')
 #ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
 #ssl_context.load_verify_locations('cert.pem')
 
@@ -47,13 +47,13 @@ class StreamServer():
 
             while True:
                 self.generated_frames+=1
-                if self.stream_ready:
+                if self.stream_ready.is_set():
                     yield self.received_frame
                 else:
                     yield self.deafult_frame
 
         def frame_consumer_to_client(frame):
-            if self.stream_ready and not self.capture_peer:
+            if not self.capture_peer:
                 self.create_deep_message(frame)
 
         self.hp_server_address = HP_SERVER +':'+ SERVER_PORT
@@ -79,8 +79,8 @@ class StreamServer():
         self.remotePeerId = None
         self.source_peer_id = None
         self.source_metadata = None
-        self.source_changed = False
-        self.stream_ready = False
+        self.source_changed = asyncio.Event()
+        self.stream_ready = asyncio.Event()
         self.deep_delay = 0
         self.round_trip = 0
         self.processing_period = 0
@@ -102,7 +102,8 @@ class StreamServer():
             self.collectors.append({'name':name,'socket':receiver_socket})
 
     def create_deep_message(self,frame):
-
+        if not self.stream_ready.is_set():
+            return
         self.received_frame = frame
         self.received_frames += 1
         capture_time = time.time()
@@ -124,8 +125,8 @@ class StreamServer():
         try:
             while True:
 
-                if not self.stream_ready:
-                    await asyncio.sleep(0.5)
+                if not self.stream_ready.is_set():
+                    await self.stream_ready.wait()
                     self.processed_frames = 0
                     last_receive_time = time.time()
                     no_data_time = 0
@@ -144,9 +145,12 @@ class StreamServer():
                     self.processing_period = time.time() - last_receive_time
                     no_data_time += self.processing_period
                     if no_data_time > float(MAX_ALLOWED_DELAY) * 1.2:
-                        if no_data_time > 5 * float(MAX_ALLOWED_DELAY):
-                            await self.peer.send({'type': 'error', 'messagge':  f'No data from DEEP since  {str(no_data_time)} seconds. Reason: {str(e)}' })
-                            raise Exception(msg)
+                        if no_data_time > 10 * float(MAX_ALLOWED_DELAY):
+                            msg = f'No data from DEEP since  {str(no_data_time)} seconds. Reason: {str(e)}'
+                            await self.peer.send({'type': 'error', 'messagge': msg })
+                            logging.error(msg)
+                            await self.peer.disconnect()
+                            break
 
                         msg = f'High processing period: {str(no_data_time)}. Reason: {str(e)}' 
                         await self.peer.send({'type': 'warning', 'messagge': msg})
@@ -203,7 +207,7 @@ class StreamServer():
                 return
                 
             self.source_peer_id = data['peerId']
-            self.source_changed = True
+            self.source_changed.set()
 
             if self.source_peer_id == 'none':
                 self.source_peer_id = None
@@ -218,7 +222,47 @@ class StreamServer():
             logging.info('Source metadata: ' + str(self.source_metadata))
             await self.peer.send(data)
 
-    
+    async def source_manager(self):
+        while True:
+            await self.source_changed.wait()
+            self.source_changed.clear()
+            self.stream_ready.clear()
+            if self.capture_peer:
+                await self.capture_peer.close()
+                self.capture_peer = None
+
+            if self.source_peer_id != self.remotePeerId and self.source_peer_id is not None: #check
+                try:
+                    def consumer(frame):
+                        self.create_deep_message(frame)
+
+                    self.capture_peer = Peer('wss://' + self.hp_server_address, peer_type='video_capture',
+                            frame_generator=None, frame_consumer=consumer, ssl_context=ssl_context)
+                    
+                    await self.capture_peer.open()
+                    logging.info(f'[{self.id}]: capture peer instance created')
+                    self.capture_peer.add_data_handler(self.on_capture_data)
+
+                    await self.capture_peer.connect_to(self.source_peer_id)
+                    logging.info(f'[{self.id}]: connected to {self.source_peer_id}')
+                    self.stream_ready.set()
+                    async def capture_peer_monitor():
+                        await self.capture_peer.disconnection_event.wait()
+                        self.stream_ready.clear()
+                        if self.peer.readyState == PeerState.CONNECTED:
+                            await self.peer.send({'type':'source-disconnected', 'reason': 'remote disconnection'})
+                        await self.capture_peer.close()
+                        self.capture_peer = None
+                    asyncio.create_task(capture_peer_monitor())
+
+                except Exception as err:
+                    if self.peer.readyState == PeerState.CONNECTED:
+                        await self.peer.send({'type':'source-disconnected', 'reason':str(err)})
+            elif self.source_peer_id == self.remotePeerId:
+                self.stream_ready.set()
+
+
+
     async def stop(self):
         self.sender_socket.close()
         for collector in self.collectors:
@@ -242,42 +286,10 @@ class StreamServer():
                     receiver_task = asyncio.create_task(self.receiver(coll['socket']))
                     tasks.append(receiver_task)
 
-                while self.peer.readyState == PeerState.CONNECTED:
-                    if self.capture_peer:
-                        if self.capture_peer.readyState == PeerState.DISCONNECTING:
-                            self.stream_ready = False
-                            await self.peer.send({'type':'source-disconnecting'})
+                tasks.append(asyncio.create_task(self.source_manager()))
+                await self.peer.disconnection_event.wait()
 
-                    if self.source_changed:
-                        self.source_changed = False
-                        self.stream_ready = False
-                        if self.capture_peer:
-                            await self.capture_peer.close()
-                            self.capture_peer = None
-
-                        if self.source_peer_id != self.remotePeerId and self.source_peer_id is not None: #check
-                            try:
-                                def consumer(frame):
-                                    self.create_deep_message(frame)
-
-                                self.capture_peer = Peer('wss://' + self.hp_server_address, peer_type='video_capture',
-                                        frame_generator=None, frame_consumer=consumer, ssl_context=ssl_context)
-                                
-                                await self.capture_peer.open()
-                                logging.info(f'[{self.id}]: capture peer instance created')
-                                self.capture_peer.add_data_handler(self.on_capture_data)
-
-                                await self.capture_peer.connect_to(self.source_peer_id)
-                                logging.info(f'[{self.id}]: connected to {self.source_peer_id}')
-                                self.stream_ready = True
-                            except Exception as err:
-                                await self.peer.send({'type':'source-error','error':str(err)})
-                        elif self.source_peer_id == self.remotePeerId:
-                            self.stream_ready = True
-                    
-                    await asyncio.sleep(0.1)
-
-                self.stream_ready = False
+                self.stream_ready.clear()
                 for task in tasks:
                     task.cancel()
                 try:

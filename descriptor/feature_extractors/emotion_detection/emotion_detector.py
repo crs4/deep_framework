@@ -27,6 +27,7 @@ Every class must have:
 
 class HappyNet(AbstractDescriptor):
 
+    win_size = EMO_WIN_SIZE
     
     def __init__(self):
       """
@@ -34,7 +35,7 @@ class HappyNet(AbstractDescriptor):
       """
       self.categories =  [ 'Angry' , 'Disgust' , 'Fear' , 'Happy'  , 'Neutral' ,  'Sad' , 'Surprise']  
       self.__setup_net()
-      self.win_size = EMO_WIN_SIZE
+      
 
     def __setup_net(self):
       

@@ -5,6 +5,7 @@ import argparse
 import numpy as np
 import cv2
 import tensorflow as tf
+from detection_constants import *
 
 
 def _run_in_batches(f, data_dict, out, batch_size):
@@ -76,7 +77,7 @@ class ImageEncoder(object):
         #config = tf.ConfigProto(device_count = {'GPU': 1})
         config = tf.ConfigProto()
         config.gpu_options.allow_growth = True
-        os.environ['CUDA_VISIBLE_DEVICES'] = '0' 
+        os.environ['CUDA_VISIBLE_DEVICES'] = GPU_ID
         self.session = tf.Session(config=config)
         with tf.gfile.GFile(checkpoint_filename, "rb") as file_handle:
             graph_def = tf.GraphDef()

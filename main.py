@@ -24,82 +24,47 @@ if __name__ == "__main__":
 	print("### DEEP FRAMEWORK STARTING PROCEDURE ### ")
 	if args.run:
 		print('Using last configuration and settings...')
+
 	q = Interviewer()
 	machine = Machine()
 	cluster_manager = ClusterManager()
 	registry = Registry()
 	conf = Configurator(registry)
 	starter = Starter(machine,registry,cluster_manager,use_last_settings=args.run)
-	detector = (None,None)
+
 	nodes_data = starter.get_nodes()
 	
 	print(nodes_data)
 
-	filename = 'env_params.list'
-	change_params_answer =  'y'
-	if not args.run:
-		if os.path.isfile('./'+filename):
-			change_params_question = 'Do you want to change streaming params? (y/n): \n'
-			change_params_answer = q.get_acceptable_answer(change_params_question,['y','n']).lower()
-		if  change_params_answer == 'y':
-			max_delay = q.get_number('Insert max delay in seconds you consider acceptable for getting algorithms results (default: 1s): \n','float',1)
-			interval_stats = q.get_number('How often do you want to generate statics of execution in seconds? (default: 1s): \n','float',1)
-			#timezone = q.get_answer('Please, insert your timezone (default Europe/Rome): \n')
-			#if timezone=='':
-			#	timezone = 'Europe/Rome'
-			add_video_source = 'Do you want to add a video source? (y/n): \n'
-			sources = []
-			source_folder = None
-			while q.get_acceptable_answer(add_video_source,['y','n']).lower() == 'y':
-				source_type = q.get_acceptable_answer('Please enter the video source type (url/stored). \n',['url','stored']).lower()
-				if source_type == 'stored':
-					if source_folder is None:
-						source_folder = input('Please, insert the absolute path of your local video folder.\n(It will be used for every stored video source.)\n')
-						starter.create_volume(source_folder)
-					source = input('Please, insert the video name with its extension.\n')
-					source='/mnt/remote_media/'+source
-				else:
-					source = input('Insert video source address/url: \n')
-				id = input('Give a unique name/ID to this video source: \n')
-				sources.append((id, source))
 
-			with open(filename, 'w') as out:
-				out.write('MAX_ALLOWED_DELAY=' + str(max_delay) + '\n')
-				out.write('INTERVAL_STATS=' + str(interval_stats) + '\n')
-				#out.write('TZ=' + timezone + '\n')
-				for id, source  in sources:
-					out.write('\nSOURCE_' + id + '=' + source + '\n')
-	if args.run or change_params_answer == 'n':
-		sources = []
-		with open(filename) as f:
-			content = f.read().splitlines()
-			for line in content:
-				if line.startswith('SOURCE_'):
-					id = line.split('=')[0][7:]
-					source = line[len(id) + 1:]
-					sources.append((id, source))
+	sources = starter.manage_sources()
+	detector = starter.manage_detector(conf)
+	starter.manage_algs(conf)
+	starter.manage_standard_images()
 
-	if not args.run:
-
-		config_question = 'Do you want to change default algorithms configuration? y/n: \n'
-		if not os.path.isfile('./'+ALGS_CONFIG_FILE) or q.get_acceptable_answer(config_question,['y','n']).lower() == 'y':		
-			detector = conf.ask_detector(q)
-			conf.configure()
-
-	
 	execution_algs = starter.get_execution_algs()
-	print(execution_algs)
-
-	conf.set_main_compose_variables(execution_algs)
-
-	conf.set_compose_images(MAIN_COMPOSE_FILE, sources, detector)
 
 
-	gpu_alloc = GPUallocator(nodes_data,execution_algs)
+	gpu_alloc = GPUallocator(nodes_data,execution_algs,detector)
 	alg_gpu_matches = gpu_alloc.match_algs_gpus()
 	print(alg_gpu_matches)
 
+	det = starter.set_detector(alg_gpu_matches)
+
+	conf.set_main_compose_variables(execution_algs)
+	conf.set_compose_images(MAIN_COMPOSE_FILE, sources, nodes_data, det)
+
+	"""
+	gpu_alloc = GPUallocator(nodes_data,execution_algs)
+	alg_gpu_matches = gpu_alloc.match_algs_gpus()
+	print(alg_gpu_matches)
+	"""
+
 	compose_command_string = conf.set_compose_algs_variables(execution_algs,alg_gpu_matches)
+	if not args.run:
+		starter.build_and_push(alg_gpu_matches)
+
+	
 
 	starter.start_framework(compose_command_string)
 	

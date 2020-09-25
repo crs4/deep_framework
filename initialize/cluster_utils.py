@@ -34,8 +34,9 @@ class ClusterManager:
 			ip = self.q.get_ip("ip: ")
 			user = self.q.get_answer("username: ")
 			port = self.q.get_number("ssh port (default 22): ","int", '22')
-			pulling = self.q.get_acceptable_answer("Do you want to pull docker images?: (y/n): ", ['y', 'n'])
-			node = RemoteNode(ip, user, role_node_answer,pulling, port,cluster)
+			#pulling = self.q.get_acceptable_answer("Do you want to pull docker images?: (y/n): ", ['y', 'n'])
+			#node = RemoteNode(ip, user, role_node_answer,pulling, port,cluster)
+			node = RemoteNode(ip, user, role_node_answer, port,cluster)
 			dest_folder = self.q.get_remote_folder("Please insert a valid project destination folder: ",user,ip)
 			node.dest_folder = dest_folder
 			node.start_routine()
