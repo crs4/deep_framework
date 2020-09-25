@@ -161,10 +161,14 @@ function dataService($window) {
             }
             hp.send(acknowledge)
           } else if (data.type == 'error') {
-            alert('Deep message' + JSON.stringify(data))
+            this.stop()
+            alert('Deep error' + JSON.stringify(data))
+          } else if (data.type == 'source-disconnected') {
+            deepVideoSource = 'none'
+            alert('Video source disconnected. Reason: ' + data.reason)
           }
           else {
-            console.error('Deep message' + JSON.stringify(data))
+            console.warn('Deep message' + JSON.stringify(data))
           }
         })
 
