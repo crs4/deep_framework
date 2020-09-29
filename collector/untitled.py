@@ -69,10 +69,8 @@ class Collector(Process):
 
        
         subs_output = dict()
-        subs_image_attributes = dict()
-        subs_image_attributes['image_attributes'] = dict()
 
-        people_res = []
+        objects_res = []
         mess = None
         
         # run timer for stats computation
@@ -82,16 +80,16 @@ class Collector(Process):
         while True:
 
             result = dict()
-            people_res = []
+            objects_res = []
 
             # receive frame and data from frame provider
             fp_dict,__= recv_data(fp_socket,0,False)
             frame_id = fp_dict['frame_idx']
-            fp_people = fp_dict['objects']
+            fp_objects = fp_dict['objects']
             vc_time = fp_dict['vc_time']
 
 
-            pids_fp = list(map(lambda x: x['pid'], fp_people)) # id of new people in the scene
+            pids_fp = list(map(lambda x: x['pid'], fp_objects)) # id of new objects in the scene
             for p in pids_fp:
                 if p not in subs_output.keys():
                     subs_output[p] = dict()
@@ -99,23 +97,33 @@ class Collector(Process):
             # blocks until one or more puller receives a message for a waiting time
             socks = dict(poller.poll(0)) 
             for rec_tuple in receivers:
-               
+                print(rec_tuple)
                 name, rec = rec_tuple
                 if rec in socks and socks[rec] == zmq.POLLIN:
+                    #mess = rec.recv_pyobj(zmq.DONTWAIT)
+                    print(name)
                     mess, __ = recv_data(rec,zmq.DONTWAIT,False)
 
                     res_dict = mess['obj_res_dict']
-                    img_res = mess['img_res']
-                    if img_res:
-                        subs_image_attributes['image_attributes'][name] = img_res
+                    img_dict = mess['img_res_dict']
+                    print('id ',img_dict)
 
-                    for pid, res in res_dict.items():
+                    if res_dict:
+                        for pid, res in res_dict.items():
 
-                        try:
-                            subs_output[pid][name] = res
-                        except Exception as inst:
-                            print(inst, 'ex coll')
-                            continue
+                            try:
+                                subs_output[pid][name] = res
+                            except Exception as inst:
+                                print(inst, 'ex coll')
+                                continue
+
+                    if img_dict:
+                        print('si')
+                        subs_output['img_properties'] = {name: img_dict}
+                    else:
+                        print('no')
+                        subs_output['img_properties'] = None
+
 
                         
 
@@ -123,32 +131,33 @@ class Collector(Process):
 
                     # res_alg ={'ueu8300029ks993': ['angry',...'], 'hdfhsdfk883u': ['sad',...'] }
 
-            for person in fp_people:
+            for obj in fp_objects:
 
                 
+                print(obj)
+                temp_object_dict = obj
 
-                temp_person_dict = person
-
-                res_algs = subs_output[person['pid']]
+                res_algs = subs_output[obj['pid']]
 
                 if len( res_algs.keys() ) > 0:
 
                     for alg_name, classification in res_algs.items():
 
-                        temp_person_dict[alg_name] = classification
+                        temp_object_dict[alg_name] = classification
+
                        
 
-                people_res.append(temp_person_dict)
+                objects_res.append(temp_object_dict)
 
-            
-           
+
+            if subs_output['img_properties'] is not None:
+                objects_res.append(subs_output['img_properties'])
 
             r = dict()
             r['collector_time'] = time.time()
-            r['data'] = people_res
-            r['image_attributes'] = subs_image_attributes['image_attributes']
+            r['data'] = objects_res
             r['vc_time'] = vc_time
-            print(people_res)
+            print(objects_res)
             
             send_data(sender,None,0,False,**r)
             send_data(server_sender,None,0,False,**r)
@@ -158,7 +167,7 @@ class Collector(Process):
 
 
 
-            #clearing people not more in scene
+            #clearing objects not more in scene
             pids_departed = set(subs_output.keys()).difference(set(pids_fp))
             if len(pids_departed) > 0:
                 
@@ -196,5 +205,6 @@ if __name__ == '__main__':
     print(subs)
     collector = Collector(subs, {'fp_in': PROV_OUT_TO_COL,'out_stream_port':OUT_STREAM_PORT,'out_server_port':OUT_SERVER_PORT} )
     collector.start()
+
 
 

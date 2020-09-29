@@ -49,7 +49,7 @@ class YawNet(AbstractDescriptor):
 
 
 
-    def detect_batch(self,images):
+    def detect_batch(self,detector_results,images):
       """
       Evaluates pose (yaw) for each person detected in images
 

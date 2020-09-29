@@ -429,10 +429,11 @@ class ImageManager:
 
 	def build_images(self,list_to_build, build_standard_images):
 		temp_paths = self.__find_dockerfiles()
+		
 		paths = []
 		for p in temp_paths:
 			if build_standard_images == 'y':
-				if '.' not in p:
+				if 'cpu' not in p and 'gpu' not in p:
 					paths.append(p)
 					continue
 
@@ -440,8 +441,8 @@ class ImageManager:
 				if alg in p and mode.lower() in p:
 					paths.append(p)
 		
-
-
+		
+		
 		build_commands = self.__create_build_commands(paths)
 		
 		for i,build in enumerate(build_commands):

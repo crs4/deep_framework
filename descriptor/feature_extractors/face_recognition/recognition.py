@@ -108,7 +108,7 @@ class FaceRecognition(AbstractDescriptor):
       return result
     
 
-    def detect_batch(self,images):
+    def detect_batch(self,detector_results,images):
       """
       Assigns a label to each person detected in images
 

@@ -43,7 +43,7 @@ class GenderNet(AbstractDescriptor):
 		
 		
 
-	def detect_batch(self,images):
+	def detect_batch(self,detector_results,images):
 		"""
 		It assigns a gender to each person detected in images
 
