@@ -16,7 +16,7 @@ from utils.socket_commons import send_data, recv_data
 ROOT = os.path.dirname(__file__)
 logging.basicConfig(level=logging.INFO)
 
-logging.info('*** DEEP STREAM MANAGER v0.8 ***')
+logging.info('*** DEEP STREAM MANAGER v0.10 ***')
 #ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
 #ssl_context.load_verify_locations('cert.pem')
 
@@ -29,7 +29,7 @@ ssl_context.verify_mode = ssl.CERT_NONE
 class StreamServer():
 
     def __init__(self, peer_type):        
-        self.id = 'temp_id'
+        self.id = f'sm_{int(time.time() * 1000)}'
         self.__connection_reset()
         self.__socket_setup()
 
@@ -58,10 +58,9 @@ class StreamServer():
 
         self.hp_server_address = HP_SERVER +':'+ SERVER_PORT
         print(self.hp_server_address)
-        self.peer = Peer('wss://' + self.hp_server_address, peer_type=peer_type,
+        self.peer = Peer('wss://' + self.hp_server_address, peer_type=peer_type, id=self.id,
                         frame_generator=frame_generator_to_client, frame_consumer=frame_consumer_to_client, ssl_context=ssl_context,
                         datachannel_options=datachannel_options, frame_rate=FRAME_RATE)
-
         self.capture_peer = None
     
     def __connection_reset(self):
@@ -84,6 +83,7 @@ class StreamServer():
         self.deep_delay = 0
         self.round_trip = 0
         self.processing_period = 0
+        self.core_watchdog = asyncio.Event()
         
 
     def __socket_setup(self):
@@ -113,8 +113,8 @@ class StreamServer():
             send_data(self.sender_socket,[frame],0,False,**res)
         else:
             logging.info(f'[{self.id}]: Skipping frame: {str(self.received_frames)}, deep delay: {str(self.deep_delay)}, processing period: {str(self.processing_period)}')
-
-
+        
+        self.core_watchdog.set()
 
 
     async def receiver(self,socket):
@@ -127,6 +127,13 @@ class StreamServer():
 
                 if not self.stream_ready.is_set():
                     await self.stream_ready.wait()
+                    try:
+                        residual_messages = 0
+                        while True:
+                            received_data, __ = recv_data(socket,1,False)
+                            residual_messages += 1  
+                    except:
+                        logging.info(f'[{self.id}]: Collector socket empty. There were {residual_messages} messages on buffer') 
                     self.processed_frames = 0
                     last_receive_time = time.time()
                     no_data_time = 0
@@ -261,7 +268,25 @@ class StreamServer():
             elif self.source_peer_id == self.remotePeerId:
                 self.stream_ready.set()
 
-
+    async def core_watchdog_timer(self):
+        while True:
+            try:
+                await asyncio.wait_for(self.core_watchdog.wait(), timeout=30)
+            except asyncio.TimeoutError:
+                logging.warning(f'[{self.id}]: Watchdog: timer set!')
+                logging.info(f'[{self.id}]: Watchdog: sending default frame to core components...')
+                res = {'frame_idx': 0, 'vc_time': time.time(), 'frame_shape': self.deafult_frame.shape}
+                send_data(self.sender_socket,[self.deafult_frame],0,False,**res)
+                await asyncio.sleep(2)
+                # Empty collector socket
+                for coll in self.collectors:
+                    try:
+                        while True:
+                            received_data, __ = recv_data(coll['socket'],1,False)
+                            logging.info(f'[{self.id}]: Watchdog: received collector data')  
+                    except:
+                        logging.info(f'[{self.id}]: Watchdog: collector socket empty')  
+            self.core_watchdog.clear()          
 
     async def stop(self):
         self.sender_socket.close()
@@ -272,6 +297,7 @@ class StreamServer():
         await self.peer.close()
 
     async def start(self, remotePeerId=None):
+        core_watchdog_task = asyncio.create_task(self.core_watchdog_timer())
         await self.peer.open()
         self.peer.add_data_handler(self.on_remote_data)
         try:
@@ -296,7 +322,7 @@ class StreamServer():
                     for task in tasks:
                         await task
                 except asyncio.CancelledError:
-                    print(f'[{self.id}]: tasks are cancelled now')
+                    logging.info(f'[{self.id}]: tasks are cancelled now')
                 while self.peer.readyState != PeerState.ONLINE:
                     await asyncio.sleep(1)
                 
@@ -309,9 +335,11 @@ class StreamServer():
             #raise err
         finally:
             await self.peer.close()
-
-
-
+            core_watchdog_task.cancel()
+            try:
+                await core_watchdog_task
+            except asyncio.CancelledError:
+                logging.info(f'[{self.id}]: core watchdog is cancelled')
 
 
 stream_manager = StreamServer(peer_type='stream_manager')
