@@ -361,7 +361,6 @@ class ObjectsProvider():
         rect_dict['y_topleft'] = int(obj.rect.top_left_point.y_coordinate / self.ratio)
         rect_dict['x_bottomright'] = int(obj.rect.bottom_right_point.x_coordinate / self.ratio)
         rect_dict['y_bottomright'] =int(obj.rect.bottom_right_point.y_coordinate / self.ratio)
-        rect_dict['class'] = obj.rect.properties['class']
         
         points = []
         for obj_p in obj.points:
@@ -380,6 +379,8 @@ class ObjectsProvider():
         obj_dict['pid'] = str(obj.pid)
         obj_dict['rect'] = rect_dict
         obj_dict['points'] = points
+        obj_dict['class'] = obj.rect.properties['class']
+
         return obj_dict
 
 

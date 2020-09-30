@@ -238,6 +238,7 @@ class FaceProvider(Process):
         obj_dict['pid'] = str(obj.pid)
         obj_dict['rect'] = rect
         obj_dict['points'] = points
+        obj_dict['class'] = 'face'
         return obj_dict
 
     def __create_objects(self,people):
