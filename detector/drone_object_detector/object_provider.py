@@ -196,6 +196,7 @@ class ObjectsProvider():
             vc_frame_idx = rec_dict['frame_idx']
             vc_time = rec_dict['vc_time']  
             # ****** End always skipping code ******
+            frame_shape = rec_dict['frame_shape']  
 
 
             #algorithm start
@@ -223,6 +224,7 @@ class ObjectsProvider():
             res['objects'] = obj_list_serialized
             res['fp_time'] = time.time()
             res['vc_time'] = vc_time
+            res['frame_shape'] = frame_shape
 
             #print('det res: ',obj_list_serialized)
             print('Total provider time: ', time.time() - alg_start, ' for frame ', frame_counter, 'with ', len(object_list), ' objects')

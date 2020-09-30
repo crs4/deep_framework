@@ -146,7 +146,7 @@ class Collector(Process):
             r = dict()
             r['collector_time'] = time.time()
             r['data'] = objects_res
-            r['image_attributes'] = subs_image_attributes['image_attributes']
+            r['frame_attributes'] = subs_image_attributes['image_attributes']
             r['vc_time'] = vc_time
             print(objects_res)
             
