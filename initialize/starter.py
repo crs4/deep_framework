@@ -385,9 +385,9 @@ class ImageManager:
 			for file in files:
 				if 'Dockerfile' in file:
 					dockerfile_path = os.path.join(root, file)
+					
 					if any(exc in dockerfile_path for exc in self.excluded):
 						continue
-					
 					dockerfiles_path.append(dockerfile_path)
 		return dockerfiles_path
 
@@ -432,14 +432,22 @@ class ImageManager:
 		
 		paths = []
 		for p in temp_paths:
+
 			if build_standard_images == 'y':
 				if 'cpu' not in p and 'gpu' not in p:
 					paths.append(p)
 					continue
 
-			for (alg,mode) in list_to_build:
-				if alg in p and mode.lower() in p:
-					paths.append(p)
+			if 'feature_extractors' in p:
+				comp_folder = os.path.dirname(p)
+
+				for (alg,mode) in list_to_build:
+					alg_config_file = [os.path.join(comp_folder, f) for f in os.listdir(comp_folder) if f.endswith('.' + 'ini')][0]
+					reader_alg = ConfigParser()
+					reader_alg.read(alg_config_file)
+					alg_name = reader_alg.get('CONFIGURATION','NAME')
+					if alg == alg_name and mode.lower() in p:
+						paths.append(p)
 		
 		
 		
