@@ -376,7 +376,7 @@ class ImageManager:
 		self.registry = registry.insecure_addr
 		self.images_list = []
 		self.__pull_images=[]
-		self.excluded = ['clothing','sample','generic']
+		self.excluded = ['clothing','sample','generic','img']
 	
 	def __find_dockerfiles(self):
 
