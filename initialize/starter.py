@@ -438,16 +438,21 @@ class ImageManager:
 					paths.append(p)
 					continue
 
-			if 'feature_extractors' in p:
-				comp_folder = os.path.dirname(p)
+			
 
-				for (alg,mode) in list_to_build:
+			for (alg,mode) in list_to_build:
+				if 'feature_extractors' in p:
+					comp_folder = os.path.dirname(p)
 					alg_config_file = [os.path.join(comp_folder, f) for f in os.listdir(comp_folder) if f.endswith('.' + 'ini')][0]
 					reader_alg = ConfigParser()
 					reader_alg.read(alg_config_file)
 					alg_name = reader_alg.get('CONFIGURATION','NAME')
 					if alg == alg_name and mode.lower() in p:
 						paths.append(p)
+				else:
+					if alg in p and mode.lower() in p:
+						paths.append(p)
+
 		
 		
 		

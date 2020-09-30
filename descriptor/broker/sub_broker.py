@@ -63,6 +63,7 @@ class SubBroker(Process):
             sub_broker_data['frame_idx'] = vc_frame_idx
             sub_broker_data['vc_time'] = vc_time
             sub_broker_data['fp_time'] = fp_time
+            sub_broker_data['frame_shape'] = rec_dict['frame_shape']
             
             
             send_data(sub_broker_socket,imgs,0,False,**sub_broker_data)
