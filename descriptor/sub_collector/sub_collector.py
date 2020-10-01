@@ -51,7 +51,10 @@ class SubCollector(Process):
 
 
             #sends results to main collector
-            col_socket.send_pyobj(rec_dict)
+            #col_socket.send_pyobj(rec_dict)
+
+            send_data(col_socket,None,0,False,**rec_dict)
+
 
         print("subs collector: interrupt received, stopping")
         # clean up

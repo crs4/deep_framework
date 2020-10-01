@@ -43,7 +43,7 @@ class AgeNet(AbstractDescriptor):
 
                                           
 
-	def detect_batch(self,images):
+	def detect_batch(self,detector_results,images):
 		"""
 		It assigns an interval of ages to each person detected in images
 

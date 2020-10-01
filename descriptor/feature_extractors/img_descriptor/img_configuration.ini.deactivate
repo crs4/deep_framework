@@ -1,0 +1,11 @@
+
+
+
+
+[CONFIGURATION]
+
+NAME = img_desc_name
+PATH = img_descriptor.img_desc
+CLASS = ImgDescriptor
+FRAMEWORK = None
+TYPE = image_oriented

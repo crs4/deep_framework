@@ -69,8 +69,6 @@ class Collector(Process):
 
        
         subs_output = dict()
-        subs_image_attributes = dict()
-        subs_image_attributes['image_attributes'] = dict()
 
         objects_res = []
         mess = None
@@ -99,23 +97,33 @@ class Collector(Process):
             # blocks until one or more puller receives a message for a waiting time
             socks = dict(poller.poll(0)) 
             for rec_tuple in receivers:
-               
+                print(rec_tuple)
                 name, rec = rec_tuple
                 if rec in socks and socks[rec] == zmq.POLLIN:
+                    #mess = rec.recv_pyobj(zmq.DONTWAIT)
+                    print(name)
                     mess, __ = recv_data(rec,zmq.DONTWAIT,False)
 
                     res_dict = mess['obj_res_dict']
-                    img_res = mess['img_res']
-                    if img_res:
-                        subs_image_attributes['image_attributes'][name] = img_res
+                    img_dict = mess['img_res_dict']
+                    print('id ',img_dict)
 
-                    for pid, res in res_dict.items():
+                    if res_dict:
+                        for pid, res in res_dict.items():
 
-                        try:
-                            subs_output[pid][name] = res
-                        except Exception as inst:
-                            print(inst, 'ex coll')
-                            continue
+                            try:
+                                subs_output[pid][name] = res
+                            except Exception as inst:
+                                print(inst, 'ex coll')
+                                continue
+
+                    if img_dict:
+                        print('si')
+                        subs_output['img_properties'] = {name: img_dict}
+                    else:
+                        print('no')
+                        subs_output['img_properties'] = None
+
 
                         
 
@@ -126,8 +134,8 @@ class Collector(Process):
             for obj in fp_objects:
 
                 
-
-                temp_obj_dict = obj
+                print(obj)
+                temp_object_dict = obj
 
                 res_algs = subs_output[obj['pid']]
 
@@ -135,18 +143,19 @@ class Collector(Process):
 
                     for alg_name, classification in res_algs.items():
 
-                        temp_obj_dict[alg_name] = classification
+                        temp_object_dict[alg_name] = classification
+
                        
 
-                objects_res.append(temp_obj_dict)
+                objects_res.append(temp_object_dict)
 
-            
-           
+
+            if subs_output['img_properties'] is not None:
+                objects_res.append(subs_output['img_properties'])
 
             r = dict()
             r['collector_time'] = time.time()
             r['data'] = objects_res
-            r['frame_attributes'] = subs_image_attributes['image_attributes']
             r['vc_time'] = vc_time
             print(objects_res)
             
@@ -196,5 +205,6 @@ if __name__ == '__main__':
     print(subs)
     collector = Collector(subs, {'fp_in': PROV_OUT_TO_COL,'out_stream_port':OUT_STREAM_PORT,'out_server_port':OUT_SERVER_PORT} )
     collector.start()
+
 
 

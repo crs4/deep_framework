@@ -8,7 +8,7 @@ PATH = clothing_recognition.clothes_descriptor
 CLASS = ClothingDescriptor
 FRAMEWORK = tensorflow
 
-
+TYPE = object_oriented
 
 
 

@@ -1,5 +1,6 @@
+
 # CHANGE INITIAL IMAGE
-FROM sample:gpu
+FROM python:3.7-slim
 
 
 RUN apt-get update && apt-get install -y \ 
@@ -8,20 +9,18 @@ RUN apt-get update && apt-get install -y \
     libopencv-dev \
     pkg-config \
     iputils-ping \
-    python-setuptools \
-    # OTHERS PACKAGES
+    python-setuptools
 
 # CHECK PIP INSTALLATION
 RUN pip3 install \
     pyzmq==18.0.1 \
-    opencv-python==4.1.0.25 \
-    # OTHERS PACKAGES
+    opencv-python==4.1.0.25
 
-COPY . /home/deepframework/descriptor/generic_descriptor
 
-# OTHER OPERATIONS HERE
-# ...
-# ...
+
+COPY . /home/deepframework/descriptor/img_descriptor
+
+
 
 # DON'T TOUCH 
 COPY --from=utils:deep_setup /home/deepframework/utils/. /home/deepframework/descriptor/utils/

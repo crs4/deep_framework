@@ -44,7 +44,7 @@ class HappyNet(AbstractDescriptor):
 
     
 
-    def detect_batch(self,images):
+    def detect_batch(self,detector_results,images):
       """
       It assigns an emotion to each person detected in images
 

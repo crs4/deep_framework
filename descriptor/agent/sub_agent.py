@@ -49,6 +49,7 @@ class Sub(Process):
             self.alg_name = self.alg['name']
             module = importlib.import_module(self.alg['path'])
             alg_instance = getattr(module, self.alg['class'])
+            alg_type = self.alg['type']
             det = alg_instance()
             print('CREATED ',self.alg_name)
             WIN_SIZE = det.win_size
@@ -63,7 +64,7 @@ class Sub(Process):
         self.monitor_sender.connect(PROT+MONITOR_ADDRESS+':'+MONITOR_STATS_IN)
         
 
-        # subscribes to sub broker to get people data
+        # subscribes to sub broker to get objects data
         sub_broker_socket = context.socket(zmq.PULL)
         sub_broker_socket.connect(PROT+BROKER_ADDRESS+':'+self.rec_det_port)
 
@@ -73,9 +74,13 @@ class Sub(Process):
         sub_col_socket = context.socket(zmq.PUSH)
         sub_col_socket.connect(PROT+SUB_COLLECTOR_ADDRESS+':'+self.send_port)
 
-        people_old = []
-        windows = dict()
-        
+        objects_old = []
+        obj_windows = dict()
+
+        img_windows = dict()
+        img_windows[self.alg_name] = SlidingWindow(size=WIN_SIZE)
+
+
         print('END INIT ' + self.alg_name)
         # run timer in order to compute stats
         self.stats_maker.run_fps_timer()
@@ -85,7 +90,8 @@ class Sub(Process):
             
 
             sub_res = dict()
-            res_dict = dict()
+            obj_res_dict = dict()
+            img_res = None
             pids_old = []
 
             #get message from publisher
@@ -93,7 +99,7 @@ class Sub(Process):
             self.stats_maker.received_frames +=1
 
             vc_frame_idx = rec_dict['frame_idx']
-            people = rec_dict['objects'] # {'frame_idx': 123, 'data': [(p1,crop1),....,(pn,cropn)]}
+            objects = rec_dict['objects'] # {'frame_idx': 123, 'data': [(p1,crop1),....,(pn,cropn)]}
 
             fp_time = rec_dict['fp_time']
             vc_time = rec_dict['vc_time']
@@ -104,45 +110,53 @@ class Sub(Process):
                 continue
 
             
-            # tracks people present in previous frames
-            if len(people_old) != 0:
+            # tracks objects present in previous frames
+            if len(objects_old) != 0:
                 
-                pids_new = list(map(lambda x: x['pid'], people)) # id of new people in the scene
-                people_old = list(filter(lambda x: x['pid'] in pids_new , people_old)) # list of people in the scene already present in previous frames
+                pids_new = list(map(lambda x: x['pid'], objects)) # id of new objects in the scene
+                objects_old = list(filter(lambda x: x['pid'] in pids_new , objects_old)) # list of objects in the scene already present in previous frames
                 
-                pids_old = list(map(lambda x: x['pid'], people_old))
-                windows = {k: v for k, v in windows.items() if k in pids_new}
+                pids_old = list(map(lambda x: x['pid'], objects_old))
+                obj_windows = {k: v for k, v in obj_windows.items() if k in pids_new}
 
             
             alg_res = []
             try:
-                alg_res = det.detect_batch(crops)
+                alg_res = det.detect_batch(rec_dict,crops)
             except Exception as e:
                 print(e,'desc')
 
+            if alg_type == 'object_oriented':
 
-            for p,r in zip(people,alg_res):
-                # check if person is already present
-                if p['pid'] in pids_old:
-                    win = windows[p['pid']]
-                
-                else:
-                    win = SlidingWindow(size=WIN_SIZE)
-                    windows[p['pid']] = win
-                    people_old.append(p)
+                for p,r in zip(objects,alg_res):
+                    # check if object is already present
+                    if p['pid'] in pids_old:
+                        win = obj_windows[p['pid']]
+                    
+                    else:
+                        win = SlidingWindow(size=WIN_SIZE)
+                        obj_windows[p['pid']] = win
+                        objects_old.append(p)
 
-                
-                win.add_item(r)
+                    
+                    win.add_item(r)
 
-                ref = det.refine_classification(win.items)
+                    ref = det.refine_classification(win.items)
 
-                res_dict[p['pid']] = ref
+                    obj_res_dict[p['pid']] = ref
+
+            else:
+                win = img_windows[self.alg_name]
+                win.add_item(alg_res)
+                img_res = det.refine_classification(win.items)
+
 
            
             
             self.stats_maker.elaborated_frames+=1
           
-            sub_res['sub_res_dict'] = res_dict
+            sub_res['obj_res_dict'] = obj_res_dict
+            sub_res['img_res'] = img_res
             sub_res['frame_idx'] = vc_frame_idx
             
             #sends results to collector
@@ -186,7 +200,7 @@ if __name__ == '__main__':
     config_file = [os.path.join(dp, f) for dp, dn, filenames in os.walk(cur_dir) for f in filenames if os.path.splitext(f)[1] == '.ini'][0]
     config = ConfigParser()
     config.read(config_file)
-    alg_config = {'path': config.get('CONFIGURATION','PATH'), 'class':config.get('CONFIGURATION','CLASS'),'name':config.get('CONFIGURATION','NAME')}
+    alg_config = {'path': config.get('CONFIGURATION','PATH'), 'class':config.get('CONFIGURATION','CLASS'),'name':config.get('CONFIGURATION','NAME'),'type':config.get('CONFIGURATION','TYPE')}
     
     ALGS=os.environ['ALGS']
     alg_list=ALGS.split(',')

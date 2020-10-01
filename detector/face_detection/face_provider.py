@@ -101,6 +101,7 @@ class FaceProvider(Process):
             current_frame = imgs[0]
             vc_frame_idx = rec_dict['frame_idx']
             vc_time = rec_dict['vc_time']
+            frame_shape = rec_dict['frame_shape']
 
             if time.time() - vc_time > MAX_ALLOWED_DELAY:
                 self.stats_maker.skipped_frames += 1
@@ -143,6 +144,7 @@ class FaceProvider(Process):
             res['objects'] = obj_list_serialized
             res['fp_time'] = time.time()
             res['vc_time'] = vc_time
+            res['frame_shape'] = frame_shape
 
             #print('det res: ',obj_list_serialized)
             
@@ -236,6 +238,7 @@ class FaceProvider(Process):
         obj_dict['pid'] = str(obj.pid)
         obj_dict['rect'] = rect
         obj_dict['points'] = points
+        obj_dict['class'] = 'face'
         return obj_dict
 
     def __create_objects(self,people):

@@ -196,6 +196,7 @@ class ObjectsProvider():
             vc_frame_idx = rec_dict['frame_idx']
             vc_time = rec_dict['vc_time']  
             # ****** End always skipping code ******
+            frame_shape = rec_dict['frame_shape']  
 
 
             #algorithm start
@@ -223,6 +224,7 @@ class ObjectsProvider():
             res['objects'] = obj_list_serialized
             res['fp_time'] = time.time()
             res['vc_time'] = vc_time
+            res['frame_shape'] = frame_shape
 
             #print('det res: ',obj_list_serialized)
             print('Total provider time: ', time.time() - alg_start, ' for frame ', frame_counter, 'with ', len(object_list), ' objects')
@@ -359,7 +361,6 @@ class ObjectsProvider():
         rect_dict['y_topleft'] = int(obj.rect.top_left_point.y_coordinate / self.ratio)
         rect_dict['x_bottomright'] = int(obj.rect.bottom_right_point.x_coordinate / self.ratio)
         rect_dict['y_bottomright'] =int(obj.rect.bottom_right_point.y_coordinate / self.ratio)
-        rect_dict['class'] = obj.rect.properties['class']
         
         points = []
         for obj_p in obj.points:
@@ -378,6 +379,8 @@ class ObjectsProvider():
         obj_dict['pid'] = str(obj.pid)
         obj_dict['rect'] = rect_dict
         obj_dict['points'] = points
+        obj_dict['class'] = obj.rect.properties['class']
+
         return obj_dict
 
 

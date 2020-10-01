@@ -376,7 +376,7 @@ class ImageManager:
 		self.registry = registry.insecure_addr
 		self.images_list = []
 		self.__pull_images=[]
-		self.excluded = ['clothing','sample','generic']
+		self.excluded = ['clothing','sample','generic','img']
 	
 	def __find_dockerfiles(self):
 
@@ -385,9 +385,9 @@ class ImageManager:
 			for file in files:
 				if 'Dockerfile' in file:
 					dockerfile_path = os.path.join(root, file)
+					
 					if any(exc in dockerfile_path for exc in self.excluded):
 						continue
-					
 					dockerfiles_path.append(dockerfile_path)
 		return dockerfiles_path
 
@@ -429,19 +429,33 @@ class ImageManager:
 
 	def build_images(self,list_to_build, build_standard_images):
 		temp_paths = self.__find_dockerfiles()
+		
 		paths = []
 		for p in temp_paths:
+
 			if build_standard_images == 'y':
-				if '.' not in p:
+				if 'cpu' not in p and 'gpu' not in p:
 					paths.append(p)
 					continue
 
+			
+
 			for (alg,mode) in list_to_build:
-				if alg in p and mode.lower() in p:
-					paths.append(p)
+				if 'feature_extractors' in p:
+					comp_folder = os.path.dirname(p)
+					alg_config_file = [os.path.join(comp_folder, f) for f in os.listdir(comp_folder) if f.endswith('.' + 'ini')][0]
+					reader_alg = ConfigParser()
+					reader_alg.read(alg_config_file)
+					alg_name = reader_alg.get('CONFIGURATION','NAME')
+					if alg == alg_name and mode.lower() in p:
+						paths.append(p)
+				else:
+					if alg in p and mode.lower() in p:
+						paths.append(p)
+
 		
-
-
+		
+		
 		build_commands = self.__create_build_commands(paths)
 		
 		for i,build in enumerate(build_commands):

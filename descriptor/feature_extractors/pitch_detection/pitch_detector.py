@@ -51,7 +51,7 @@ class PitchNet(AbstractDescriptor):
 
 
 
-    def detect_batch(self,images):
+    def detect_batch(self,detector_results,images):
       """
       Evaluates pose (pitch) for each person detected in images
 
