@@ -167,7 +167,7 @@ class Starter:
 			detector,det_build = conf.ask_detector(q)
 			det,det_mode = detector
 			det_framework = None
-			detector_path = os.path.join(MAIN_DIR,'detector/'+det)
+			detector_path = os.path.join(MAIN_DIR,'detector/object_extractors/'+det)
 
 			for file in os.listdir(detector_path):
 				if file.endswith(".ini"):
@@ -464,6 +464,8 @@ class ImageManager:
 				mode = 'cpu'
 			elif 'gpu' in build:
 				mode = 'gpu'
+			elif 'setup' in build:
+				mode = 'setup'
 			else:
 				mode = ''
 
@@ -491,9 +493,10 @@ class ImageManager:
 				mode = 'cpu'
 			elif 'gpu' in push:
 				mode = 'gpu'
+			elif 'setup' in push:
+				mode = 'setup'
 			else:
 				mode = ''
-
 			try:
 				result = re.search('5000/(.*):deep', push)
 				image_name = result.group(1)

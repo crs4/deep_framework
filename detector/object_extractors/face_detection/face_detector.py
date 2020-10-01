@@ -24,10 +24,10 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 import time
-from mtcnn_caffe import mtcnn_utils as face_caffe
-from mtcnn_caffe.utils import format_points,format_bbox
+from .mtcnn_caffe import mtcnn_utils as face_caffe
+from .mtcnn_caffe.utils import format_points,format_bbox
 
-from face_detection_constants import *
+from .face_detection_constants import *
 
 import caffe
 from imutils import face_utils

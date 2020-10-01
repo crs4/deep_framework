@@ -2,13 +2,14 @@
 from multiprocessing import Process
 import numpy as np
 
-#from face_detection.face_detection_constants import *
 from face_detection_constants import *
+from test_2 import FaceDetectorExecutor
+"""
 import imutils
 from face_detector import FaceNet_vcaffe
 from tracking.tracker import Tracker,TrackerCV
 from object_manager.manager import ObjectManager
-from utils.geometric_functions import resize_image
+"""
 from utils.socket_commons import send_data, recv_data
 from utils.stats_maker import StatsMaker
 from utils.features import Object, Rect, Point
@@ -33,7 +34,7 @@ class FaceProvider(Process):
         self.col_port = configuration['out_col']
         self.rec_port = configuration['in']
 
-
+        """
         self.tracker = Tracker(**LK_PARAMS) # method for points tracking
         #self.tracker = TrackerCV() # method for points tracking
         self.detector = FaceNet_vcaffe(**FACENET_PARAMS) # method for face detection.
@@ -42,10 +43,12 @@ class FaceProvider(Process):
         self.tracks = []
         self.tracking_success = False
         self.ratio = 1
-    
+        """
+    """
     def reset_app(self):
         self.tracks = []
         self.tracking_success = False
+    """
 
 
 
@@ -91,7 +94,7 @@ class FaceProvider(Process):
         current_frame = None
         frame_counter = 0
         
-
+        self.executor = FaceDetectorExecutor()
         while True:
             object_list = []
 
@@ -110,7 +113,9 @@ class FaceProvider(Process):
 
             #algorithm start
             try:
-                object_list = self.extract_features(current_frame,(frame_counter))
+                executor_dict = dict(rec_dict)
+                executor_dict['frame_counter'] = frame_counter
+                object_list = self.executor.extract_features(current_frame,executor_dict)
 
             except Exception as e:
                 print('gen ',e)
@@ -172,7 +177,7 @@ class FaceProvider(Process):
         publisher.close()
         context.term()
 
-
+    """
     def extract_features(self,current_frame,*args):
 
         frame_counter = args[0]
@@ -210,6 +215,7 @@ class FaceProvider(Process):
 
         object_list = self.__create_objects(people)
         return object_list
+    """
                 
 
 
@@ -225,15 +231,15 @@ class FaceProvider(Process):
         obj_dict = dict()
                 
         rect = dict()
-        rect['x_topleft'] = int(obj.rect.top_left_point.x_coordinate / self.ratio)
-        rect['y_topleft'] = int(obj.rect.top_left_point.y_coordinate / self.ratio)
-        rect['x_bottomright'] = int(obj.rect.bottom_right_point.x_coordinate / self.ratio)
-        rect['y_bottomright'] =int(obj.rect.bottom_right_point.y_coordinate / self.ratio)
+        rect['x_topleft'] = int(obj.rect.top_left_point.x_coordinate / self.executor.ratio)
+        rect['y_topleft'] = int(obj.rect.top_left_point.y_coordinate / self.executor.ratio)
+        rect['x_bottomright'] = int(obj.rect.bottom_right_point.x_coordinate / self.executor.ratio)
+        rect['y_bottomright'] =int(obj.rect.bottom_right_point.y_coordinate / self.executor.ratio)
         
         
         points = []
         for obj_p in obj.points:
-            points.append([int(obj_p.x_coordinate / self.ratio), int(obj_p.y_coordinate / self.ratio), obj_p.properties['tag']])
+            points.append([int(obj_p.x_coordinate / self.executor.ratio), int(obj_p.y_coordinate / self.executor.ratio), obj_p.properties['tag']])
             
         obj_dict['pid'] = str(obj.pid)
         obj_dict['rect'] = rect
@@ -241,6 +247,8 @@ class FaceProvider(Process):
         obj_dict['class'] = 'face'
         return obj_dict
 
+
+    """
     def __create_objects(self,people):
         objects = []
         for p in people:
@@ -254,6 +262,7 @@ class FaceProvider(Process):
             obj = Object(rect = obj_rect, points = obj_points, pid = p.pid)
             objects.append(obj)
         return objects
+    """
 
             
             

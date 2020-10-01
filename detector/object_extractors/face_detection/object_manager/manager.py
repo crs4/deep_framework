@@ -5,7 +5,7 @@ import sys
 from utils.geometric_functions import get_rect_around_points
 from utils.check_functions import check_points_similarity
 from scipy.spatial import distance
-from face_detection_constants import *
+from face_detection.face_detection_constants import *
 
 
 class Person():

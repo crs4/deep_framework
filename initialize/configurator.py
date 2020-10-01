@@ -256,14 +256,14 @@ class Configurator:
 
 	def ask_detector(self,inter):
 		#set detector
-		detectors_folders = next(os.walk('detector'))
+		detectors_folders = next(os.walk('detector/object_extractors'))
 		detectors_list = detectors_folders[1]
 
 		for det in detectors_list:
 			det_framework = None
 			if 'sample' in det:
 				continue
-			det_files = next(os.walk('detector/'+det))[2]
+			det_files = next(os.walk('detector/object_extractors/'+det))[2]
 			gpu_dockerfile_bool = any([True for f in det_files if 'gpu' in f.lower()])
 			answer_det = inter.get_acceptable_answer('Do you want to execute '+det+'? (y/n): \n',['y','n']).lower()
 			if answer_det == 'y':

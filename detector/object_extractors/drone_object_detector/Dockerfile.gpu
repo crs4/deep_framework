@@ -1,10 +1,12 @@
-FROM python:3.7
+FROM nvidia/cuda:10.0-cudnn7-devel
+
 
 ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get update && apt-get install -y \
     python3-opencv ca-certificates python3-dev git wget sudo curl libopencv-dev nano libssl-dev \
     ninja-build protobuf-compiler libprotobuf-dev && \
     rm -rf /var/lib/apt/lists/*
+RUN ln -sv /usr/bin/python3 /usr/bin/python
 
 ENV PATH="/root/.local/bin:${PATH}"
 
@@ -15,12 +17,14 @@ RUN wget https://github.com/Kitware/CMake/releases/download/v3.17.3/cmake-3.17.3
         make && \
         make install
 
+RUN export PATH=/usr/local/cuda-10.1/bin${PATH:+:${PATH}}
+RUN export LD_LIBRARY_PATH=/usr/local/cuda-10.1/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
 
 ADD . /yolo4_deep_sort
 
 WORKDIR /yolo4_deep_sort/darknet
 
-RUN make -f Makefile_cpu
+RUN make -f Makefile_gpu
 
 WORKDIR /yolo4_deep_sort
 
@@ -31,7 +35,7 @@ RUN wget https://bootstrap.pypa.io/get-pip.py && \
 RUN pip install \
     opencv-python==4.1.0.25 \
     opencv-contrib-python==4.2.0.34 \
-    tensorflow==1.13.2 \
+    tensorflow-gpu==1.13.2 \
     scipy==1.4.1 \
     Pillow\
     scikit-learn==0.21.2 \
@@ -49,6 +53,7 @@ RUN pip install numpy==1.16
 
 
 COPY --from=utils:deep_setup /home/deepframework/utils /yolo4_deep_sort/utils
+COPY --from=interface:deep_setup /home/deepframework/interface/. /yolo4_deep_sort
 
 
-CMD python3 object_provider.py
+CMD python3 provider.py

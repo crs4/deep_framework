@@ -1,6 +1,6 @@
 
 
-FROM sample:cpu
+FROM sample:gpu
 
 
 
@@ -15,8 +15,9 @@ RUN pip3 install \
 COPY . /home/deepframework/detector/sample_detector
 
 COPY --from=utils:deep_setup /home/deepframework/utils /home/deepframework/detector/sample_detector/utils
+COPY --from=interface:deep_setup /home/deepframework/interface/. /home/deepframework/detector/sample_detector
 
 
 WORKDIR /home/deepframework/detector/sample_detector
 
-CMD python provider.py
+CMD python3 provider.py
