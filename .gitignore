@@ -29,6 +29,9 @@
 **/compose-files/*.list
 cluster_configuration.ini
 algorithms_configuration.ini
+detector_configuration.ini
+
+docker_pull.sh
 env_params.list
 
 
