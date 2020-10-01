@@ -71,10 +71,10 @@ class EnhancedVideoCanvas {
     }
 
     setData(data) {
-        if (data.data) this.data = data.data
-        if (data.frameShape) {
-            this.frameWidth = data.last_frame_shape[1]
-            this.frameHeight = data.last_frame_shape[0]
+        if (data.objects) this.objects = data.objects
+        if (data.frame_shape) {
+            this.frameWidth = data.frame_shape[1]
+            this.frameHeight = data.frame_shape[0]
         }
     }
 
@@ -110,14 +110,14 @@ class EnhancedFacesVideoCanvas extends EnhancedVideoCanvas{
     setData(data) {
         super.setData(data)
         this.facesData = {}
-        if (!this.data.length) return
-        const faces = this.data
+        if (!this.objects.length) return
+        const faces = this.objects
         faces.forEach((face) => {
             let faceData = {
                 pid: face.pid,
                 bbox: face.rect,
                 name: !face.face_recognition || face.face_recognition == 'Unknown' ?
-                    `${face.rect.class} ${face.pid.slice(-4)}` : face.face_recognition,
+                    `${face.class} ${face.pid.slice(-4)}` : face.face_recognition,
                 pitch: face.pitch,
                 yaw: face.yaw,
                 gender: face.gender ? face.gender : '-',
@@ -131,14 +131,14 @@ class EnhancedFacesVideoCanvas extends EnhancedVideoCanvas{
                 }) : [],
                 glasses: face.glasses ? face.glasses.slice(2, -1) : ''
             }
-            faceData.color = this.faceColorMap.get(face.pid)
+            faceData.color = this.faceColorMap.get(face.class)
             if (!faceData.color) {
                 faceData.color = this.availableBoxColors.shift()
             }
             if (!faceData.color) {
                 faceData.color = 'black'
             }
-            this.faceColorMap.set(face.pid, faceData.color)
+            this.faceColorMap.set(face.class, faceData.color)
             this.facesData[face.pid] = faceData
         })
         if (Object.keys(this.facesData).length < this.faceColorMap.size) {
