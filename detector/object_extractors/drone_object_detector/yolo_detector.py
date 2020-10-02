@@ -1,5 +1,5 @@
 import os
-from darknet import darknet
+from .darknet import darknet
 import time
 import cv2
 import numpy as np

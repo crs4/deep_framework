@@ -16,11 +16,15 @@ RUN wget https://github.com/Kitware/CMake/releases/download/v3.17.3/cmake-3.17.3
         make install
 
 
-ADD . /yolo4_deep_sort
+ADD . /yolo4_deep_sort/drone_object_detector
 
-WORKDIR /yolo4_deep_sort/darknet
+#WORKDIR /yolo4_deep_sort/drone_object_detector/darknet
 
-RUN make -f Makefile_cpu
+#RUN make -f Makefile_cpu
+
+COPY --from=drone_object_detector:deep_setup_cpu /yolo4_deep_sort/drone_object_detector/darknet /yolo4_deep_sort/drone_object_detector/darknet
+
+
 
 WORKDIR /yolo4_deep_sort
 
