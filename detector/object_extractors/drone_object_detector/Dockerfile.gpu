@@ -22,11 +22,11 @@ RUN export LD_LIBRARY_PATH=/usr/local/cuda-10.1/lib64${LD_LIBRARY_PATH:+:${LD_LI
 
 ADD . /yolo4_deep_sort/drone_object_detector
 
-#WORKDIR /yolo4_deep_sort/drone_object_detector/darknet
+WORKDIR /yolo4_deep_sort/drone_object_detector/darknet
 
-#RUN make -f Makefile_gpu
+RUN make -f Makefile_gpu
 
-COPY --from=drone_object_detector:deep_setup_gpu /yolo4_deep_sort/drone_object_detector/darknet /yolo4_deep_sort/drone_object_detector/darknet
+#COPY --from=drone_object_detector:deep_setup_gpu /yolo4_deep_sort/drone_object_detector/darknet /yolo4_deep_sort/drone_object_detector/darknet
 
 WORKDIR /yolo4_deep_sort
 

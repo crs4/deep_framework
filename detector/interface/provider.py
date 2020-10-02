@@ -192,7 +192,11 @@ class ObjectProvider(Process):
         obj_dict['pid'] = str(obj.pid)
         obj_dict['rect'] = rect
         obj_dict['points'] = points
-        obj_dict['class'] = self.det_name
+        if 'class' in obj.rect.properties.keys():
+            obj_class = obj.rect.properties['class']
+        else:
+            obj_class = self.det_name
+        obj_dict['class'] = obj_class
         return obj_dict
 
             

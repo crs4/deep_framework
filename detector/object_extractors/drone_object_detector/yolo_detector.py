@@ -7,7 +7,7 @@ import numpy as np
 
 
 class YoloDetector:
-
+    ratio=1
     def __init__(self):
         base_path = os.path.split(os.path.abspath(__file__))[0] + '/darknet/models/yolo608_visdrone'
         weights_path = os.path.join(base_path, 'yolo-obj_best.weights')

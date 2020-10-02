@@ -14,14 +14,16 @@ from .yolo_detector import YoloDetector
 from .associator import associate
 
 from utils.features import Object, Point, Rect
+import time
+import numpy as np
 
 
 class DroneExecutor:
 
-	ratio = 1
+    ratio = 1
 
-	def __init__(self):
-		#deep_sort
+    def __init__(self):
+        #deep_sort
         self.encoder = gdet.create_box_encoder(model_filename,batch_size=1,to_xywh = True)
         metric = nn_matching.NearestNeighborDistanceMetric("cosine", max_cosine_distance, nn_budget)
         self.ds_tracker = Tracker(metric)

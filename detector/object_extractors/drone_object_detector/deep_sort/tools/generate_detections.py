@@ -5,7 +5,7 @@ import argparse
 import numpy as np
 import cv2
 import tensorflow as tf
-from detection_constants import *
+from interface_constants import *
 
 
 def _run_in_batches(f, data_dict, out, batch_size):
