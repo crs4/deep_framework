@@ -9,13 +9,12 @@ from utils.features import Object, Rect, Point
 
 class FaceDetectorExecutor:
 
-    ratio = 1
     def __init__(self):
         self.tracker = Tracker(**LK_PARAMS) # method for points tracking
         #self.tracker = TrackerCV() # method for points tracking
         self.detector = FaceNet_vcaffe(**FACENET_PARAMS) # method for face detection.
         self.object_manager = ObjectManager()
-        
+        self.ratio = 1
         self.tracks = []
         self.tracking_success = False
         
@@ -29,11 +28,11 @@ class FaceDetectorExecutor:
         objects = []
         for p in people:
             obj_points = []
-            top_left = Point(p.rect['x_topleft'],p.rect['y_topleft'])
-            bottom_right = Point(p.rect['x_bottomright'],p.rect['y_bottomright'])
+            top_left = Point(int(p.rect['x_topleft']/self.ratio),int(p.rect['y_topleft']/self.ratio))
+            bottom_right = Point(int(p.rect['x_bottomright']/self.ratio),int(p.rect['y_bottomright']/self.ratio))
             obj_rect = Rect(top_left,bottom_right)
             for k,v in p.face_points.items():
-                point = Point(v[0][0],v[0][1],**{'tag':k})
+                point = Point( int( v[0][0]/self.ratio) , int(v[0][1]/self.ratio),**{'tag':k})
                 obj_points.append(point)
             obj = Object(rect = obj_rect, points = obj_points, pid = p.pid)
             objects.append(obj)

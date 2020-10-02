@@ -98,7 +98,6 @@ class PersonProvider(Process):
 
 
             try:
-                self.displayed_frame = current_frame.copy() # for visualization purpose
                 self.ratio = BODY_IMAGE_WIDTH/float(self.displayed_frame.shape[1])
             except Exception as e:
                 print('exception in rec frame ',e)

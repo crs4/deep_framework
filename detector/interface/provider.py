@@ -179,15 +179,15 @@ class ObjectProvider(Process):
         obj_dict = dict()
                 
         rect = dict()
-        rect['x_topleft'] = int(obj.rect.top_left_point.x_coordinate / self.executor.ratio)
-        rect['y_topleft'] = int(obj.rect.top_left_point.y_coordinate / self.executor.ratio)
-        rect['x_bottomright'] = int(obj.rect.bottom_right_point.x_coordinate / self.executor.ratio)
-        rect['y_bottomright'] =int(obj.rect.bottom_right_point.y_coordinate / self.executor.ratio)
+        rect['x_topleft'] = int(obj.rect.top_left_point.x_coordinate)
+        rect['y_topleft'] = int(obj.rect.top_left_point.y_coordinate)
+        rect['x_bottomright'] = int(obj.rect.bottom_right_point.x_coordinate )
+        rect['y_bottomright'] =int(obj.rect.bottom_right_point.y_coordinate)
         
         
         points = []
         for obj_p in obj.points:
-            points.append([int(obj_p.x_coordinate / self.executor.ratio), int(obj_p.y_coordinate / self.executor.ratio), obj_p.properties['tag']])
+            points.append([int(obj_p.x_coordinate), int(obj_p.y_coordinate), obj_p.properties['tag']])
             
         obj_dict['pid'] = str(obj.pid)
         obj_dict['rect'] = rect
