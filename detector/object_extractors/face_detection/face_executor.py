@@ -5,9 +5,10 @@ from .tracking.tracker import Tracker,TrackerCV
 from .object_manager.manager import ObjectManager
 from .face_detection_constants import *
 from utils.features import Object, Rect, Point
+from utils.abstract_detector import AbstractDetector
 
 
-class FaceDetectorExecutor:
+class FaceDetectorExecutor(AbstractDetector):
 
     def __init__(self):
         self.tracker = Tracker(**LK_PARAMS) # method for points tracking

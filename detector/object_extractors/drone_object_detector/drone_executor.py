@@ -14,11 +14,14 @@ from .yolo_detector import YoloDetector
 from .associator import associate
 
 from utils.features import Object, Point, Rect
+from utils.abstract_detector import AbstractDetector
+
+
 import time
 import numpy as np
 
 
-class DroneExecutor:
+class DroneExecutor(AbstractDetector):
 
     ratio = 1
 

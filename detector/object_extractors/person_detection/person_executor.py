@@ -16,10 +16,11 @@ from utils.stats_maker import StatsMaker
 
 from utils.geometric_functions import check_point_in_rect
 from utils.features import Object, Rect, Point
+from utils.abstract_detector import AbstractDetector
 
 
 
-class PersonExecutor:
+class PersonExecutor(AbstractDetector):
 
     ratio = 1
 
