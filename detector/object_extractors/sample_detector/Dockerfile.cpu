@@ -1,7 +1,18 @@
 
+# CHANGE INITIAL IMAGE
 
 FROM sample:cpu
 
+
+
+RUN apt-get update && apt-get install -y \ 
+    build-essential \
+    libjpeg-dev \
+    libopencv-dev \
+    pkg-config \
+    iputils-ping \
+    python-setuptools
+    # OTHERS PACKAGES
 
 
 RUN pip3 install \
@@ -9,15 +20,23 @@ RUN pip3 install \
     pyzmq==18.0.1 \
     opencv-python==4.1.0.25 \
     opencv-contrib-python==4.2.0.34
+    # OTHERS PACKAGES
+
+
 
 
 
 COPY . /home/deepframework/detector/sample_detector
 
-COPY --from=utils:deep_setup /home/deepframework/utils /home/deepframework/detector/sample_detector/utils
-COPY --from=interface:deep_setup /home/deepframework/interface/. /home/deepframework/detector/sample_detector
 
+# OTHER OPERATIONS HERE
+# ...
+# ...
 
-WORKDIR /home/deepframework/detector/sample_detector
+# DON'T TOUCH 
+COPY --from=utils:deep_setup /home/deepframework/utils /home/deepframework/detector/utils
+COPY --from=interface:deep_setup /home/deepframework/interface/. /home/deepframework/detector
 
+# DON'T TOUCH
+WORKDIR /home/deepframework/detector
 CMD python3 provider.py
