@@ -5,7 +5,7 @@ import argparse
 import numpy as np
 import cv2
 import tensorflow as tf
-from interface_constants import *
+from drone_object_detector.detection_constants import *
 
 
 def _run_in_batches(f, data_dict, out, batch_size):

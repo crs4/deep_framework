@@ -11,6 +11,7 @@ nms_max_overlap = 1.0
 base_path = os.path.split(os.path.abspath(__file__))[0]
 model_filename = os.path.join(base_path,'models/market1501.pb')
 
+GPU_ID = os.environ['GPU_ID']
 
 
 
