@@ -22,6 +22,8 @@ image_base_path = det_config['path'].split('.')[0]
 frame = cv2.imread(os.path.join(image_base_path,'test_image.jpg'))
 executor_dict = {'frame_idx': 0,'vc_time': time.time(),'frame_shape':frame.shape ,'frame_counter': 0}
 
+
+
 class TestExecutor(unittest.TestCase):
 
 
@@ -29,6 +31,14 @@ class TestExecutor(unittest.TestCase):
 	def test_extract_features(self):
 		methods = dir(executor)
 		self.assertTrue('extract_features' in methods)
+
+	def test_extract_features_objects_serialize(self):
+		objs = executor.extract_features(frame,executor_dict)
+		objs_serialized = [obj.serialize() for obj in objs]
+		print('Detected', str(len(objs_serialized)), 'objects')
+		for obj in objs_serialized:
+			print(obj)
+		self.assertTrue(len(objs_serialized)>0)
 
 
 	def test_extract_features_objects(self):

@@ -61,7 +61,6 @@ class Tracker:
 
         num_obj = int((len(tracked_points) / LOST_THR))
 
-        print('obj',num_obj)
 
        
         new_tracks = []

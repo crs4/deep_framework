@@ -56,6 +56,7 @@ RUN pip install numpy==1.16
 
 COPY --from=utils:deep_setup /home/deepframework/utils /yolo4_deep_sort/utils
 COPY --from=interface:deep_setup /home/deepframework/interface/. /yolo4_deep_sort
+COPY --from=tests:deep_setup /home/deepframework/detector_tests/detector_test.py /home/deepframework/detector
 
 
 CMD python3 provider.py

@@ -45,7 +45,7 @@ class FaceDetectorExecutor(AbstractDetector):
 
 
         frame_counter = executor_dict['frame_counter']
-        print('frame: ',frame_counter)
+
         try:
             self.ratio = FACE_IMAGE_WIDTH/float(current_frame.shape[1])
         except Exception as e:

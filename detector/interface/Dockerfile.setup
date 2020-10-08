@@ -1,9 +1,6 @@
 
 FROM python:3.7-slim
 
-RUN pip3 install \
-    pyzmq==18.0.1
-
 RUN mkdir -p /home/deepframework/interface
 
 COPY . /home/deepframework/interface

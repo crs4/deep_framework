@@ -21,6 +21,7 @@ COPY . /home/deepframework/detector/person_detection
 
 COPY --from=utils:deep_setup /home/deepframework/utils /home/deepframework/detector/utils
 COPY --from=interface:deep_setup /home/deepframework/interface/. /home/deepframework/detector
+COPY --from=tests:deep_setup /home/deepframework/detector_tests/detector_test.py /home/deepframework/detector
 
 WORKDIR /home/deepframework/detector
 
