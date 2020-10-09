@@ -30,6 +30,7 @@ COPY . /home/deepframework/descriptor/generic_descriptor
 # DON'T TOUCH 
 COPY --from=utils:deep_setup /home/deepframework/utils/. /home/deepframework/generic_descriptor/utils/
 COPY --from=agent:deep_setup /home/deepframework/agent/. /home/deepframework/generic_descriptor
+COPY --from=descriptor_tests:deep_setup /home/deepframework/descriptor_tests/execute_test.py /home/deepframework/descriptor
 
 # DON'T TOUCH 
 WORKDIR /home/deepframework/generic_descriptor

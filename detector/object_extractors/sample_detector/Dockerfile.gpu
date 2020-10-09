@@ -35,7 +35,7 @@ COPY . /home/deepframework/detector/sample_detector
 # DON'T TOUCH 
 COPY --from=utils:deep_setup /home/deepframework/utils /home/deepframework/detector/utils
 COPY --from=interface:deep_setup /home/deepframework/interface/. /home/deepframework/detector
-COPY --from=tests:deep_setup /home/deepframework/detector_tests/detector_test.py /home/deepframework/detector
+COPY --from=detector_tests:deep_setup /home/deepframework/detector_tests/execute_test.py /home/deepframework/detector
 
 # DON'T TOUCH 
 WORKDIR /home/deepframework/detector
