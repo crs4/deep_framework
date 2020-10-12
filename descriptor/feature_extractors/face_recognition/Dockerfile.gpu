@@ -22,6 +22,7 @@ COPY --from=agent:deep_setup /home/deepframework/agent/. /home/deepframework/des
 
 
 COPY --from=face_recognition:deep_setup /home/deepframework/descriptor/face_recognition/template_models/. /home/deepframework/descriptor/face_recognition/template_models
+COPY --from=descriptor_tests:deep_setup /home/deepframework/descriptor_tests/execute_test.py /home/deepframework/descriptor
 
 WORKDIR /home/deepframework/descriptor
 

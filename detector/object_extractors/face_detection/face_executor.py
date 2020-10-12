@@ -45,7 +45,7 @@ class FaceDetectorExecutor(AbstractDetector):
 
 
         frame_counter = executor_dict['frame_counter']
-        print('frame: ',frame_counter)
+
         try:
             self.ratio = FACE_IMAGE_WIDTH/float(current_frame.shape[1])
         except Exception as e:
@@ -58,7 +58,6 @@ class FaceDetectorExecutor(AbstractDetector):
         if len(self.tracks) > 0:
             
 
-            print('tr')
             self.tracking_success, new_features = self.tracker.update_features(current_frame,self.tracks)   
 
             if self.tracking_success:
@@ -66,7 +65,6 @@ class FaceDetectorExecutor(AbstractDetector):
 
         # computation of detector features
         if frame_counter % DETECTION_INTERVAL == 0 or not self.tracking_success:
-            print('det')
             det_features = self.detector.detect(current_frame)
             self.object_manager.check_people(det_features)
             self.tracks = self.tracker.create_track_points(det_features['points'])

@@ -17,6 +17,7 @@ RUN pip3 install \
 COPY . /home/deepframework/descriptor/clothing_recognition
 COPY --from=utils:deep_setup /home/deepframework/utils /home/deepframework/descriptor/utils
 COPY --from=agent:deep_setup /home/deepframework/agent/. /home/deepframework/descriptor
+COPY --from=descriptor_tests:deep_setup /home/deepframework/descriptor_tests/execute_test.py /home/deepframework/descriptor
 
 
 

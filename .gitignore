@@ -21,6 +21,7 @@
 *~
 *.part
 *.pdf
+*.sh
 
 **/descriptor/feature_extractors/face_recognition/template_models/images/
 
