@@ -52,8 +52,7 @@ class GPUallocator(Machine):
 		str_driver_version = non_decimal.sub('', temp_version)
 		splt = str_driver_version.split('.')
 		driver_version = float(splt[0]+'.'+splt[1])
-		print(driver_version)
-		a = input('stop')
+		
 		if driver_version < self.driver_version_thr:
 			print('Node %s: NVIDIA DRIVER version %s is too old. This node will be used in CPU mode.' % (node_name,driver_version))
 			return False
