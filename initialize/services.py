@@ -3,17 +3,18 @@ from config import *
 class DockerServicesManager:
 
 
-	def __init__(self,pipeline,registry_address):
+	def __init__(self,pipeline,registry_address,sources):
 		self.pipeline = pipeline
-		self.stream_manager = pipeline['stream_manager']
-		self.stream_capture = pipeline['stream_capture']
-		self.monitor = pipeline['monitor']
-		self.server= pipeline['server']
+		
 		self.registry_address = registry_address
+		self.sources = sources
 
 
 	
 	def extract_pipeline(self):
+
+		desc_name_list = []
+
 
 		for chain in self.pipeline['chains']:
 
@@ -22,6 +23,10 @@ class DockerServicesManager:
 			broker = chain['broker']
 			subcollector = chain['subcollector']
 			descriptor_list = chain['descriptors']
+			for desc in descriptor_list:
+				desc_name = desc.params['name'] 
+				desc_name_list.append(desc_name)
+
 
 			self.manage_detector_services(detector)
 			
@@ -34,7 +39,7 @@ class DockerServicesManager:
 			self.manage_descriptors_services(descriptor_list)
 			
 
-		self.create_base_services()
+		self.create_base_services(desc_name_list)
 
 
 	def manage_detector_services(self,detector_component):
@@ -64,21 +69,38 @@ class DockerServicesManager:
 		#sub_collector_service.write_service()
 	
 	def manage_descriptors_services(self,descriptor_list_components):
-
+		desc_name_list = []
 		for desc_component in descriptor_list_components:
 			descriptor_service = DescriptorService(desc_component)
 			descriptor_dict = descriptor_service.create_descriptor_service(self.registry_address)
-			print(descriptor_dict)
+			#print(descriptor_dict)
 			#descriptor_service.write_service()
 
 
 
 
 
+	def create_base_services(self,desc_name_list):
+		stream_manager = self.pipeline['stream_manager']
+		stream_capture = self.pipeline['stream_capture']
+		monitor = self.pipeline['monitor']
+		server= self.pipeline['server']
 
-	def create_base_services(self):
-		pass
+		stream_man_service = StreamManagerService(stream_manager)
+		stream_man_dict = stream_man_service.create_stream_manager_service(self.registry_address)
 
+
+		for source in self.sources:
+			stream_cap_service = StreamCaptureService(stream_capture,source)
+			stream_cap_dict = stream_cap_service.create_stream_capture_service(self.registry_address)
+			#print(stream_cap_dict)
+
+		monitor_service = MonitorService(monitor,desc_name_list)
+		monitor_dict = monitor_service.create_monitor_service(self.registry_address)
+
+		server_service = ServerService(server,desc_name_list)
+		server_dict = server_service.create_server_service(self.registry_address)
+		print(server_dict)
 
 
 class DeepService:
@@ -129,7 +151,7 @@ class DetectorService(DeepService):
 		coll_env = 'COLLECTOR_ADDRESS='+detector_component.connected_to['collector']
 		stream_man = 'VIDEOSRC_ADDRESS='+detector_component.connected_to['stream_manager']
 		monitor = 'MONITOR_ADDRESS='+detector_component.connected_to['monitor']
-		stream_in = 'VC_OUT='+str(detector_component.stream_manager_port)
+		stream_in = 'STREAM_OUT='+str(detector_component.stream_manager_port)
 		det_out_to_brok = 'FP_OUT='+str(detector_component.broker_port)
 		det_out_to_col	= 'FP_OUT_TO_COL='+str(detector_component.collector_port)
 		monitor_in = 'MONITOR_STATS_IN='+str(detector_component.monitor_in_port)
@@ -303,7 +325,131 @@ class DescriptorService(DeepService):
 		return sub_col_dict
 
 
+class StreamManagerService(DeepService):
 
+	def __init__(self,stream_manager_component):
+		super().__init__()
+		self.service_name = stream_manager_component.component_name
+		self.image_tag = self.set_component_tag()
+		self.env_file = [ENV_PARAMS]
+		self.net = NETWORK
+		self.environments = self.__set_environments(stream_manager_component)
+
+	def __set_environments(self,stream_manager_component):
+		environments = []
+
+		hp_server = 'HP_SERVER='+stream_manager_component.connected_to['server']
+		collector_in_ports = 'COLLECTOR_PORTS='+','.join([str(col_port) for col_port in stream_manager_component.collector_ports])
+		server_port = 'SERVER_PORT='+str(stream_manager_component.server_port)
+		vc_out = 'STREAM_OUT='+str(stream_manager_component.detector_port)
+		environments = [hp_server,collector_in_ports,server_port,vc_out]
+		
+		return environments
+
+
+	def create_stream_manager_service(self,registry_address):
+		stream_man_dict = dict()
+		stream_man_dict['environment'] = self.environments
+		stream_man_dict['env_file'] = self.env_file
+		stream_man_dict['image'] = self.set_image_name(registry_address,self.service_name,self.image_tag)
+		stream_man_dict['networks'] = [self.net]
+		stream_man_dict['depends_on'] = ['server']
+
+		return stream_man_dict
+
+
+class StreamCaptureService(DeepService):
+
+	def __init__(self,stream_capture_component,source):
+		super().__init__()
+		self.service_name = stream_capture_component.component_name
+		self.image_tag = self.set_component_tag()
+		self.env_file = [ENV_PARAMS]
+		self.net = NETWORK
+		self.environments = self.__set_environments(stream_capture_component,source)
+
+	def __set_environments(self,stream_capture_component,source):
+		environments = []
+
+		hp_server = 'HP_SERVER='+stream_capture_component.connected_to['server']
+		server_port = 'SERVER_PORT='+str(stream_capture_component.server_port)
+		stream_capture_id = 'STREAM_CAPTURE_ID='+source['source_id']
+		environments = [hp_server,server_port,stream_capture_id]
+		
+		return environments
+
+
+	def create_stream_capture_service(self,registry_address):
+		stream_man_dict = dict()
+		stream_man_dict['environment'] = self.environments
+		stream_man_dict['env_file'] = self.env_file
+		stream_man_dict['image'] = self.set_image_name(registry_address,self.service_name,self.image_tag)
+		stream_man_dict['networks'] = [self.net]
+		stream_man_dict['depends_on'] = ['server']
+
+		return stream_man_dict
+
+
+class MonitorService(DeepService):
+
+	def __init__(self,monitor_component,desc_name_list):
+		super().__init__()
+		self.service_name = monitor_component.component_name
+		self.image_tag = self.set_component_tag()
+		self.env_file = [ENV_PARAMS]
+		self.net = NETWORK
+		self.environments = self.__set_environments(monitor_component,desc_name_list)
+
+	def __set_environments(self,monitor_component,desc_name_list):
+		environments = []
+
+		algs = 'ALGS='+','.join(desc_name_list)
+		monitor_stats_in = 'MONITOR_STATS_IN='+str(monitor_component.monitor_in_port)
+		monitor_stats_out = 'MONITOR_STATS_OUT='+str(monitor_component.monitor_out_port)
+		environments = [algs,monitor_stats_in,monitor_stats_out] 
+		return environments
+
+
+	def create_monitor_service(self,registry_address):
+		monitor_dict = dict()
+		monitor_dict['environment'] = self.environments
+		monitor_dict['env_file'] = self.env_file
+		monitor_dict['image'] = self.set_image_name(registry_address,self.service_name,self.image_tag)
+		monitor_dict['networks'] = [self.net]
+
+		return monitor_dict
+
+
+class ServerService(DeepService):
+
+	def __init__(self,server_component,desc_name_list):
+		super().__init__()
+		self.service_name = server_component.component_name
+		self.image_tag = self.set_component_tag()
+		self.env_file = [ENV_PARAMS]
+		self.net = NETWORK
+		self.environments = self.__set_environments(server_component,desc_name_list)
+
+	def __set_environments(self,server_component,desc_name_list):
+		environments = []
+		server_out_port = 'SERVER_PORT='+str(APP_PORT)
+		algs = 'ALGS='+','.join(desc_name_list)
+		col_ports = 'COLLECTOR_PORTS='+','.join([str(port) for port in server_component.collector_ports])
+		monitor_out_port = 'MONITOR_STATS_OUT='+str(server_component.monitor_port)
+		monitor_address = 'MONITOR_ADDRESS='+server_component.connected_to['monitor']
+		environments = [col_ports,monitor_out_port,monitor_address,server_out_port,algs]
+
+		return environments
+
+
+	def create_server_service(self,registry_address):
+		server_dict = dict()
+		server_dict['environment'] = self.environments
+		server_dict['env_file'] = self.env_file
+		server_dict['image'] = self.set_image_name(registry_address,self.service_name,self.image_tag)
+		server_dict['networks'] = [self.net]
+
+		return server_dict
 
 
 

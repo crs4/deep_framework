@@ -220,7 +220,7 @@ if __name__ == '__main__':
     det_config = {'path': config.get('CONFIGURATION','PATH'), 'class':config.get('CONFIGURATION','CLASS'),'name':config.get('CONFIGURATION','NAME')}
  
     
-    prod = ObjectProvider({'in':VC_OUT,'out': FP_OUT,'out_col': FP_OUT_TO_COL, 'det_config': det_config})
+    prod = ObjectProvider({'in':STREAM_OUT,'out': FP_OUT,'out_col': FP_OUT_TO_COL, 'det_config': det_config})
     prod.start()
     
 

@@ -2,7 +2,9 @@
 const monitor_address = process.env.MONITOR_ADDRESS || '0.0.0.0'
 const monitor_port = process.env.MONITOR_STATS_OUT || '3000'
 const algs = process.env.ALGS
-const face_port = process.env.FACE_PORT
+
+const collector_ports = process.env.COLLECTOR_PORTS
+const collector_port_arr = collector_ports.split(",");
 
 const protocol = process.env.PROT || 'tcp://'
 
@@ -30,33 +32,34 @@ const hpServer = new HpServer({ server: server, verifyPeer: verifyPeer });
 
 const zmq = require('zeromq');
 
-const face_sock = zmq.socket('pair');
 // const person_sock = zmq.socket('pair');
 const monitor_sock = zmq.socket('sub');
 
 
-face_sock.bind(protocol +'*:'+ face_port);
 // person_sock.bind(protocol +'*:'+ person_port.toString());
 monitor_sock.connect(protocol + monitor_address + ':' + monitor_port);
 monitor_sock.subscribe('');
 
 
+for (var i = 0; i < collector_port_arr.length; i++) {
+	
+	col_port = collector_port_arr[i];
+	const col_sock = zmq.socket('pair');
+	col_sock.bind(protocol +'*:'+ col_port);
 
+	app.get('/api/stream_'+str(i), function(request, response){
 
+		response.writeHead(200, {
+		'Content-Type': 'text/event-stream',
+		'Cache-Control': 'no-cache',
+		'Connection': 'keep-alive'
+		});
 
-app.get('/api/faces_stream', function(request, response){
-
-	response.writeHead(200, {
-	'Content-Type': 'text/event-stream',
-	'Cache-Control': 'no-cache',
-	'Connection': 'keep-alive'
+		col_sock.on("message", function(data) {
+			response.write("data: " + data.toString() + "\n\n");
+		});
 	});
-
-	face_sock.on("message", function(data) {
-		response.write("data: " + data.toString() + "\n\n");
-	});
-});
-
+}
 // app.get('/api/body_stream', function(request, response){
 
 // 	response.writeHead(200, {

@@ -88,10 +88,10 @@ class StreamServer():
 
     def __socket_setup(self):
         
-        collector_list = SERVER_IN_PORTS.split(',')
+        collector_list = COLLECTOR_PORTS.split(',')
         self.context = zmq.Context()
         self.sender_socket = self.context.socket(zmq.PUB)
-        self.sender_socket.bind(PROT + '*:' + VC_OUT)
+        self.sender_socket.bind(PROT + '*:' + STREAM_OUT)
 
         self.collectors = []
         for coll in collector_list:

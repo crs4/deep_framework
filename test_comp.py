@@ -39,7 +39,7 @@ if __name__ == "__main__":
 	sources = sp.get_sources(use_last_settings)
 	print(sources)
 	"""
-	
+	sources = [{'source_id': '1', 'source_path':'/folder', 'source_folder': None}]
 	det_prov = DetectorProvider(det_revealed)
 	dets = det_prov.get_detectors(use_last_settings)
 	dets_names = [det['name'] for det in dets]
@@ -54,7 +54,7 @@ if __name__ == "__main__":
 	p = Pipeline(alg_gpu_matches)
 	pipeline = p.create_pipeline()
 
-	dm = DockerServicesManager(pipeline,'192.168.195.224')
+	dm = DockerServicesManager(pipeline,'192.168.195.224',sources)
 	dm.extract_pipeline()
 
 
