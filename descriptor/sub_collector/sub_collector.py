@@ -78,7 +78,7 @@ if __name__ == '__main__':
 
     for alg in alg_list:
         alg_name,broker_port, sub_col_port, col_port = alg.split(':')
-        sub = SubCollector({'in':sub_col_port,'out':col_port,'alg':alg_name})
+        sub = SubCollector({'in':SUB_COL_PORT,'out':COL_PORT})
         subs.append(sub)
 
 

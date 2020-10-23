@@ -176,7 +176,7 @@ class Collector(Process):
     def __send_stats(self):
         
         stats = self.stats_maker.create_stats()
-        stats_dict={STAT+self.__class__.__name__:stats}
+        stats_dict={COMPONENT_NAME:stats}
         send_data(self.monitor_sender,None,0,False,**stats_dict)
 
 
@@ -189,7 +189,7 @@ if __name__ == '__main__':
     if len(alg_list) > 0 and alg_list[0] != '':
 
         for i, alg in enumerate(alg_list):
-            alg_name, broker_port, sub_col_port, col_port = alg.split(':')
+            alg_name, col_port = alg.split(':')
             subs.append({'send_port':col_port,'alg':alg_name})
 
 

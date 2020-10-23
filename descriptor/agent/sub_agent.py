@@ -202,21 +202,10 @@ if __name__ == '__main__':
     config.read(config_file)
     alg_config = {'path': config.get('CONFIGURATION','PATH'), 'class':config.get('CONFIGURATION','CLASS'),'name':config.get('CONFIGURATION','NAME'),'type':config.get('CONFIGURATION','TYPE')}
     
-    ALGS=os.environ['ALGS']
-    alg_list=ALGS.split(',')
-    
-
-    for alg in alg_list:
-        
-        alg_name,broker_port, sub_col_port, col_port = alg.split(':')
-        if alg_name == alg_config['name']:
-            sub = Sub({'in':broker_port,'out':sub_col_port,'alg':alg_config})
-            subs.append(sub)
-
+    sub = Sub({'in':BROKER_PORT,'out':SUB_COL_PORT,'alg':alg_config})
 
     # start worker 
-    for s in subs:
-        s.start()
+    sub.start()
     
     
 

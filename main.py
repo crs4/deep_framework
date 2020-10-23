@@ -33,6 +33,9 @@ if __name__ == "__main__":
 	starter = Starter(machine,registry,cluster_manager,use_last_settings=args.run)
 
 	nodes_data = starter.get_nodes()
+
+
+	
 	
 	print(nodes_data)
 

@@ -26,7 +26,7 @@ class SubBroker(Process):
         
         self.rec_det_port = configuration['in']
         self.send_port = configuration['out']
-        self.alg_name = configuration['alg']
+        self.broker_name = configuration['broker_name']
         Process.__init__(self)
 
     def run(self):
@@ -43,7 +43,7 @@ class SubBroker(Process):
         sub_broker_socket.bind(PROT+'*'+':'+self.send_port)
         sub_broker_data = dict()
 
-        print('START BROKER: ',self.alg_name)
+        print('START BROKER: ',self.broker_name)
 
         while True:
             
@@ -87,13 +87,10 @@ if __name__ == '__main__':
     """
     subs = []
     
-    ALGS=os.environ['ALGS']
-    alg_list=ALGS.split(',')
     
 
     for alg in alg_list:
-        alg_name, broker_port, sub_col_port, col_port = alg.split(':')
-        sub = SubBroker({'in':FP_OUT,'out':broker_port,'alg':alg_name})
+        sub = SubBroker({'in':FP_OUT,'out':BROKER_PORT,'broker_name':BROKER_NAME})
         subs.append(sub)
 
 
