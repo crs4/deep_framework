@@ -1,5 +1,13 @@
+from pathlib import Path
+import ruamel.yaml
+from ruamel.yaml.scalarstring import SingleQuotedScalarString
+S = ruamel.yaml.scalarstring.DoubleQuotedScalarString
+yaml = ruamel.yaml.YAML()
+yaml.preserve_quotes = True
+
 
 from config import *
+
 class DockerServicesManager:
 
 
@@ -8,7 +16,7 @@ class DockerServicesManager:
 		self.registry_address = registry_address
 		self.sources = sources
 		self.services = []
-		self.dict_services = []
+		self.dict_services = dict()
 		self.extract_pipeline()
 
 
@@ -53,7 +61,7 @@ class DockerServicesManager:
 		det_service = DetectorService(detector_component,self.registry_address)
 		det_dict = det_service.create_detector_service()
 		self.services.append(det_service)
-		self.dict_services.append(det_dict)
+		self.dict_services[det_service.service_name] = det_dict
 		#print(det_dict)
 		#det_service.write_service()
 
@@ -62,7 +70,7 @@ class DockerServicesManager:
 		coll_service = CollectorService(collector_component,self.registry_address)
 		col_dict = coll_service.create_collector_service()
 		self.services.append(coll_service)
-		self.dict_services.append(col_dict)
+		self.dict_services[coll_service.service_name] = col_dict
 		#coll_service.write_service()
 		#print(col_dict)
 	
@@ -70,7 +78,7 @@ class DockerServicesManager:
 		broker_service = BrokerService(broker_component,self.registry_address)
 		brok_dict = broker_service.create_broker_service()
 		self.services.append(broker_service)
-		self.dict_services.append(brok_dict)
+		self.dict_services[broker_service.service_name] = brok_dict
 		#print(brok_dict)
 		#broker_service.write_service()
 
@@ -79,7 +87,7 @@ class DockerServicesManager:
 		sub_collector_service = SubCollectorService(subcollector_component,self.registry_address)
 		subcol_dict = sub_collector_service.create_sub_collector_service()
 		self.services.append(sub_collector_service)
-		self.dict_services.append(subcol_dict)
+		self.dict_services[sub_collector_service.service_name] = subcol_dict
 		#print(subcol_dict)
 		#sub_collector_service.write_service()
 	
@@ -89,7 +97,7 @@ class DockerServicesManager:
 			descriptor_service = DescriptorService(desc_component,self.registry_address)
 			descriptor_dict = descriptor_service.create_descriptor_service()
 			self.services.append(descriptor_service)
-			self.dict_services.append(descriptor_dict)			
+			self.dict_services[descriptor_service.service_name] = descriptor_dict		
 			#print(descriptor_dict)
 			#descriptor_service.write_service()
 
@@ -106,36 +114,47 @@ class DockerServicesManager:
 		stream_man_service = StreamManagerService(stream_manager,self.registry_address)
 		stream_man_dict = stream_man_service.create_stream_manager_service()
 		self.services.append(stream_man_service)
-		self.dict_services.append(stream_man_dict)
+		self.dict_services[stream_man_service.service_name] = stream_man_dict
 
 
 		for source in self.sources:
 			stream_cap_service = StreamCaptureService(stream_capture,source,self.registry_address)
 			stream_cap_dict = stream_cap_service.create_stream_capture_service()
 			self.services.append(stream_cap_service)
-			self.dict_services.append(stream_cap_dict)
+			self.dict_services[stream_cap_service.service_name] = stream_cap_dict
 
 			#print(stream_cap_dict)
 
 		monitor_service = MonitorService(monitor,desc_name_list,self.registry_address)
 		monitor_dict = monitor_service.create_monitor_service()
 		self.services.append(monitor_service)
-		self.dict_services.append(monitor_dict)
+		self.dict_services[monitor_service.service_name] = monitor_dict
 
 
 		server_service = ServerService(server,desc_name_list,self.registry_address)
 		server_dict = server_service.create_server_service()
 		self.services.append(server_service)
-		self.dict_services.append(server_dict)
+		self.dict_services[server_service.service_name] = server_dict
 
 	def get_services(self):
 		return self.services
 
-	def get_services(self):
-		return self.services
 
 	def write_services(self):
-		pass
+		compose = dict()
+		compose['services'] = self.dict_services
+		compose['version'] = '3'
+		compose['volumes'] = {'deep_media_volume':{'external':'true'}}
+		
+
+		compose_file = Path(MAIN_COMPOSE_FILE)
+		try:
+			with compose_file.open('w') as ofp:
+				yaml.indent(mapping=4)
+				yaml.dump(compose, ofp)
+		except Exception as e:
+			raise e
+
 
 
 class DeepService:
@@ -433,6 +452,7 @@ class StreamCaptureService(DeepService):
 		stream_man_dict['image'] = self.image_name
 		stream_man_dict['networks'] = [self.net]
 		stream_man_dict['depends_on'] = ['server']
+		stream_man_dict['volumes'] = ['deep_media_volume:/mnt/remote_media']
 
 		return stream_man_dict
 

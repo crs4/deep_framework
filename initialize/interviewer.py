@@ -56,13 +56,40 @@ class Interviewer:
 				break
 		return value
 
+class ParamsProvider(Interviewer):
+
+	def __init__(self):
+		super().__init__()
+
+
+	def ask_for_params(self):
+		max_delay = self.get_number('Insert max delay in seconds you consider acceptable for getting algorithms results (default: 1s): \n','float',1)
+		interval_stats = self.get_number('How often do you want to generate statics of execution in seconds? (default: 1s): \n','float',1)
+		return {'max_delay': max_delay,'interval_stats':interval_stats }
+
+	def write_params(self,params):
+		with open(ENV_PARAMS, 'w') as env_file:
+			for kpar, vpar in params.items():
+				env_file.write(str(kpar.upper())+'='+str(vpar)+'\n')
+
+			env_file.write('PYTHONUNBUFFERED=0\n')
+			env_file.write('PROT=tcp://\n')
+	
+
+	def set_stream_params(self, use_last_settings):
+
+		if not use_last_settings:
+			params = self.ask_for_params()
+			self.write_params(params)
+
+
 
 class SourceProvider(Interviewer):
 
 	def __init__(self):
 		super().__init__()
 		self.remote_source_path = '/mnt/remote_media/'
-		self.local_source_params_path = 'env_params.list'
+		self.local_source_params_path = ENV_PARAMS
 
 
 	def ask_for_sources(self):
@@ -86,7 +113,7 @@ class SourceProvider(Interviewer):
 		return sources
 
 	def write_sources(self,sources):
-		with open(self.local_source_params_path, 'w') as env_file:
+		with open(self.local_source_params_path, 'a') as env_file:
 			for source_conf  in sources:
 				source_id = source_conf['source_id']
 				source_path = source_conf['source_path']
