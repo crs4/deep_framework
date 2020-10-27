@@ -147,7 +147,7 @@ class DetectorProvider(Interviewer):
 					detector_wished_params['name'] = det['name']
 					detector_wished_params['mode'] = det_mode
 					detector_wished_params['to_build'] = build
-					detector_wished_params['dockerfile'] = [dfile for dfile in det['dockerfiles'] if det_mode in dfile][0]
+					detector_wished_params['dockerfiles'] = det['dockerfiles']
 					detector_wished_params['framework'] = det['framework']
 					detectors_to_execute.append(detector_wished_params)
 
@@ -161,7 +161,6 @@ class DetectorProvider(Interviewer):
 			det_wished_config[name] = {}
 			det_wished_config[name]['mode'] = det['mode']
 			det_wished_config[name]['framework'] = det['framework']
-			det_wished_config[name]['dockerfile'] = det['dockerfile']
 			
 			with open(os.path.join(MAIN_DIR, DETECTOR_CONFIG_FILE), 'w') as defaultconfigfile:
 				det_wished_config.write(defaultconfigfile)
@@ -220,17 +219,14 @@ class DescriptorProvider(Interviewer):
 				
 				descriptor_wished_params = dict()
 				descriptor_wished_params['name'] = alg_name
-				descriptor_wished_params['alg_mode'] = alg_mode
+				descriptor_wished_params['mode'] = alg_mode
 				descriptor_wished_params['framework'] = desc['framework']
 				descriptor_wished_params['to_build'] = alg_build
 				descriptor_wished_params['related_to'] = related_detector
+				descriptor_wished_params['dockerfiles'] = desc['dockerfiles']
 
 				descriptors_to_execute.append(descriptor_wished_params)
-				#descriptor_wished_params[alg_name]['docker_image'] = alg_config['docker_image']
-				#descriptor_wished_params[alg_name]['compose_path'] = alg_config['compose_path']
-				#descriptor_wished_params[alg_name]['ports'] = ",".join([str(i) for i in alg_config['ports']])
-
-
+				
 		return descriptors_to_execute
 		
 
@@ -239,7 +235,7 @@ class DescriptorProvider(Interviewer):
 		for desc in descriptors:
 			name = desc['name']
 			desc_wished_config[name] = {}
-			desc_wished_config[name]['mode'] = desc['alg_mode']
+			desc_wished_config[name]['mode'] = desc['mode']
 			desc_wished_config[name]['framework'] = desc['framework']
 			desc_wished_config[name]['related_to'] = desc['related_to']
 			
@@ -272,7 +268,33 @@ class DescriptorProvider(Interviewer):
 
 		return descriptors
 
+class StandardProvider(Interviewer):
 
+	def __init__(self,standard_components):
+		super().__init__()
+		self.standard_components = standard_components
+		
+
+
+	def ask_for_standard(self):
+
+		build_setup = self.get_acceptable_answer('Do you want to build setup components? (y/n): \n',['y','n']).lower()
+		build_pipeline = self.get_acceptable_answer('Do you want to to build standard pipeline components? (y/n): \n',['y','n']).lower()
+
+		self.standard_components['build_setup'] = build_setup
+		self.standard_components['build_pipeline'] = build_pipeline
+
+		return self.standard_components
+
+	def get_standard_components(self, use_last_settings):
+
+		if use_last_settings:
+			self.standard_components['build_setup'] = 'n'
+			self.standard_components['build_pipeline'] = 'n'
+		else:
+			self.standard_components = self.ask_for_standard()
+
+		return self.standard_components
 
 
 

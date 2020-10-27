@@ -5,9 +5,11 @@ class DockerServicesManager:
 
 	def __init__(self,pipeline,registry_address,sources):
 		self.pipeline = pipeline
-		
 		self.registry_address = registry_address
 		self.sources = sources
+		self.services = []
+		self.dict_services = []
+		self.extract_pipeline()
 
 
 	
@@ -20,59 +22,74 @@ class DockerServicesManager:
 
 			detector = chain['detector'] 
 			collector = chain['collector']
-			broker = chain['broker']
-			subcollector = chain['subcollector']
-			descriptor_list = chain['descriptors']
-			for desc in descriptor_list:
-				desc_name = desc.params['name'] 
-				desc_name_list.append(desc_name)
+			descriptor_chains = chain['descriptors']
+			
+			for desc_chain in descriptor_chains:
+				broker = desc_chain['broker']
+				subcollector = desc_chain['subcollector']
+				descriptor_list = desc_chain['descriptors']
+				for desc in descriptor_list:
+					desc_name = desc.params['name'] 
+					desc_name_list.append(desc_name)
+
+				self.manage_broker_services(broker)
+			
+				self.manage_subcollector_services(subcollector)
+							
+				self.manage_descriptors_services(descriptor_list)
 
 
 			self.manage_detector_services(detector)
 			
 			self.manage_collector_services(collector)
 			
-			self.manage_broker_services(broker)
 			
-			self.manage_subcollector_services(subcollector)
-						
-			self.manage_descriptors_services(descriptor_list)
 			
 
 		self.create_base_services(desc_name_list)
 
 
 	def manage_detector_services(self,detector_component):
-		det_service = DetectorService(detector_component)
-		det_dict = det_service.create_detector_service(self.registry_address)
+		det_service = DetectorService(detector_component,self.registry_address)
+		det_dict = det_service.create_detector_service()
+		self.services.append(det_service)
+		self.dict_services.append(det_dict)
 		#print(det_dict)
 		#det_service.write_service()
 
 	
 	def manage_collector_services(self,collector_component):
-		coll_service = CollectorService(collector_component)
-		col_dict = coll_service.create_collector_service(self.registry_address)
+		coll_service = CollectorService(collector_component,self.registry_address)
+		col_dict = coll_service.create_collector_service()
+		self.services.append(coll_service)
+		self.dict_services.append(col_dict)
 		#coll_service.write_service()
 		#print(col_dict)
 	
 	def manage_broker_services(self,broker_component):
-		broker_service = BrokerService(broker_component)
-		brok_dict = broker_service.create_broker_service(self.registry_address)
+		broker_service = BrokerService(broker_component,self.registry_address)
+		brok_dict = broker_service.create_broker_service()
+		self.services.append(broker_service)
+		self.dict_services.append(brok_dict)
 		#print(brok_dict)
 		#broker_service.write_service()
 
 
 	def manage_subcollector_services(self,subcollector_component):
-		sub_collector_service = SubCollectorService(subcollector_component)
-		subcol_dict = sub_collector_service.create_sub_collector_service(self.registry_address)
+		sub_collector_service = SubCollectorService(subcollector_component,self.registry_address)
+		subcol_dict = sub_collector_service.create_sub_collector_service()
+		self.services.append(sub_collector_service)
+		self.dict_services.append(subcol_dict)
 		#print(subcol_dict)
 		#sub_collector_service.write_service()
 	
 	def manage_descriptors_services(self,descriptor_list_components):
 		desc_name_list = []
 		for desc_component in descriptor_list_components:
-			descriptor_service = DescriptorService(desc_component)
-			descriptor_dict = descriptor_service.create_descriptor_service(self.registry_address)
+			descriptor_service = DescriptorService(desc_component,self.registry_address)
+			descriptor_dict = descriptor_service.create_descriptor_service()
+			self.services.append(descriptor_service)
+			self.dict_services.append(descriptor_dict)			
 			#print(descriptor_dict)
 			#descriptor_service.write_service()
 
@@ -86,24 +103,44 @@ class DockerServicesManager:
 		monitor = self.pipeline['monitor']
 		server= self.pipeline['server']
 
-		stream_man_service = StreamManagerService(stream_manager)
-		stream_man_dict = stream_man_service.create_stream_manager_service(self.registry_address)
+		stream_man_service = StreamManagerService(stream_manager,self.registry_address)
+		stream_man_dict = stream_man_service.create_stream_manager_service()
+		self.services.append(stream_man_service)
+		self.dict_services.append(stream_man_dict)
 
 
 		for source in self.sources:
-			stream_cap_service = StreamCaptureService(stream_capture,source)
-			stream_cap_dict = stream_cap_service.create_stream_capture_service(self.registry_address)
+			stream_cap_service = StreamCaptureService(stream_capture,source,self.registry_address)
+			stream_cap_dict = stream_cap_service.create_stream_capture_service()
+			self.services.append(stream_cap_service)
+			self.dict_services.append(stream_cap_dict)
+
 			#print(stream_cap_dict)
 
-		monitor_service = MonitorService(monitor,desc_name_list)
-		monitor_dict = monitor_service.create_monitor_service(self.registry_address)
+		monitor_service = MonitorService(monitor,desc_name_list,self.registry_address)
+		monitor_dict = monitor_service.create_monitor_service()
+		self.services.append(monitor_service)
+		self.dict_services.append(monitor_dict)
 
-		server_service = ServerService(server,desc_name_list)
-		server_dict = server_service.create_server_service(self.registry_address)
-		print(server_dict)
+
+		server_service = ServerService(server,desc_name_list,self.registry_address)
+		server_dict = server_service.create_server_service()
+		self.services.append(server_service)
+		self.dict_services.append(server_dict)
+
+	def get_services(self):
+		return self.services
+
+	def get_services(self):
+		return self.services
+
+	def write_services(self):
+		pass
 
 
 class DeepService:
+
+	
 
 	def set_component_tag(self,gpu_id=None, base_component = True):
 		tag = 'deep'
@@ -128,7 +165,7 @@ class DeepService:
 
 
 class DetectorService(DeepService):
-	def __init__(self,detector_component):
+	def __init__(self,detector_component,registry_address):
 		super().__init__()
 		self.params = detector_component.params
 		self.detector_name = self.params['name']
@@ -139,6 +176,7 @@ class DetectorService(DeepService):
 		self.net = NETWORK
 		self.deploy_node = self.node
 		self.environments = self.__set_environments(detector_component)
+		self.image_name = self.set_image_name(registry_address,self.detector_name,self.image_tag)
 
 	def __setup_deploy(self):
 
@@ -160,11 +198,11 @@ class DetectorService(DeepService):
 		environments.append(gpu_env)
 		return environments
 
-	def create_detector_service(self,registry_address):
+	def create_detector_service(self):
 		detector = dict()
 		detector['environment'] = self.environments
 		detector['env_file'] = self.env_file
-		detector['image'] = self.set_image_name(registry_address,self.detector_name,self.image_tag)
+		detector['image'] = self.image_name
 		detector['networks'] = [self.net]
 		#detector['ports'] = self.ports_map
 		detector['deploy']= {'placement':{'constraints': ['node.hostname=='+self.deploy_node ]}}
@@ -178,13 +216,16 @@ class DetectorService(DeepService):
             
 class CollectorService(DeepService):
 
-	def __init__(self,collector_component):
+	def __init__(self,collector_component,registry_address):
 		super().__init__()
 		self.service_name = collector_component.component_name
+		
 		self.image_tag = self.set_component_tag()
 		self.env_file = [ENV_PARAMS]
 		self.net = NETWORK
 		self.environments = self.__set_environments(collector_component)
+		self.image_name = self.set_image_name(registry_address,collector_component.component_type,self.image_tag)
+
 
 	def __set_environments(self,collector_component):
 		environments = []
@@ -203,11 +244,11 @@ class CollectorService(DeepService):
 		return environments
 
 
-	def create_collector_service(self,registry_address):
+	def create_collector_service(self):
 		collector = dict()
 		collector['environment'] = self.environments
 		collector['env_file'] = self.env_file
-		collector['image'] = self.set_image_name(registry_address,self.service_name,self.image_tag)
+		collector['image'] = self.image_name
 		collector['networks'] = [self.net]
 		return collector
 
@@ -218,13 +259,15 @@ class CollectorService(DeepService):
             
 class BrokerService(DeepService):
 
-	def __init__(self,broker_component):
+	def __init__(self,broker_component,registry_address):
 		super().__init__()
 		self.service_name = broker_component.component_name
 		self.image_tag = self.set_component_tag()
+		 
 		self.env_file = [ENV_PARAMS]
 		self.net = NETWORK
 		self.environments = self.__set_environments(broker_component)
+		self.image_name = self.set_image_name(registry_address,broker_component.component_type,self.image_tag)
 
 	def __set_environments(self,broker_component):
 		environments = []
@@ -237,11 +280,11 @@ class BrokerService(DeepService):
 		return environments
 
 
-	def create_broker_service(self,registry_address):
+	def create_broker_service(self):
 		broker = dict()
 		broker['environment'] = self.environments
 		broker['env_file'] = self.env_file
-		broker['image'] = self.set_image_name(registry_address,self.service_name,self.image_tag)
+		broker['image'] = self.image_name
 		broker['networks'] = [self.net]
 		return broker
 
@@ -250,13 +293,14 @@ class BrokerService(DeepService):
             
 class SubCollectorService(DeepService):
 
-	def __init__(self,sub_collector_component):
+	def __init__(self,sub_collector_component,registry_address):
 		super().__init__()
 		self.service_name = sub_collector_component.component_name
 		self.image_tag = self.set_component_tag()
 		self.env_file = [ENV_PARAMS]
 		self.net = NETWORK
 		self.environments = self.__set_environments(sub_collector_component)
+		self.image_name = self.set_image_name(registry_address,sub_collector_component.component_type,self.image_tag)
 
 	def __set_environments(self,sub_collector_component):
 		environments = []
@@ -267,11 +311,11 @@ class SubCollectorService(DeepService):
 		return environments
 
 
-	def create_sub_collector_service(self,registry_address):
+	def create_sub_collector_service(self):
 		sub_col_dict = dict()
 		sub_col_dict['environment'] = self.environments
 		sub_col_dict['env_file'] = self.env_file
-		sub_col_dict['image'] = self.set_image_name(registry_address,self.service_name,self.image_tag)
+		sub_col_dict['image'] = self.image_name
 		sub_col_dict['networks'] = [self.net]
 		return sub_col_dict
 
@@ -281,7 +325,7 @@ class SubCollectorService(DeepService):
             
 class DescriptorService(DeepService):
 
-	def __init__(self,descriptor_component):
+	def __init__(self,descriptor_component,registry_address):
 		super().__init__()
 		self.params = descriptor_component.params
 		self.descriptor_name = self.params['name']
@@ -292,6 +336,7 @@ class DescriptorService(DeepService):
 		self.net = NETWORK
 		self.deploy_node = self.node
 		self.environments = self.__set_environments(descriptor_component)
+		self.image_name = self.set_image_name(registry_address,self.descriptor_name,self.image_tag)
 
 	def __setup_deploy(self):
 
@@ -316,24 +361,25 @@ class DescriptorService(DeepService):
 		return environments
 
 
-	def create_descriptor_service(self,registry_address):
+	def create_descriptor_service(self):
 		sub_col_dict = dict()
 		sub_col_dict['environment'] = self.environments
 		sub_col_dict['env_file'] = self.env_file
-		sub_col_dict['image'] = self.set_image_name(registry_address,self.service_name,self.image_tag)
+		sub_col_dict['image'] = self.image_name
 		sub_col_dict['networks'] = [self.net]
 		return sub_col_dict
 
 
 class StreamManagerService(DeepService):
 
-	def __init__(self,stream_manager_component):
+	def __init__(self,stream_manager_component,registry_address):
 		super().__init__()
-		self.service_name = stream_manager_component.component_name
+		self.service_name = stream_manager_component.component_type
 		self.image_tag = self.set_component_tag()
 		self.env_file = [ENV_PARAMS]
 		self.net = NETWORK
 		self.environments = self.__set_environments(stream_manager_component)
+		self.image_name = self.set_image_name(registry_address,self.service_name,self.image_tag)
 
 	def __set_environments(self,stream_manager_component):
 		environments = []
@@ -347,11 +393,11 @@ class StreamManagerService(DeepService):
 		return environments
 
 
-	def create_stream_manager_service(self,registry_address):
+	def create_stream_manager_service(self):
 		stream_man_dict = dict()
 		stream_man_dict['environment'] = self.environments
 		stream_man_dict['env_file'] = self.env_file
-		stream_man_dict['image'] = self.set_image_name(registry_address,self.service_name,self.image_tag)
+		stream_man_dict['image'] = self.image_name
 		stream_man_dict['networks'] = [self.net]
 		stream_man_dict['depends_on'] = ['server']
 
@@ -360,13 +406,14 @@ class StreamManagerService(DeepService):
 
 class StreamCaptureService(DeepService):
 
-	def __init__(self,stream_capture_component,source):
+	def __init__(self,stream_capture_component,source,registry_address):
 		super().__init__()
-		self.service_name = stream_capture_component.component_name
+		self.service_name = stream_capture_component.component_type
 		self.image_tag = self.set_component_tag()
 		self.env_file = [ENV_PARAMS]
 		self.net = NETWORK
 		self.environments = self.__set_environments(stream_capture_component,source)
+		self.image_name = self.set_image_name(registry_address,self.service_name,self.image_tag)
 
 	def __set_environments(self,stream_capture_component,source):
 		environments = []
@@ -379,11 +426,11 @@ class StreamCaptureService(DeepService):
 		return environments
 
 
-	def create_stream_capture_service(self,registry_address):
+	def create_stream_capture_service(self):
 		stream_man_dict = dict()
 		stream_man_dict['environment'] = self.environments
 		stream_man_dict['env_file'] = self.env_file
-		stream_man_dict['image'] = self.set_image_name(registry_address,self.service_name,self.image_tag)
+		stream_man_dict['image'] = self.image_name
 		stream_man_dict['networks'] = [self.net]
 		stream_man_dict['depends_on'] = ['server']
 
@@ -392,13 +439,14 @@ class StreamCaptureService(DeepService):
 
 class MonitorService(DeepService):
 
-	def __init__(self,monitor_component,desc_name_list):
+	def __init__(self,monitor_component,desc_name_list,registry_address):
 		super().__init__()
-		self.service_name = monitor_component.component_name
+		self.service_name = monitor_component.component_type
 		self.image_tag = self.set_component_tag()
 		self.env_file = [ENV_PARAMS]
 		self.net = NETWORK
 		self.environments = self.__set_environments(monitor_component,desc_name_list)
+		self.image_name = self.set_image_name(registry_address,self.service_name,self.image_tag)
 
 	def __set_environments(self,monitor_component,desc_name_list):
 		environments = []
@@ -410,11 +458,11 @@ class MonitorService(DeepService):
 		return environments
 
 
-	def create_monitor_service(self,registry_address):
+	def create_monitor_service(self):
 		monitor_dict = dict()
 		monitor_dict['environment'] = self.environments
 		monitor_dict['env_file'] = self.env_file
-		monitor_dict['image'] = self.set_image_name(registry_address,self.service_name,self.image_tag)
+		monitor_dict['image'] = self.image_name
 		monitor_dict['networks'] = [self.net]
 
 		return monitor_dict
@@ -422,13 +470,14 @@ class MonitorService(DeepService):
 
 class ServerService(DeepService):
 
-	def __init__(self,server_component,desc_name_list):
+	def __init__(self,server_component,desc_name_list,registry_address):
 		super().__init__()
-		self.service_name = server_component.component_name
+		self.service_name = server_component.component_type
 		self.image_tag = self.set_component_tag()
 		self.env_file = [ENV_PARAMS]
 		self.net = NETWORK
 		self.environments = self.__set_environments(server_component,desc_name_list)
+		self.image_name = self.set_image_name(registry_address,self.service_name,self.image_tag)
 
 	def __set_environments(self,server_component,desc_name_list):
 		environments = []
@@ -442,11 +491,11 @@ class ServerService(DeepService):
 		return environments
 
 
-	def create_server_service(self,registry_address):
+	def create_server_service(self):
 		server_dict = dict()
 		server_dict['environment'] = self.environments
 		server_dict['env_file'] = self.env_file
-		server_dict['image'] = self.set_image_name(registry_address,self.service_name,self.image_tag)
+		server_dict['image'] = self.image_name
 		server_dict['networks'] = [self.net]
 
 		return server_dict

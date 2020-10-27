@@ -28,12 +28,17 @@ if __name__ == "__main__":
 	from initialize.gputils import *
 	from initialize.pipeline import *
 	from initialize.services import *
+	from initialize.builder import *
 
-	use_last_settings = True
+	use_last_settings = False
 	
 	r = Revealer()
 	det_revealed = r.reveal_detectors()
 	desc_revealed = r.reveal_descriptors()
+	
+	standard_revelead = r.reveal_standard_components()
+	
+
 	"""
 	sp = SourceProvider()
 	sources = sp.get_sources(use_last_settings)
@@ -48,14 +53,20 @@ if __name__ == "__main__":
 	desc_prov = DescriptorProvider(desc_revealed,dets_names)
 	descs = desc_prov.get_descriptors(use_last_settings)
 
+	standard_prov = StandardProvider(standard_revelead)
+	stds = standard_prov.get_standard_components(use_last_settings)
+
 	gpu_alloc = GPUallocator(nodes_data,descs,dets)
 	alg_gpu_matches = gpu_alloc.match_algs_gpus()
 
-	p = Pipeline(alg_gpu_matches)
+	
+	p = PipelineManager(alg_gpu_matches)
 	pipeline = p.create_pipeline()
 
 	dm = DockerServicesManager(pipeline,'192.168.195.224',sources)
-	dm.extract_pipeline()
-
+	docker_services = dm.get_services()
+	
+	builder = ImageManager('si',docker_services,'192.168.195.224',stds)
+	
 
 	

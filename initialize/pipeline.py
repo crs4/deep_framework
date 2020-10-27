@@ -1,6 +1,6 @@
 
 
-class Pipeline:
+class PipelineManager:
 
 	def __init__(self,matches):
 		self.__set_connection_ports()
@@ -56,15 +56,15 @@ class Pipeline:
 
 
 	def create_chain(self,det_params,chain_id):
-
+		chain = dict()
 		det_name = det_params['name']
 		detector = DetectorComponent(det_params,self.ports,det_name)
 		collector = CollectorComponent(self.ports,det_name)
 		detector.connected_to['collector'] = collector.component_name
 
-		chain = self.create_broker_descriptor_subcollector_subchain(det_name,detector,collector)
+		desc_chains = self.create_broker_descriptor_subcollector_subchain(det_name,detector,collector)
 
-
+		chain['descriptors'] = desc_chains
 		chain['detector'] = detector
 		chain['collector'] = collector
 
@@ -79,10 +79,12 @@ class Pipeline:
 
 
 	def create_broker_descriptor_subcollector_subchain(self,det_name,detector,collector):
-		desc_chain = dict()
-		desc_chain['descriptors'] = []
-
+		
+		desc_chains = []
 		for i,desc_params in enumerate(self.descriptors):
+			desc_chain = dict()
+			desc_chain['descriptors'] = []
+
 
 			if desc_params['related_to'] == det_name:
 				
@@ -102,12 +104,13 @@ class Pipeline:
 				desc_chain['broker'] = broker
 				desc_chain['subcollector'] = subcollector
 				desc_chain['descriptors'].append(descriptor)
+				desc_chains.append(desc_chain)
 
 				self.ports['broker_descriptor_port']+=i
 				self.ports['descriptor_subcollector_port']+=i
 				self.ports['subcollector_collector_port']+=i
 
-		return desc_chain
+		return desc_chains
 			
 
 
@@ -154,7 +157,7 @@ class SubCollectorComponent:
 	def __init__(self,ports,prefix):
 		self.descriptor_port = ports['descriptor_subcollector_port']
 		self.collector_port = ports['subcollector_collector_port']
-		self.component_type = 'subcollector'
+		self.component_type = 'sub_collector'
 		self.component_name = prefix +'_'+ self.component_type
 		self.connected_to = {}
 
@@ -184,7 +187,7 @@ class StreamManagerComponent:
 		self.detector_port = ports['stream_manager_detector_port']
 		self.collector_ports = []
 		self.server_port = ports['stream_manager_server_port']
-		self.component_type = 'base_chain'
+		self.component_type = 'stream_manager'
 		self.component_name = 'stream_manager'
 		self.connected_to = {'server':'server'}
 
@@ -192,7 +195,7 @@ class StreamCaptureComponent:
 
 	def __init__(self,ports):
 		self.server_port = ports['stream_capture_server_port']
-		self.component_type = 'base_chain'
+		self.component_type = 'stream_capture'
 		self.component_name = 'stream_capture'
 		self.connected_to = {'server':'server'}
 
@@ -202,7 +205,7 @@ class MonitorComponent:
 		self.monitor_in_port = ports['monitor_in_port']
 		self.monitor_out_port = ports['monitor_out_port']
 		self.component_name = 'monitor'
-		self.component_type = 'base_chain'
+		self.component_type = 'monitor'
 		self.connected_to = {}
 
 class ServerComponent:
@@ -214,7 +217,7 @@ class ServerComponent:
 		self.connected_to = {'monitor':'monitor'}
 		self.collector_ports = []
 		self.component_name = 'server'
-		self.component_type = 'base_chain'
+		self.component_type = 'server'
 
 
 

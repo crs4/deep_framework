@@ -19,15 +19,26 @@ class Revealer:
 			conf_dict[key.lower()] = value
 
 		return conf_dict
-
-	def __reveal_dockerfiles(self,conf_file):
+	"""
+	def __reveal_dockerfiles(self,comp_base_path):
 
 		dockerfiles_path = []
-		comp_base_path, __ = os.path.split(conf_file)
 		for file in os.listdir(comp_base_path):
 			if 'Dockerfile' in file:
 				d_path = os.path.join(comp_base_path,file)
 				dockerfiles_path.append(d_path)
+		return dockerfiles_path
+	"""
+	def __reveal_dockerfiles(self,comp_base_path):
+
+		dockerfiles_path = []
+		for root, dirs, files in os.walk(comp_base_path):
+			for file in files:
+				if 'Dockerfile' in file:
+					dockerfile_path = os.path.join(root, file)
+					
+					
+					dockerfiles_path.append(dockerfile_path)
 		return dockerfiles_path
 
 
@@ -41,7 +52,8 @@ class Revealer:
 			det_config = ConfigParser()
 			det_config.read(conf)
 			det_dict = self.__convert_config_parser_to_dict(det_config)
-			dockerfiles_path = self.__reveal_dockerfiles(conf)
+			comp_base_path, __ = os.path.split(conf)
+			dockerfiles_path = self.__reveal_dockerfiles(comp_base_path)
 			det_dict['dockerfiles'] = dockerfiles_path
 			detector_list.append(det_dict)
 
@@ -55,17 +67,40 @@ class Revealer:
 			desc_config = ConfigParser()
 			desc_config.read(conf)
 			desc_dict = self.__convert_config_parser_to_dict(desc_config)
-			dockerfiles_path = self.__reveal_dockerfiles(conf)
+			comp_base_path, __ = os.path.split(conf)
+			dockerfiles_path = self.__reveal_dockerfiles(comp_base_path)
 			desc_dict['dockerfiles'] = dockerfiles_path
 			descriptor_list.append(desc_dict)
 
 		return descriptor_list
 
-	def revealer_all_custom_components(self):
+	def reveal_all_custom_components(self):
 		components = dict()
 		components['detectors'] = self.reveal_detectors()
 		components['descriptors'] = self.reveal_descriptors()
 		return components
+
+
+	def reveal_standard_components(self):
+		dockerfiles = self.__reveal_dockerfiles(MAIN_DIR)
+		standard_components = dict()
+		standard_components['pipeline'] = dict()
+		standard_components['setup'] = dict()
+		for f in dockerfiles:
+			if DESCRITPTOR_PATH in f or DETECTOR_PATH in f:
+				continue
+
+
+			comp_name = f.split('/')[-2]
+			if 'setup' in f:
+				standard_components['setup'][comp_name] = f
+			else:
+				standard_components['pipeline'][comp_name] = f
+
+		return standard_components
+
+
+
 
 
 
