@@ -28,7 +28,7 @@
 
 **/compose-files/*.yml
 **/compose-files/*.list
-**/initialize/configuration_files/
+**/initialize/configuration_files/*.ini
 
 docker-compose_main.yml
 docker_pull.sh
