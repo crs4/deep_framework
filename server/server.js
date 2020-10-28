@@ -47,7 +47,7 @@ for (var i = 0; i < collector_port_arr.length; i++) {
 	const col_sock = zmq.socket('pair');
 	col_sock.bind(protocol +'*:'+ col_port);
 
-	app.get('/api/stream_'+str(i), function(request, response){
+	app.get('/api/stream_'+i.toString(), function(request, response){
 
 		response.writeHead(200, {
 		'Content-Type': 'text/event-stream',

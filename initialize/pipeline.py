@@ -1,4 +1,4 @@
-
+from config import *
 
 class PipelineManager:
 
@@ -20,8 +20,8 @@ class PipelineManager:
 		self.ports['subcollector_collector_port'] = 7000
 		self.ports['collector_stream_manager_port'] = 7050
 		self.ports['collector_server_port'] = 4050
-		self.ports['stream_manager_server_port'] = 8050
-		self.ports['stream_capture_server_port'] = 9050
+		self.ports['stream_manager_server_port'] = APP_PORT
+		self.ports['stream_capture_server_port'] = APP_PORT
 		self.ports['monitor_in_port'] = 5550
 		self.ports['monitor_out_port'] = 5551
 

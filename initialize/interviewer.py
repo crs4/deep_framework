@@ -65,7 +65,7 @@ class ParamsProvider(Interviewer):
 	def ask_for_params(self):
 		max_delay = self.get_number('Insert max delay in seconds you consider acceptable for getting algorithms results (default: 1s): \n','float',1)
 		interval_stats = self.get_number('How often do you want to generate statics of execution in seconds? (default: 1s): \n','float',1)
-		return {'max_delay': max_delay,'interval_stats':interval_stats }
+		return {'max_allowed_delay': max_delay,'interval_stats':interval_stats }
 
 	def write_params(self,params):
 		with open(ENV_PARAMS, 'w') as env_file:

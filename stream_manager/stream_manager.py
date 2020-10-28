@@ -94,12 +94,11 @@ class StreamServer():
         self.sender_socket.bind(PROT + '*:' + STREAM_OUT)
 
         self.collectors = []
-        for coll in collector_list:
+        for coll_port in collector_list:
 
-            name, coll_port = coll.split(':')
             receiver_socket = self.context.socket(zmq.PAIR)
             receiver_socket.bind(PROT +'*:'+ coll_port)
-            self.collectors.append({'name':name,'socket':receiver_socket})
+            self.collectors.append({'socket':receiver_socket})
 
     def create_deep_message(self,frame):
         if not self.stream_ready.is_set():

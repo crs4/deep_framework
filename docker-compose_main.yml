@@ -22,6 +22,7 @@ services:
         - net_deep
     gender_descriptor:
         environment:
+        - MODE=cpu
         - FRAMEWORK=caffe
         - BROKER_ADDRESS=gender_broker
         - SUB_COLLECTOR_ADDRESS=gender_sub_collector
@@ -74,7 +75,7 @@ services:
         environment:
         - HP_SERVER=server
         - COLLECTOR_PORTS=7050
-        - SERVER_PORT=8050
+        - SERVER_PORT=8000
         - STREAM_OUT=3500
         env_file:
         - env_params.list
@@ -108,4 +109,6 @@ services:
 version: '3'
 volumes:
     deep_media_volume:
-        external: 'true'
+        external: true
+networks:
+    net_deep: '!!null'

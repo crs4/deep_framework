@@ -32,7 +32,10 @@ class Starter:
 
 
 	def create_source_volume(self,sources):
-		path = sources[0]['source_folder']
+		if len(sources) == 0:
+			return
+
+		path = [ s['source_folder'] for s in sources if s['source_folder'] is not None][0]
 		top_manager_node = self.top_manager_node
 		#inspect_command = 'docker service ps --format "{{.CurrentState}}" '
 		
@@ -175,7 +178,7 @@ class Starter:
 			else:
 				res_status = self.check_framework_started()
 				if res_status == 'OK':
-					address = self.find_stream_manager()
+					address = self.find_server()
 					print('### DEEP FRAMEWORK STARTED ###')
 					print('Check your stream at: ', address)
 				else:

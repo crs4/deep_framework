@@ -85,19 +85,14 @@ if __name__ == '__main__':
     """
     Load configuration of descriptors installed
     """
-    subs = []
     
     
 
-    for alg in alg_list:
-        sub = SubBroker({'in':FP_OUT,'out':BROKER_PORT,'broker_name':BROKER_NAME})
-        subs.append(sub)
+    sub = SubBroker({'in':FP_OUT,'out':BROKER_PORT,'broker_name':BROKER_NAME})
+    sub.start()
 
 
-    # start worker 
-    for s in subs:
-        s.start()
-   
+    
 
 
 

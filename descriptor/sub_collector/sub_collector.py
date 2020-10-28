@@ -70,22 +70,14 @@ if __name__ == '__main__':
     """
     Load configuration of descriptors installed
     """
-    subs = []
     
-    ALGS=os.environ['ALGS']
-    alg_list=ALGS.split(',')
     
 
-    for alg in alg_list:
-        alg_name,broker_port, sub_col_port, col_port = alg.split(':')
-        sub = SubCollector({'in':SUB_COL_PORT,'out':COL_PORT})
-        subs.append(sub)
+    
+    sub = SubCollector({'in':SUB_COL_PORT,'out':COL_PORT})
+    sub.start()
 
-
-    # start worker 
-    for s in subs:
-        s.start()
-   
+  
 
 
 

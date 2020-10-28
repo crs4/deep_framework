@@ -77,9 +77,9 @@ if __name__ == "__main__":
 	img_man = ImageManager(machine,docker_services,registry.insecure_addr,stds)
 	img_man.start_build_routine()
 
-	if not use_last_settings:
+	if not args.run:
 		starter.create_source_volume(sources)
-	starter.start_framework(compose_command_string)
+	starter.start_framework()
 	
 
 

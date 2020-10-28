@@ -144,7 +144,8 @@ class DockerServicesManager:
 		compose = dict()
 		compose['services'] = self.dict_services
 		compose['version'] = '3'
-		compose['volumes'] = {'deep_media_volume':{'external':'true'}}
+		compose['volumes'] = {'deep_media_volume':{'external':True}}
+		compose['networks'] = {'net_deep': None}
 		
 
 		compose_file = Path(MAIN_COMPOSE_FILE)
@@ -376,7 +377,7 @@ class DescriptorService(DeepService):
 		gpu_env = self.set_gpu_enviroment(self.gpu_id)
 		broker_port = 'BROKER_PORT='+str(descriptor_component.broker_port)
 		sub_col_port = 'SUB_COL_PORT='+str(descriptor_component.subcollector_port)
-		environments = [framework,broker_address,sub_collector_address,monitor_address,monitor_stats_in,gpu_env,broker_port,sub_col_port]
+		environments = [mode,framework,broker_address,sub_collector_address,monitor_address,monitor_stats_in,gpu_env,broker_port,sub_col_port]
 		return environments
 
 
