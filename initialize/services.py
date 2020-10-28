@@ -499,6 +499,7 @@ class ServerService(DeepService):
 		self.net = NETWORK
 		self.environments = self.__set_environments(server_component,desc_name_list)
 		self.image_name = self.set_image_name(registry_address,self.service_name,self.image_tag)
+		self.server_port =  str(server_component.server_port)
 
 	def __set_environments(self,server_component,desc_name_list):
 		environments = []
@@ -518,6 +519,7 @@ class ServerService(DeepService):
 		server_dict['env_file'] = self.env_file
 		server_dict['image'] = self.image_name
 		server_dict['networks'] = [self.net]
+		server_dict['ports'] = [self.server_port+':'+self.server_port]
 
 		return server_dict
 

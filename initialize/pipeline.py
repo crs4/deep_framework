@@ -20,8 +20,7 @@ class PipelineManager:
 		self.ports['subcollector_collector_port'] = 7000
 		self.ports['collector_stream_manager_port'] = 7050
 		self.ports['collector_server_port'] = 4050
-		self.ports['stream_manager_server_port'] = APP_PORT
-		self.ports['stream_capture_server_port'] = APP_PORT
+		self.ports['server_port'] = APP_PORT
 		self.ports['monitor_in_port'] = 5550
 		self.ports['monitor_out_port'] = 5551
 
@@ -186,7 +185,7 @@ class StreamManagerComponent:
 	def __init__(self,ports):
 		self.detector_port = ports['stream_manager_detector_port']
 		self.collector_ports = []
-		self.server_port = ports['stream_manager_server_port']
+		self.server_port = ports['server_port']
 		self.component_type = 'stream_manager'
 		self.component_name = 'stream_manager'
 		self.connected_to = {'server':'server'}
@@ -194,7 +193,7 @@ class StreamManagerComponent:
 class StreamCaptureComponent:
 
 	def __init__(self,ports):
-		self.server_port = ports['stream_capture_server_port']
+		self.server_port = ports['server_port']
 		self.component_type = 'stream_capture'
 		self.component_name = 'stream_capture'
 		self.connected_to = {'server':'server'}
@@ -211,8 +210,7 @@ class MonitorComponent:
 class ServerComponent:
 
 	def __init__(self,ports):
-		self.stream_manager_port = ports['stream_manager_server_port']
-		self.stream_capture_port = ports['stream_capture_server_port']
+		self.server_port = ports['server_port']
 		self.monitor_port = ports['monitor_out_port']
 		self.connected_to = {'monitor':'monitor'}
 		self.collector_ports = []
