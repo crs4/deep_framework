@@ -2,12 +2,10 @@
 import subprocess
 
 from configparser import ConfigParser
-from initialize.configurator import Interviewer
 from config import *
 import time
 import re
 
-q = Interviewer()
 
 
 

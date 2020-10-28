@@ -428,12 +428,12 @@ class StreamCaptureService(DeepService):
 
 	def __init__(self,stream_capture_component,source,registry_address):
 		super().__init__()
-		self.service_name = stream_capture_component.component_type
+		self.service_name = stream_capture_component.component_type+'_'+source['source_id']
 		self.image_tag = self.set_component_tag()
 		self.env_file = [ENV_PARAMS]
 		self.net = NETWORK
 		self.environments = self.__set_environments(stream_capture_component,source)
-		self.image_name = self.set_image_name(registry_address,self.service_name,self.image_tag)
+		self.image_name = self.set_image_name(registry_address,stream_capture_component.component_type,self.image_tag)
 
 	def __set_environments(self,stream_capture_component,source):
 		environments = []
@@ -444,6 +444,8 @@ class StreamCaptureService(DeepService):
 		environments = [hp_server,server_port,stream_capture_id]
 		
 		return environments
+
+	
 
 
 	def create_stream_capture_service(self):

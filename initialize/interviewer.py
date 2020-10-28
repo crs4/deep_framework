@@ -225,7 +225,8 @@ class DescriptorProvider(Interviewer):
 	def __init__(self,available_descriptors, detectors):
 		super().__init__()
 		self.available_descriptors = available_descriptors
-		self.detectors_to_execute = detectors
+		self.detectors_to_execute = [det['name'] for det in detectors]
+
 
 
 	def ask_for_descriptors(self):

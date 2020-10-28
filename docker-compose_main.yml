@@ -1,8 +1,8 @@
 services:
-    gender_broker:
+    clothing_broker:
         environment:
-        - FP_ADDRESS=face_detector_detector
-        - BROKER_NAME=gender_broker
+        - FP_ADDRESS=person_detector_detector
+        - BROKER_NAME=clothing_broker
         - BROKER_PORT=6000
         - FP_OUT=5001
         env_file:
@@ -10,9 +10,9 @@ services:
         image: 192.168.195.224:5000/broker:deep
         networks:
         - net_deep
-    gender_sub_collector:
+    clothing_sub_collector:
         environment:
-        - COLLECTOR_ADDRESS=face_detector_collector
+        - COLLECTOR_ADDRESS=person_detector_collector
         - SUB_COL_PORT=6050
         - COL_PORT=7000
         env_file:
@@ -20,12 +20,12 @@ services:
         image: 192.168.195.224:5000/sub_collector:deep
         networks:
         - net_deep
-    gender_descriptor:
+    clothing_descriptor:
         environment:
         - MODE=cpu
-        - FRAMEWORK=caffe
-        - BROKER_ADDRESS=gender_broker
-        - SUB_COLLECTOR_ADDRESS=gender_sub_collector
+        - FRAMEWORK=tensorflow
+        - BROKER_ADDRESS=clothing_broker
+        - SUB_COLLECTOR_ADDRESS=clothing_sub_collector
         - MONITOR_ADDRESS=monitor
         - MONITOR_STATS_IN=5550
         - GPU_ID=None
@@ -33,12 +33,12 @@ services:
         - SUB_COL_PORT=6050
         env_file:
         - env_params.list
-        image: 192.168.195.224:5000/gender:deep_cpu
+        image: 192.168.195.224:5000/clothing:deep_cpu
         networks:
         - net_deep
-    face_detector_detector:
+    person_detector_detector:
         environment:
-        - COLLECTOR_ADDRESS=face_detector_collector
+        - COLLECTOR_ADDRESS=person_detector_collector
         - VIDEOSRC_ADDRESS=stream_manager
         - MONITOR_ADDRESS=monitor
         - STREAM_OUT=3500
@@ -48,14 +48,14 @@ services:
         - GPU_ID=None
         env_file:
         - env_params.list
-        image: 192.168.195.224:5000/face_detector:deep_cpu
+        image: 192.168.195.224:5000/person_detector:deep_cpu
         networks:
         - net_deep
         deploy:
             placement:
                 constraints:
                 - node.hostname==linuxkit-025000000001
-    face_detector_collector:
+    person_detector_collector:
         environment:
         - PROV_OUT_TO_COL=4001
         - OUT_STREAM_PORT=7050
@@ -64,8 +64,8 @@ services:
         - STREAM_MANAGER_ADDRESS=stream_manager
         - SERVER_ADDRESS=server
         - MONITOR_ADDRESS=monitor
-        - COMPONENT_NAME=face_detector_collector
-        - ALGS=gender:7000
+        - COMPONENT_NAME=person_detector_collector
+        - ALGS=clothing:7000
         env_file:
         - env_params.list
         image: 192.168.195.224:5000/collector:deep
@@ -84,9 +84,37 @@ services:
         - net_deep
         depends_on:
         - server
+    stream_capture_stand:
+        environment:
+        - HP_SERVER=server
+        - SERVER_PORT=8000
+        - STREAM_CAPTURE_ID=stand
+        env_file:
+        - env_params.list
+        image: 192.168.195.224:5000/stream_capture:deep
+        networks:
+        - net_deep
+        depends_on:
+        - server
+        volumes:
+        - deep_media_volume:/mnt/remote_media
+    stream_capture_inc:
+        environment:
+        - HP_SERVER=server
+        - SERVER_PORT=8000
+        - STREAM_CAPTURE_ID=inc
+        env_file:
+        - env_params.list
+        image: 192.168.195.224:5000/stream_capture:deep
+        networks:
+        - net_deep
+        depends_on:
+        - server
+        volumes:
+        - deep_media_volume:/mnt/remote_media
     monitor:
         environment:
-        - ALGS=gender
+        - ALGS=clothing
         - MONITOR_STATS_IN=5550
         - MONITOR_STATS_OUT=5551
         env_file:
@@ -100,7 +128,7 @@ services:
         - MONITOR_STATS_OUT=5551
         - MONITOR_ADDRESS=monitor
         - SERVER_PORT=8000
-        - ALGS=gender
+        - ALGS=clothing
         env_file:
         - env_params.list
         image: 192.168.195.224:5000/server:deep

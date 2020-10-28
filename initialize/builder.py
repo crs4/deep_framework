@@ -69,7 +69,6 @@ class ImageManager:
 			image_name = service.image_name
 			result = re.search('5000/(.*):deep', image_name)
 			image_base_name = result.group(1)
-			#image_base_name = image_name[image_name.find('/')+1 : image_name.find(':')]
 			if image_name not in self.service_dockerfile_map.keys():
 				if image_base_name in self.standard_components['pipeline'].keys():
 					if self.standard_components['build_pipeline'] == 'y':

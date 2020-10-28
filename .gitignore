@@ -28,10 +28,9 @@
 
 **/compose-files/*.yml
 **/compose-files/*.list
-cluster_configuration.ini
-algorithms_configuration.ini
-detector_configuration.ini
+**/initialize/configuration_files/
 
+docker-compose_main.yml
 docker_pull.sh
 env_params.list
 
