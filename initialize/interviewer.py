@@ -1,5 +1,7 @@
 from configparser import ConfigParser
-
+import subprocess
+import os
+import socket
 from config import *
 
 class Interviewer:
@@ -55,6 +57,52 @@ class Interviewer:
 			else:
 				break
 		return value
+
+
+	
+	def get_ip(self,prompt):
+		while True:
+			addr = input(prompt)
+			try:
+				socket.inet_aton(addr)
+				print("Valid IP")
+				break
+			except socket.error:
+				print("Invalid IP. Please, insert a valid IP address.")
+				continue
+		return addr
+
+	def get_remote_folder(self,prompt,user,ip):
+		import subprocess
+		while True:
+			path = input(prompt)
+
+			try:
+				com = "ssh %s@%s [ -d %s ] && echo 'Exists' || echo 'Error' " % (user,ip,path)
+				p = subprocess.Popen(com, stdout=subprocess.PIPE, shell=True)
+				(output, err) = p.communicate()
+
+				output = output.decode("utf-8").strip('\n')
+				if err is not None:
+					print(err)
+				if output == 'Exists':
+					print('Valid path.')
+				if output == 'Error':
+					creation = self.get_acceptable_answer('This path does not exist on remote node. Do you want to create it? (y/n) ', ['y','n'])
+					if creation == 'y':
+						try:
+							command = "ssh %s@%s mkdir -p %s" % (user, ip, path)
+							subprocess.call(command, shell=True)
+						except Exception as e:
+							print(e)
+					else:
+						continue
+				break
+			except Exception as e:
+				print(e)
+				continue
+		return path
+
 
 class ParamsProvider(Interviewer):
 
@@ -172,6 +220,7 @@ class DetectorProvider(Interviewer):
 					build = self.get_acceptable_answer('Do you want to build relative docker image? (y/n) \n',['y','n']).lower()
 
 					detector_wished_params['name'] = det['name']
+					detector_wished_params['category'] = det['category']
 					detector_wished_params['mode'] = det_mode
 					detector_wished_params['to_build'] = build
 					detector_wished_params['dockerfiles'] = det['dockerfiles']

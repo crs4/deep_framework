@@ -57,7 +57,7 @@ class PipelineManager:
 	def create_chain(self,det_params,chain_id):
 		chain = dict()
 		det_name = det_params['name']
-		detector = DetectorComponent(det_params,self.ports,det_name)
+		detector = DetectorComponent(det_params,self.ports)
 		collector = CollectorComponent(self.ports,det_name)
 		detector.connected_to['collector'] = collector.component_name
 
@@ -120,14 +120,14 @@ class PipelineManager:
 
 class DetectorComponent:
 
-	def __init__(self,det_params,ports,prefix):
+	def __init__(self,det_params,ports):
 		self.params = det_params
 		self.collector_port = ports['detector_collector_port']
 		self.broker_port = ports['detector_broker_port']
 		self.stream_manager_port = ports['stream_manager_detector_port']
 		self.monitor_in_port = ports['monitor_in_port']
 		self.component_type = 'detector'
-		self.component_name = prefix +'_'+ self.component_type
+		self.component_name = det_params['name'] + '_' + self.component_type
 		self.connected_to = {'stream_manager':'stream_manager','monitor':'monitor'}
 
 
@@ -187,7 +187,7 @@ class StreamManagerComponent:
 		self.collector_ports = []
 		self.server_port = ports['server_port']
 		self.component_type = 'stream_manager'
-		self.component_name = 'stream_manager'
+		self.component_name = self.component_type
 		self.connected_to = {'server':'server'}
 
 class StreamCaptureComponent:
@@ -195,7 +195,7 @@ class StreamCaptureComponent:
 	def __init__(self,ports):
 		self.server_port = ports['server_port']
 		self.component_type = 'stream_capture'
-		self.component_name = 'stream_capture'
+		self.component_name = self.component_type
 		self.connected_to = {'server':'server'}
 
 class MonitorComponent:
@@ -203,8 +203,8 @@ class MonitorComponent:
 	def __init__(self,ports):
 		self.monitor_in_port = ports['monitor_in_port']
 		self.monitor_out_port = ports['monitor_out_port']
-		self.component_name = 'monitor'
 		self.component_type = 'monitor'
+		self.component_name = self.component_type
 		self.connected_to = {}
 
 class ServerComponent:
@@ -214,8 +214,8 @@ class ServerComponent:
 		self.monitor_port = ports['monitor_out_port']
 		self.connected_to = {'monitor':'monitor'}
 		self.collector_ports = []
-		self.component_name = 'server'
 		self.component_type = 'server'
+		self.component_name = self.component_type
 
 
 

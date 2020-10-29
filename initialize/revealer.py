@@ -19,6 +19,7 @@ class Revealer:
 			conf_dict[key.lower()] = value
 
 		return conf_dict
+
 	"""
 	def __reveal_dockerfiles(self,comp_base_path):
 
@@ -52,6 +53,7 @@ class Revealer:
 			det_config = ConfigParser()
 			det_config.read(conf)
 			det_dict = self.__convert_config_parser_to_dict(det_config)
+			det_dict['name'] = det_dict['category']
 			comp_base_path, __ = os.path.split(conf)
 			dockerfiles_path = self.__reveal_dockerfiles(comp_base_path)
 			det_dict['dockerfiles'] = dockerfiles_path
@@ -67,6 +69,7 @@ class Revealer:
 			desc_config = ConfigParser()
 			desc_config.read(conf)
 			desc_dict = self.__convert_config_parser_to_dict(desc_config)
+			#desc_dict['name'] = self.__set_custom_algorithm_name(conf)
 			comp_base_path, __ = os.path.split(conf)
 			dockerfiles_path = self.__reveal_dockerfiles(comp_base_path)
 			desc_dict['dockerfiles'] = dockerfiles_path

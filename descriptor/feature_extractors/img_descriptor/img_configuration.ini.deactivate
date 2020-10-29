@@ -9,4 +9,4 @@ PATH = img_descriptor.img_desc
 CLASS = ImgDescriptor
 FRAMEWORK = None
 TYPE = image_oriented
-RELATED_TO = drone_obbject_detector
+RELATED_TO = drone_objects

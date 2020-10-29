@@ -40,7 +40,7 @@ class ObjectProvider(Process):
 
         try:
             # create instance of specific descriptor
-            self.det_name = self.det_config['name']
+            self.det_name = self.det_config['category']
             module = importlib.import_module(self.det_config['path'])
             det_instance = getattr(module, self.det_config['class'])
             self.executor = det_instance()
@@ -217,7 +217,7 @@ if __name__ == '__main__':
     config_file = [os.path.join(dp, f) for dp, dn, filenames in os.walk(cur_dir) for f in filenames if os.path.splitext(f)[1] == '.ini'][0]
     config = ConfigParser()
     config.read(config_file)
-    det_config = {'path': config.get('CONFIGURATION','PATH'), 'class':config.get('CONFIGURATION','CLASS'),'name':config.get('CONFIGURATION','NAME')}
+    det_config = {'path': config.get('CONFIGURATION','PATH'), 'class':config.get('CONFIGURATION','CLASS'),'category':config.get('CONFIGURATION','CATEGORY')}
  
     
     prod = ObjectProvider({'in':STREAM_OUT,'out': FP_OUT,'out_col': FP_OUT_TO_COL, 'det_config': det_config})

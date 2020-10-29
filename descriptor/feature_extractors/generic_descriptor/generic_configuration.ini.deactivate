@@ -9,4 +9,4 @@ PATH = generic_descriptor.generic_desc
 CLASS = GenericDescriptor
 FRAMEWORK = tensorflow
 TYPE = object_oriented
-RELATED_TO = face_detector
+RELATED_TO = face
