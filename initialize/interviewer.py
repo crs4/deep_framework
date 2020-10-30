@@ -202,12 +202,16 @@ class DetectorProvider(Interviewer):
 	def ask_for_detectors(self):
 		detectors_to_execute = []
 
+		config_question = 'Detector configuration file found. Do you want to change it? (y/n): \n'
+		if os.path.isfile(DETECTOR_CONFIG_FILE) and self.get_acceptable_answer(config_question,['y','n']).lower() == 'n':
+			return detectors_to_execute
+
 		while len(detectors_to_execute) == 0:
 			print('Please, enter your wished detector.\n')
 			for det in self.available_detectors:
 				det_name = det['name']
 				gpu_dockerfile_bool = any([True for f in det['dockerfiles'] if 'gpu' in f.lower()])
-				answer_det = self.get_acceptable_answer('Do you want to execute '+det_name+'? (y/n): \n',['y','n']).lower()
+				answer_det = self.get_acceptable_answer('Do you want to execute '+det_name+' detector? (y/n): \n',['y','n']).lower()
 				if answer_det == 'y':
 					detector_wished_params = dict()
 					
@@ -245,6 +249,7 @@ class DetectorProvider(Interviewer):
 
 		detectors = []
 		reader_det_config = ConfigParser()
+
 		reader_det_config.read(DETECTOR_CONFIG_FILE)
 		detectors_list = reader_det_config.sections()
 		for det in detectors_list:
@@ -259,7 +264,7 @@ class DetectorProvider(Interviewer):
 
 	def get_detectors(self, use_last_settings):
 
-		if use_last_settings:
+		if use_last_settings and os.path.isfile(DETECTOR_CONFIG_FILE):
 			detectors = self.read_detectors()
 		else:
 			detectors = self.ask_for_detectors()
@@ -280,6 +285,10 @@ class DescriptorProvider(Interviewer):
 
 	def ask_for_descriptors(self):
 		descriptors_to_execute = []
+
+		config_question = 'Descriptor configuration file found. Do you want to change it? (y/n): \n'
+		if os.path.isfile(ALGS_CONFIG_FILE) and self.get_acceptable_answer(config_question,['y','n']).lower() == 'n':
+			return descriptors_to_execute
 
 		for desc in self.available_descriptors:
 
@@ -337,7 +346,7 @@ class DescriptorProvider(Interviewer):
 
 	def get_descriptors(self, use_last_settings):
 
-		if use_last_settings:
+		if use_last_settings and os.path.isfile(ALGS_CONFIG_FILE):
 			descriptors = self.read_descriptors()
 		else:
 			descriptors = self.ask_for_descriptors()

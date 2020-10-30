@@ -33,7 +33,12 @@ class Starter:
 		if len(sources) == 0:
 			return
 
-		path = [ s['source_folder'] for s in sources if s['source_folder'] is not None][0]
+		path_list = [ s['source_folder'] for s in sources if s['source_folder'] is not None]
+		if len(path_list) == 0:
+			return
+		else:
+			path = path_list[0]
+
 		top_manager_node = self.top_manager_node
 		#inspect_command = 'docker service ps --format "{{.CurrentState}}" '
 		
@@ -129,7 +134,24 @@ class Starter:
 
 
 
+	def __pull_images(self):
+		for node_name,node_values in self.nodes.items():
+			user = node_values['user']
+			ip = node_values['ip']
+			path = node_values['path']
+			node_type = node_values['type']
+			if node_type == 'RemoteNode':
+				print(node_name,' is pulling docker images...')
 
+				try:
+					copy_pull_com = "scp -q -p docker_pull.sh %s@%s:%s" %(user,ip,path)
+					self.machine.exec_shell_command(copy_pull_com)
+
+					sub_command = "'cd %s && ./docker_pull.sh %s'" % (path, self.registry.insecure_addr)
+					command = "ssh -t %s@%s %s" % (user, ip, sub_command)
+					output = self.machine.exec_shell_command(command)
+				except Exception as e:
+					raise e
 
 
 	def find_server(self):
@@ -150,6 +172,7 @@ class Starter:
 
 
 	def start_framework(self):
+		self.__pull_images()
 
 		start_command = "docker stack deploy -c "+ MAIN_COMPOSE_FILE + " deepframework"
 		top_manager_node = self.top_manager_node
@@ -158,7 +181,7 @@ class Starter:
 
 		if top_manager_node['type'] == 'RemoteNode':
 			start_command = "ssh %s@%s 'cd %s && %s'" % (top_manager_node['user'], top_manager_node['ip'], top_manager_node['path'], start_command)
-			copy_command = 'scp -q -p -r env_params.list ' + MAIN_COMPOSE_FILE+' '+ALGS_CONFIG_FILE+' '+DETECTOR_CONFIG_FILE+ ' ' +top_manager_node['user']+'@'+top_manager_node['ip']+':'+top_manager_node['path']
+			copy_command = 'scp -q -p -r env_params.list ' + MAIN_COMPOSE_FILE+ ' ' +top_manager_node['user']+'@'+top_manager_node['ip']+':'+top_manager_node['path']
 			try:
 				result = subprocess.Popen([copy_command], shell=True)
 			except Exception as e:
