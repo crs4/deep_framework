@@ -145,7 +145,7 @@ class DockerServicesManager:
 		compose['services'] = self.dict_services
 		compose['version'] = '3'
 		compose['volumes'] = {'deep_media_volume':{'external':True}}
-		compose['networks'] = {'net_deep': None}
+		compose['networks'] = {NETWORK: None}
 		
 
 		compose_file = Path(MAIN_COMPOSE_FILE)
