@@ -36,7 +36,7 @@ class PipelineManager:
 			chain_id+=1
 
 			stream_manager.collector_ports.append(self.ports['collector_stream_manager_port'])
-			server.collector_ports.append(self.ports['collector_server_port'])
+			server.collector_ports.append((det_params['name'],self.ports['collector_server_port']))
 
 			
 
@@ -81,17 +81,20 @@ class PipelineManager:
 		
 		desc_chains = []
 		for i,desc_params in enumerate(self.descriptors):
+			i+=1
 			desc_chain = dict()
 			desc_chain['descriptors'] = []
 
 
 			if desc_params['related_to'] == det_name:
 				
-
+				
 				desc_name = desc_params['name']
 				broker = BrokerComponent(self.ports,desc_name)
 				descriptor = DescriptorComponent(desc_params,self.ports,desc_name)
 				subcollector = SubCollectorComponent(self.ports,desc_name)
+
+				
 
 				broker.connected_to['detector'] = detector.component_name
 				subcollector.connected_to['collector'] =  collector.component_name

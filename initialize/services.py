@@ -507,7 +507,7 @@ class ServerService(DeepService):
 		environments = []
 		server_out_port = 'SERVER_PORT='+str(APP_PORT)
 		algs = 'ALGS='+','.join(desc_name_list)
-		col_ports = 'COLLECTOR_PORTS='+','.join([str(port) for port in server_component.collector_ports])
+		col_ports = 'COLLECTOR_PORTS='+','.join([det_name+':'+str(port) for det_name,port in server_component.collector_ports])
 		monitor_out_port = 'MONITOR_STATS_OUT='+str(server_component.monitor_port)
 		monitor_address = 'MONITOR_ADDRESS='+server_component.connected_to['monitor']
 		environments = [col_ports,monitor_out_port,monitor_address,server_out_port,algs]

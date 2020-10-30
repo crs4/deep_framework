@@ -264,12 +264,14 @@ class DetectorProvider(Interviewer):
 
 	def get_detectors(self, use_last_settings):
 
-		if use_last_settings and os.path.isfile(DETECTOR_CONFIG_FILE):
-			detectors = self.read_detectors()
-		else:
+		if not use_last_settings:
 			detectors = self.ask_for_detectors()
-			self.write_detectors(detectors)
-
+			if len(detectors) == 0:
+				detectors = self.read_detectors()
+			else:
+				self.write_detectors(detectors)
+		else:
+			detectors = self.read_detectors()
 		return detectors
 
 
@@ -346,13 +348,17 @@ class DescriptorProvider(Interviewer):
 
 	def get_descriptors(self, use_last_settings):
 
-		if use_last_settings and os.path.isfile(ALGS_CONFIG_FILE):
-			descriptors = self.read_descriptors()
-		else:
+		if not use_last_settings:
 			descriptors = self.ask_for_descriptors()
-			self.write_descriptors(descriptors)
-
+			if len(descriptors) == 0:
+				descriptors = self.read_descriptors()
+			else:
+				self.write_descriptors(descriptors)
+		else:
+			descriptors = self.read_descriptors()
 		return descriptors
+
+
 
 class StandardProvider(Interviewer):
 
