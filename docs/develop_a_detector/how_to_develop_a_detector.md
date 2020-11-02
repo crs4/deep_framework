@@ -14,7 +14,7 @@ These operation will be described in following sections.
 
 The executor implements the object detection and tracking algorithm on multiple sequential frames. The operations to be performed within the file are:
 * Import the classes that perform detection and tracking.
-* Define a class that extends the AbstractDetector abstract class, defined at the path ![alt text](../../utils/abstract_detector.py).
+* Define a class that extends the AbstractDetector abstract class, defined at the path ![path](../../utils/abstract_detector.py).
 * Implement the extract_features method within the class. This method is invoked in the main interface, which manages all the installed detection algorithms, and cyclically receives the frames, which are the input stream to the DeepFramework, and a dictionary (executor_dict) that contains all the information needed to implement your own detection and and tracking algorithm. In short:
 
 ![alt text](executor.png)
