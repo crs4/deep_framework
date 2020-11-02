@@ -210,15 +210,19 @@ class DetectorProvider(Interviewer):
 			print('Please, enter your wished detector.\n')
 			for det in self.available_detectors:
 				det_name = det['name']
-				gpu_dockerfile_bool = any([True for f in det['dockerfiles'] if 'gpu' in f.lower()])
 				answer_det = self.get_acceptable_answer('Do you want to execute '+det_name+' detector? (y/n): \n',['y','n']).lower()
 				if answer_det == 'y':
 					detector_wished_params = dict()
-					
-					if gpu_dockerfile_bool:
+
+					modes_availables = [ d.split('.')[1] for d in det['dockerfiles']]
+					if len(modes_availables) == 0:
+						print('No dockerfile found.')
+						continue
+					elif len(modes_availables) > 1:
 						det_mode = self.get_acceptable_answer('Select mode of execution of '+det_name+'? (cpu/gpu): \n',['cpu','gpu']).lower()
 					else:
-						det_mode = 'cpu'
+						det_mode = modes_availables[0]
+					
 
 
 					build = self.get_acceptable_answer('Do you want to build relative docker image? (y/n) \n',['y','n']).lower()
@@ -299,10 +303,19 @@ class DescriptorProvider(Interviewer):
 				continue
 
 			alg_name = desc['name']
+
 			answer_alg = self.get_acceptable_answer('Do you want to execute '+alg_name+' algorythm? (y/n): \n',['y','n']).lower()
 			if answer_alg == 'y':
+				
+				modes_availables = [ d.split('.')[1] for d in desc['dockerfiles']]
+				if len(modes_availables) == 0:
+					print('No dockerfile found.')
+					continue
+				elif len(modes_availables) > 1:
+					alg_mode = self.get_acceptable_answer('Select mode of execution of '+alg_name+' algorithm? (cpu/gpu): \n',['cpu','gpu']).lower()
+				else:
+					alg_mode = modes_availables[0]
 
-				alg_mode = self.get_acceptable_answer('Select mode of execution of '+alg_name+' algorithm? (cpu/gpu): \n',['cpu','gpu']).lower()
 				alg_build = self.get_acceptable_answer('Do you want to build relative docker image? (y/n): \n',['y','n']).lower()
 				
 				descriptor_wished_params = dict()
