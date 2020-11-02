@@ -1,7 +1,7 @@
 ## How to develop a detector
 
 An algorithm of object detection can be developed with following operations:
-1. Create a folder inside the path (detector/object_extractors). 
+1. Create a folder inside the path ![alt text](detector/object_extractors). 
 2. Create the class that implements the detector and tracker in separate files.
 3. Create the executor.py file.
 4. Create the configuration file 'configuration.ini'.
@@ -14,7 +14,7 @@ These operation will be described in following sections.
 
 The executor implements the object detection and tracking algorithm on multiple sequential frames. The operations to be performed within the file are:
 * Import the classes that perform detection and tracking.
-* Define a class that extends the AbstractDetector abstract class, defined at the path (utils/abstract_detector.py).
+* Define a class that extends the AbstractDetector abstract class, defined at the path ![alt text](utils/abstract_detector.py).
 * Implement the extract_features method within the class. This method is invoked in the main interface, which manages all the installed detection algorithms, and cyclically receives the frames, which are the input stream to the DeepFramework, and a dictionary (executor_dict) that contains all the information needed to implement your own detection and and tracking algorithm. In short:
 
 ![alt text](executor.png)
@@ -48,7 +48,7 @@ The following guidelines must be taken into account when creating dockerfiles:
 * The Dockerfile for creating Docker images that will only use the cpu should be called Dockerfile.cpu
 * The Dockerfile for creating Docker images that will use the gpu should be called Dockerfile.gpu
 * Supporting Docker images should be named Dockerfile.setup if any.
-Modify the Dockerfiles according to the comments in the sample dockerfiles within the sample_detector/ folder.
+Modify the Dockerfiles according to the comments in the sample dockerfiles within the ![alt text]sample_detector/ folder.
 
 ### Creating configuration files
 Create a configuration file with the '.ini' extension in your detector folder. The file must contain the following information
@@ -80,7 +80,7 @@ python3 test_creator.py
 ```
 
 This command generates the scripts to test all the algorithms (detection and feature extraction) installed on the platform. For detection algorithms, the tests are created in the following path:
-detector/detector_tests/test_scripts
+![alt text]detector/detector_tests/test_scripts
 To run a test, from the main folder, run the desired script. Example:
 ```
 ./detector/detector_tests/test_scripts/my_test.sh
