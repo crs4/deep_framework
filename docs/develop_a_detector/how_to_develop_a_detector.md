@@ -1,12 +1,12 @@
 ## How to develop a detector
 
 An algorithm of object detection can be developed with following operations:
-1. Create a folder inside the path ../deep_framework/detector/object_extractors. 
+1. Create a folder inside the path (detector/object_extractors). 
 2. Create the class that implements the detector and tracker in separate files.
-3. Create the executor.py file, according to the Creating executor instructions.
-4. Create the configuration file 'configuration.ini' according to the instructions in Create configuration file.
-5 .Create the Dockerfiles according to the instructions in Creating Dockerfiles.
-6. Execute the test creation and execution procedure in the paragraph Creating and executing tests.
+3. Create the executor.py file.
+4. Create the configuration file 'configuration.ini'.
+5 .Create the Dockerfiles according.
+6. Execute the test creation and execution procedure.
 
 These operation will be described in following sections.
 
@@ -14,26 +14,26 @@ These operation will be described in following sections.
 
 The executor implements the object detection and tracking algorithm on multiple sequential frames. The operations to be performed within the file are:
 * Import the classes that perform detection and tracking.
-* Define a class that extends the AbstractDetector abstract class, defined at the path utils.abstract_detector.
+* Define a class that extends the AbstractDetector abstract class, defined at the path (utils/abstract_detector.py).
 * Implement the extract_features method within the class. This method is invoked in the main interface, which manages all the installed detection algorithms, and cyclically receives the frames, which are the input stream to the DeepFramework, and a dictionary (executor_dict) that contains all the information needed to implement your own detection and and tracking algorithm. In short:
 
 ![alt text](executor.png)
 
 The executor_dict dictionary contains the following keys:
-* frame_idx: frame id received from the detector
-* vc_time: instant of time when the image is captured
-* frame_shape: frame size
-* frame_counter: counter of analysed frames
+* **frame_idx**: frame id received from the detector
+* **vc_time**: instant of time when the image is captured
+* **frame_shape**: frame size
+* **frame_counter**: counter of analysed frames
 
-The method must return a list of Object type objects. The Object class is implemented at the following path: utils/features.py. It presents the following interface:
+The method must return a list of Object type objects. The Object class is implemented at the following path: (utils/features.py). It presents the following interface:
 
 ![alt text](object.png)
 
 The input parameters are:
-* rect: is an object of type Rect 
-* points: is a list of objects of type Point
-* pid: is the object's identifier. It can be set manually or it can be assigned automatically. It is set to None if whole_image is set to True and the pid field is not initialised.
-* whole_image: when set to True, indicates that the object is made up of the whole image
+* **rect**: is an object of type Rect 
+* **points**: is a list of objects of type Point
+* **pid**: is the object's identifier. It can be set manually or it can be assigned automatically. It is set to None if whole_image is set to True and the pid field is not initialised.
+* **whole_image**: when set to True, indicates that the object is made up of the whole image
 The coordinates of the bounding boxes and/or keypoints must initialize Rect and Point objects respectively. The classes have the following interfaces.
 
 
