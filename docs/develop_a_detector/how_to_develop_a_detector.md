@@ -1,7 +1,7 @@
 ## How to develop a detector
 
 An algorithm of object detection can be developed with following operations:
-1. Create a folder inside this [path](detector/object_extractors). 
+1. Create a folder inside this [path](../../detector/object_extractors). 
 2. Create the class that implements the detector and tracker in separate files.
 3. Create the *executor.py* file.
 4. Create the configuration file *configuration.ini*.
@@ -48,7 +48,7 @@ The following guidelines must be taken into account when creating dockerfiles:
 * The Dockerfile for creating Docker images that will only use the cpu should be called Dockerfile.cpu
 * The Dockerfile for creating Docker images that will use the gpu should be called Dockerfile.gpu
 * Supporting Docker images should be named Dockerfile.setup if any.
-Modify the Dockerfiles according to the comments in the sample dockerfiles within the ![alt text]sample_detector/ folder.
+Modify the Dockerfiles according to the comments in the sample dockerfiles within the [folder path](../../object_extractors/object_sample_detector/).
 
 ### Creating configuration files
 Create a configuration file with the '.ini' extension in your detector folder. The file must contain the following information
@@ -79,8 +79,8 @@ Execute the following command:
 python3 test_creator.py
 ```
 
-This command generates the scripts to test all the algorithms (detection and feature extraction) installed on the platform. For detection algorithms, the tests are created in the following path:
-![alt text]detector/detector_tests/test_scripts
+This command generates the scripts to test all the algorithms (detection and feature extraction) installed on the platform. For detection algorithms, the tests are created in this [path](../../detector/detector_tests/test_scripts).
+
 To run a test, from the main folder, run the desired script. Example:
 ```
 ./detector/detector_tests/test_scripts/my_test.sh
