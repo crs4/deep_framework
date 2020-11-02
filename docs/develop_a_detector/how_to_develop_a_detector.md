@@ -1,7 +1,7 @@
 ## How to develop a detector
 
 An algorithm of object detection can be developed with following operations:
-1. Create a folder inside the path *detector/object_extractors/*. 
+1. Create a folder inside this [path](detector/object_extractors). 
 2. Create the class that implements the detector and tracker in separate files.
 3. Create the *executor.py* file.
 4. Create the configuration file *configuration.ini*.
