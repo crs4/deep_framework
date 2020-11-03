@@ -48,7 +48,7 @@ The following guidelines must be taken into account when creating dockerfiles:
 * The Dockerfile for creating Docker images that will only use the cpu should be called Dockerfile.cpu
 * The Dockerfile for creating Docker images that will use the gpu should be called Dockerfile.gpu
 * Supporting Docker images should be named Dockerfile.setup if any.
-Modify the Dockerfiles according to the comments in the sample dockerfiles within the [folder path](../../object_extractors/sample_detector/).
+Modify the Dockerfiles according to the comments in the sample dockerfiles within the [folder path](../../detector/object_extractors/sample_detector/).
 
 ### Creating configuration files
 Create a configuration file with the '.ini' extension in your detector folder. The file must contain the following information
