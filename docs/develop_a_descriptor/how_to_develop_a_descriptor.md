@@ -17,12 +17,12 @@ image
 For this reason the Descriptor class should implement:
 * **win_size**: number of classification results that make up the time window on which an average will be averaged.
 * **detect_batch**: is the method that given the list of incoming images (crop of detector detected objects, images) and the list of detector detected objects (detector_results), must return their classification.
-* detector_results is the dictionary produced by the detector and contains the following values:
-* frame_idx: id of the frame analysed by the detector
-* objects: list of objects detected by the detector in the frame_idx frame
-* fp_time: timestamp that identifies the instant in which the detector produces its results.  
-* vc_time: timestamp that identifies the instant of time in which the frame was captured. 
-* frame_shape: frame size.
+  * detector_results is the dictionary produced by the detector and contains the following values:
+    * frame_idx: id of the frame analysed by the detector
+    * objects: list of objects detected by the detector in the frame_idx frame
+    * fp_time: timestamp that identifies the instant in which the detector produces its results.  
+    * vc_time: timestamp that identifies the instant of time in which the frame was captured. 
+    * frame_shape: frame size.
 * **refine_classification**: is the method that takes an input list of results (class_results) and returns the output results averaged over the maximum size of the time window on which they were captured represented by win_size.
 * class_results: is a list of results produced by detect_batch
 
