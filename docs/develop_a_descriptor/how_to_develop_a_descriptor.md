@@ -24,7 +24,7 @@ For this reason the Descriptor class should implement:
     * vc_time: timestamp that identifies the instant of time in which the frame was captured. 
     * frame_shape: frame size.
 * **refine_classification**: is the method that takes an input list of results (class_results) and returns the output results averaged over the maximum size of the time window on which they were captured represented by win_size.
-* class_results: is a list of results produced by detect_batch
+  * class_results: is a list of results produced by detect_batch
 
 Example:
 
