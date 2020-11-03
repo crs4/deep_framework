@@ -58,12 +58,12 @@ Create a configuration file with the '.ini' extension in your detector folder. T
 * **FRAMEWORK**: the framework used by the detector in case of GPU use (None if no framework is used)
 
 Example:
-* Case 1: The detector uses a framework but only in CPU mode or does not use any framework.
+* **Case 1**: The detector uses a framework but only in CPU mode or does not use any framework.
 
 
 ![alt text](framework_none.png)
 
-Case 2: The detector uses a framework (e.g. tensorflow) in GPU mode.
+* **Case 2**: The detector uses a framework (e.g. tensorflow) in GPU mode.
 
 ![alt text](framework_not_none.png)
 
