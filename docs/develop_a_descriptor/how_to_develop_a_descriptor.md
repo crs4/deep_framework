@@ -3,14 +3,14 @@
 An algorithm of feature extraction can be developed with following operations:
 
 
-1. Create a folder within the path ../deep_framework/descriptor/feature_extractors.
+1. Create a folder within the path [descriptor/feature_extractors](../../descriptor/feature_extractors).
 2. Inside the folder, create, in a dedicated file, the class that implements the descriptor.
 3. Inside the folder, create the descriptor configuration file.
 4. Create the Dockerfiles.
 5. Execute the test creation and execution procedure.
 
 ### Class definition
-Each descriptor must extend the abstract class AbstractDescriptor, defined at the path utils.abstract_descriptor
+Each descriptor must extend the abstract class AbstractDescriptor, defined at the path [utils.abstract_descriptor](../../utils.abstract_descriptor)
 
 image
 
@@ -40,8 +40,8 @@ The configuration file must be of type .ini and must contain the following field
 * **FRAMEWORK**: framework used by the descriptor (None if no framework is used)
 * **RELATED_TO**: indicates which detector the descriptor is associated with. Enter the name of the detector category.
 * **TYPE**: can take two values: 
-object_oriented: the descriptor extracts a property of the object detected by the detector
-image_oriented. the descriptor extracts an image property.
+  * object_oriented: the descriptor extracts a property of the object detected by the detector
+  * image_oriented. the descriptor extracts an image property.
 Example:
 generic_configuration.ini
 
@@ -56,7 +56,7 @@ The following guidelines must be taken into account when creating dockerfiles:
 * The Dockerfile for creating Docker images that will use only the cpu should be called Dockerfile.cpu
 * The Dockerfile for creating Docker images that will use the gpu should be called Dockerfile.gpu
 * Supporting Docker images should be named Dockerfile.setup if any.
-Modify the Dockerfiles according to the comments in the example dockerfiles in the generic_descriptor/ folder.
+Modify the Dockerfiles according to the comments in the example dockerfiles in the [generic_descriptor](../../descriptor/feature_extractors/generic_descriptor/) folder.
 
 ### Creation and execution of tests
 Once the descriptor development and configuration procedure has been completed, the test procedure must be performed.
@@ -66,7 +66,7 @@ python3 test_creator.py
 ```
 
 This command generates the scripts to test all the algorithms (detection and feature extraction) installed on the platform. For feature extraction algorithms, the tests are created in the following path:
-descriptor/descriptor_tests/test_scripts
+[descriptor/descriptor_tests/test_scripts](../../descriptor/descriptor_tests/test_scripts)
 To run a test, from the main folder, run the desired script. Example:
 ```
 ./descriptor/descriptor_tests/test_scripts/my_test.sh
