@@ -32,7 +32,7 @@ The method must return a list of Object type objects. The Object class is implem
 The input parameters are:
 * **rect**: is an object of type Rect 
 * **points**: is a list of objects of type Point
-* **pid**: is the object's identifier. It can be set manually or it can be assigned automatically. It is set to None if whole_image is set to True and the pid field is not initialised.
+* **pid**: is the object's identifier. It can be set manually or it can be assigned automatically. It is set to None if whole_image is set to True and the pid field is not initialized.
 * **whole_image**: when set to True, indicates that the object is made up of the whole image
 The coordinates of the bounding boxes and/or keypoints must initialize Rect and Point objects respectively. The classes have the following interfaces.
 
@@ -86,7 +86,7 @@ To run a test, from the main folder, run the desired script. Example:
 ./detector/detector_tests/test_scripts/my_test.sh
 ```
 
-Before executing the script, it is necessary to insert an image, called test_image.jpg, inside the detector folder, which will be used to verify the correct functioning of the algorithm developed.
+Before executing the script, it is necessary to put an image, called test_image.jpg, inside the detector folder, which will be used to verify the correct functioning of the algorithm developed.
 
 
 
