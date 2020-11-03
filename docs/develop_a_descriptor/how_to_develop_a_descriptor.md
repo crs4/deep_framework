@@ -12,7 +12,8 @@ An algorithm of feature extraction can be developed with following operations:
 ### Class definition
 Each descriptor must extend the abstract class AbstractDescriptor, defined at the path [utils.abstract_descriptor](../../utils/abstract_descriptor.py)
 
-image
+![alt text](abstract.png)
+
 
 For this reason the Descriptor class should implement:
 * **win_size**: number of classification results that make up the time window on which an average will be averaged.
@@ -29,7 +30,7 @@ For this reason the Descriptor class should implement:
 Example:
 
 
-image
+![alt text](generic_desc.png)
 
 ### Configuration creation
 The configuration file must be of type .ini and must contain the following fields:
@@ -45,9 +46,11 @@ The configuration file must be of type .ini and must contain the following field
 Example:
 generic_configuration.ini
 
-image
+![alt text](configuration.png)
 
-image
+
+![alt text](struct.png)
+
 
 
 ### Creation of dockerfiles
