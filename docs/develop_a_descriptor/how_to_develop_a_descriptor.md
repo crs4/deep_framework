@@ -10,7 +10,7 @@ An algorithm of feature extraction can be developed with following operations:
 5. Execute the test creation and execution procedure.
 
 ### Class definition
-Each descriptor must extend the abstract class AbstractDescriptor, defined at the path [utils.abstract_descriptor](../../utils.abstract_descriptor)
+Each descriptor must extend the abstract class AbstractDescriptor, defined at the path [utils.abstract_descriptor](../../utils/abstract_descriptor.py)
 
 image
 
@@ -66,7 +66,7 @@ python3 test_creator.py
 ```
 
 This command generates the scripts to test all the algorithms (detection and feature extraction) installed on the platform. For feature extraction algorithms, the tests are created in the following path:
-[descriptor/descriptor_tests/test_scripts](../../descriptor/descriptor_tests/test_scripts)
+[descriptor/descriptor_tests/test_scripts](../../descriptor/descriptor_tests/test_scripts).
 To run a test, from the main folder, run the desired script. Example:
 ```
 ./descriptor/descriptor_tests/test_scripts/my_test.sh
