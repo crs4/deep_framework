@@ -1,4 +1,4 @@
-## How to develop a detector
+# How to develop a detector
 
 An algorithm of object detection can be developed with following operations:
 1. Create a folder inside the following path [detector/object_extractors](../../detector/object_extractors). 
