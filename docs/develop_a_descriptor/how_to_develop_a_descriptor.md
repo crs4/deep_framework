@@ -4,9 +4,9 @@ An algorithm of feature extraction can be developed with following operations:
 
 
 1. Create a folder within the path [descriptor/feature_extractors](../../descriptor/feature_extractors).
-2. Inside the folder, create, in a dedicated file, the class that implements the descriptor.
-3. Inside the folder, create the descriptor configuration file.
-4. Create the Dockerfiles.
+2. Inside the folder, create, in a dedicated file, the class that implements the descriptor as described in [Class definition](#Class-definition).
+3. Inside the folder, create the descriptor configuration file, following these [rules](#Configuration-creation).
+4. Create the Dockerfiles, as in this [section](#Creation-of-dockerfiles).
 5. Execute the test creation and execution procedure, as described in this [section](#creation-and-execution-of-tests).
 
 ### Class definition
