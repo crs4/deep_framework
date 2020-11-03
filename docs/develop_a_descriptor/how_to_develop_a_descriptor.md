@@ -7,7 +7,7 @@ An algorithm of feature extraction can be developed with following operations:
 2. Inside the folder, create, in a dedicated file, the class that implements the descriptor.
 3. Inside the folder, create the descriptor configuration file.
 4. Create the Dockerfiles.
-5. Execute the test creation and execution procedure.
+5. Execute the test creation and execution procedure, as described in this [section](#creation-and-execution-of-tests).
 
 ### Class definition
 Each descriptor must extend the abstract class AbstractDescriptor, defined at the path [utils.abstract_descriptor](../../utils/abstract_descriptor.py).
