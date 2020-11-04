@@ -317,6 +317,7 @@ class DescriptorProvider(Interviewer):
 					alg_mode = modes_availables[0]
 
 				alg_build = self.get_acceptable_answer('Do you want to build relative docker image? (y/n): \n',['y','n']).lower()
+				num_worker = self.get_number('How many worker do you want to create for this descriptor? (y/n): (default: 1): \n','int',1)
 				
 				descriptor_wished_params = dict()
 				descriptor_wished_params['name'] = alg_name
@@ -324,6 +325,7 @@ class DescriptorProvider(Interviewer):
 				descriptor_wished_params['framework'] = desc['framework']
 				descriptor_wished_params['to_build'] = alg_build
 				descriptor_wished_params['related_to'] = related_detector
+				descriptor_wished_params['worker'] = num_worker
 				descriptor_wished_params['dockerfiles'] = desc['dockerfiles']
 
 				descriptors_to_execute.append(descriptor_wished_params)
@@ -339,6 +341,7 @@ class DescriptorProvider(Interviewer):
 			desc_wished_config[name]['mode'] = desc['mode']
 			desc_wished_config[name]['framework'] = desc['framework']
 			desc_wished_config[name]['related_to'] = desc['related_to']
+			desc_wished_config[name]['worker'] = str(desc['worker'])
 			
 			with open(os.path.join(MAIN_DIR, ALGS_CONFIG_FILE), 'w') as defaultconfigfile:
 				desc_wished_config.write(defaultconfigfile)

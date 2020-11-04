@@ -314,6 +314,7 @@ class SubCollectorService(DeepService):
 
 	def __init__(self,sub_collector_component,registry_address):
 		super().__init__()
+		self.params = sub_collector_component.params
 		self.service_name = sub_collector_component.component_name
 		self.image_tag = self.set_component_tag()
 		self.env_file = [ENV_PARAMS]
@@ -326,7 +327,8 @@ class SubCollectorService(DeepService):
 		collector_address = 'COLLECTOR_ADDRESS='+sub_collector_component.connected_to['collector']
 		sub_col_in_port = 'SUB_COL_PORT='+str(sub_collector_component.descriptor_port)
 		sub_col_out_port = 'COL_PORT='+str(sub_collector_component.collector_port)
-		environments = [collector_address,sub_col_in_port,sub_col_out_port]
+		sub_col_worker = 'WORKER='+str(self.params['worker'])
+		environments = [collector_address,sub_col_in_port,sub_col_out_port,sub_col_worker]
 		return environments
 
 
@@ -387,6 +389,7 @@ class DescriptorService(DeepService):
 		desc_dict['image'] = self.image_name
 		desc_dict['networks'] = [self.net]
 		desc_dict['deploy']= {'placement':{'constraints': ['node.hostname=='+self.node ]}}
+		desc_dict['deploy']= {'replicas': int(self.params['worker'])}
 
 		return desc_dict
 

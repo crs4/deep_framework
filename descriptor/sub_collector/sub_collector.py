@@ -39,8 +39,9 @@ class SubCollector(Process):
         col_socket = context.socket(zmq.PAIR)
         col_socket.connect(PROT+COLLECTOR_ADDRESS+':'+self.send_port)
 
-
-
+        ordered_buffer = []
+        sub_buffer = []
+        sub_max_size = int(WORKER)
         while True:
             
 
@@ -48,12 +49,23 @@ class SubCollector(Process):
             #get message from sub collector
             
             rec_dict, __ = recv_data(sub_col_socket,0,False)
+            if len(sub_buffer) < sub_max_size:
+                sub_buffer.append(rec_dict)
+                continue
+            else:
+                ordered_buffer = sorted(sub_buffer, key=lambda k: k['vc_time'])
+                sub_buffer = []
+
+
+
 
 
             #sends results to main collector
-            #col_socket.send_pyobj(rec_dict)
+            for msg_dict in ordered_buffer:
+                #print(msg_dict)
+                send_data(col_socket,None,0,False,**msg_dict)
 
-            send_data(col_socket,None,0,False,**rec_dict)
+            ordered_buffer = []
 
 
         print("subs collector: interrupt received, stopping")

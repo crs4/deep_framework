@@ -92,7 +92,7 @@ class PipelineManager:
 				desc_name = desc_params['name']
 				broker = BrokerComponent(self.ports,desc_name)
 				descriptor = DescriptorComponent(desc_params,self.ports,desc_name)
-				subcollector = SubCollectorComponent(self.ports,desc_name)
+				subcollector = SubCollectorComponent(self.ports,desc_params)
 
 				
 
@@ -156,11 +156,12 @@ class BrokerComponent:
 
 class SubCollectorComponent:
 
-	def __init__(self,ports,prefix):
+	def __init__(self,ports,desc_params):
+		self.params = desc_params
 		self.descriptor_port = ports['descriptor_subcollector_port']
 		self.collector_port = ports['subcollector_collector_port']
 		self.component_type = 'sub_collector'
-		self.component_name = prefix +'_'+ self.component_type
+		self.component_name = desc_params['name'] +'_'+ self.component_type
 		self.connected_to = {}
 
 class CollectorComponent:

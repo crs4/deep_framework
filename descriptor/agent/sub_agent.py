@@ -158,6 +158,7 @@ class Sub(Process):
             sub_res['obj_res_dict'] = obj_res_dict
             sub_res['img_res'] = img_res
             sub_res['frame_idx'] = vc_frame_idx
+            sub_res['vc_time'] = vc_time
             
             #sends results to collector
             send_data(sub_col_socket,None,0,False,**sub_res)
