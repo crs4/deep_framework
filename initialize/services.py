@@ -224,7 +224,6 @@ class DetectorService(DeepService):
 		detector['env_file'] = self.env_file
 		detector['image'] = self.image_name
 		detector['networks'] = [self.net]
-		#detector['ports'] = self.ports_map
 		detector['deploy']= {'placement':{'constraints': ['node.hostname=='+self.deploy_node ]}}
 		return detector
 
@@ -382,12 +381,14 @@ class DescriptorService(DeepService):
 
 
 	def create_descriptor_service(self):
-		sub_col_dict = dict()
-		sub_col_dict['environment'] = self.environments
-		sub_col_dict['env_file'] = self.env_file
-		sub_col_dict['image'] = self.image_name
-		sub_col_dict['networks'] = [self.net]
-		return sub_col_dict
+		desc_dict = dict()
+		desc_dict['environment'] = self.environments
+		desc_dict['env_file'] = self.env_file
+		desc_dict['image'] = self.image_name
+		desc_dict['networks'] = [self.net]
+		desc_dict['deploy']= {'placement':{'constraints': ['node.hostname=='+self.node ]}}
+
+		return desc_dict
 
 
 class StreamManagerService(DeepService):
