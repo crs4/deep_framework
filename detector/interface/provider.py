@@ -83,12 +83,19 @@ class ObjectProvider(Process):
 
         
 
-
+        MAX_SKIP_TIME = 0.3
+        buffer_was_empty = True
+        skip_counter = 0
+        # read the first frame waiting indefinetely
+        last_rec_dict, last_imgs = recv_data(vc_socket,0,False)
+        last_vc_time = last_rec_dict['vc_time']
+        last_alg_time = 0
+        skipping = True
 
         while True:
-            """
+            
             object_list = []
-
+            """
             rec_dict,imgs = recv_data(vc_socket,0,False)
 
             self.stats_maker.received_frames += 1
