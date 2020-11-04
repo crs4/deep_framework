@@ -4,13 +4,13 @@ An algorithm of feature extraction can be developed with following operations:
 
 
 1. Create a folder within the path [descriptor/feature_extractors](../../descriptor/feature_extractors).
-2. Inside the folder, create, in a dedicated file, the class that implements the descriptor.
-3. Inside the folder, create the descriptor configuration file.
-4. Create the Dockerfiles.
-5. Execute the test creation and execution procedure.
+2. Inside the folder, create, in a dedicated file, the class that implements the descriptor as described in [Class definition](#Class-definition).
+3. Inside the folder, create the descriptor configuration file, following these [rules](#Configuration-creation).
+4. Create the Dockerfiles, as in this [section](#Creation-of-dockerfiles).
+5. Execute the test creation and execution procedure, as described in this [section](#creation-and-execution-of-tests).
 
 ### Class definition
-Each descriptor must extend the abstract class AbstractDescriptor, defined at the path [utils.abstract_descriptor](../../utils/abstract_descriptor.py)
+Each descriptor must extend the abstract class AbstractDescriptor, defined at the path [utils.abstract_descriptor](../../utils/abstract_descriptor.py).
 
 ![alt text](abstract.png)
 
@@ -18,14 +18,14 @@ Each descriptor must extend the abstract class AbstractDescriptor, defined at th
 For this reason the Descriptor class should implement:
 * **win_size**: number of classification results that make up the time window on which an average will be averaged.
 * **detect_batch**: is the method that given the list of incoming images (crop of detector detected objects, images) and the list of detector detected objects (detector_results), must return their classification.
-  * detector_results is the dictionary produced by the detector and contains the following values:
-    * frame_idx: id of the frame analysed by the detector
-    * objects: list of objects detected by the detector in the frame_idx frame
-    * fp_time: timestamp that identifies the instant in which the detector produces its results.  
-    * vc_time: timestamp that identifies the instant of time in which the frame was captured. 
-    * frame_shape: frame size.
+  * *detector_results* is the dictionary produced by the detector and contains the following values:
+    * *frame_idx*: id of the frame analysed by the detector.
+    * *objects*: list of objects detected by the detector in the frame_idx frame.
+    * *fp_time*: timestamp that identifies the instant in which the detector produces its results.  
+    * *vc_time*: timestamp that identifies the instant of time in which the frame was captured. 
+    * *frame_shape*: frame size.
 * **refine_classification**: is the method that takes an input list of results (class_results) and returns the output results averaged over the maximum size of the time window on which they were captured represented by win_size.
-  * class_results: is a list of results produced by detect_batch
+  * *class_results*: is a list of results produced by detect_batch.
 
 Example:
 
@@ -41,8 +41,8 @@ The configuration file must be of type .ini and must contain the following field
 * **FRAMEWORK**: framework used by the descriptor (None if no framework is used)
 * **RELATED_TO**: indicates which detector the descriptor is associated with. Enter the name of the detector category.
 * **TYPE**: can take two values: 
-  * object_oriented: the descriptor extracts a property of the object detected by the detector
-  * image_oriented. the descriptor extracts an image property.
+  * *object_oriented*: the descriptor extracts a property of the object detected by the detector
+  * *image_oriented*. the descriptor extracts an image property.
 Example:
 generic_configuration.ini
 
