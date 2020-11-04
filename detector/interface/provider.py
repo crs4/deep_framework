@@ -86,6 +86,7 @@ class ObjectProvider(Process):
 
 
         while True:
+            """
             object_list = []
 
             rec_dict,imgs = recv_data(vc_socket,0,False)
@@ -100,6 +101,71 @@ class ObjectProvider(Process):
                 self.stats_maker.skipped_frames += 1
                 print('skipping')
                 continue
+
+            """
+            try:
+                if skipping:
+                    # read a new frame without waiting (raise an error is there is none)
+                    new_rec_dict, new_imgs = recv_data(vc_socket,1,False) 
+                    buffer_was_empty = False               
+                else:
+                    # use last read frame 
+                    new_rec_dict, new_imgs = last_rec_dict, last_imgs 
+                    skipping = True
+
+                new_vc_time = new_rec_dict['vc_time']
+                skip_time = new_vc_time - last_vc_time
+                current_delay = time.time() - new_vc_time
+                forecast_delay = current_delay + last_alg_time
+                if current_delay > MAX_ALLOWED_DELAY:
+                    print(f'Skipping because delay is already too high. current_delay: {current_delay}, forecast_delay: {forecast_delay}, skip_time: {skip_time}')
+                    skipping = True
+                # elif forecast_delay > MAX_ALLOWED_DELAY:
+                #     print(f'Skipping because delay will be too high. forecast_delay: {forecast_delay}, current_delay: {current_delay}, skip_time: {skip_time}')
+                #     skipping = True
+                elif skip_time > MAX_SKIP_TIME:
+                    print(f'Max skip time reached. skip_time: {skip_time}, current_delay: {current_delay}, forecast_delay: {forecast_delay}')
+                    skipping = False
+                
+                if skipping:
+                    # save the read frame
+                    last_rec_dict, last_imgs = new_rec_dict, new_imgs 
+                    skip_counter += 1 
+                    # and try to read a new one  
+                    continue 
+                else: # if the max skip time was reached
+                    print('using last frame')
+                    # use the previous frame (which do not goes over the max skip time)
+                    rec_dict, imgs = last_rec_dict, last_imgs
+                    # save the read frame
+                    last_rec_dict, last_imgs = new_rec_dict, new_imgs
+            except zmq.ZMQError:
+                print('Buffer empty')
+                if buffer_was_empty:
+                    print('Wating for new frames because buffer was already empty')
+                    # read a new frame waiting indefinetely
+                    rec_dict,imgs = recv_data(vc_socket,0,False)
+                    buffer_was_empty = False
+                else:
+                    print('using last frame')
+                    # use last read frame 
+                    rec_dict,imgs = last_rec_dict, last_imgs
+                    buffer_was_empty = True
+            
+            print(f'Frames skipped: {skip_counter}')
+            skip_counter = 0
+            last_vc_time = rec_dict['vc_time']
+
+            self.stats_maker.received_frames += 1
+            current_frame = imgs[0]
+            vc_frame_idx = rec_dict['frame_idx']
+            vc_time = rec_dict['vc_time']  
+            frame_shape = rec_dict['frame_shape']  
+
+
+
+
+
 
             #algorithm start
             try:
