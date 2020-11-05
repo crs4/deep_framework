@@ -25,3 +25,4 @@ WORKDIR /home/deepframework/descriptor
 
 
 
+CMD python3 sub_agent.py

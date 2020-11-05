@@ -29,4 +29,7 @@ COPY --from=descriptor_tests:deep_setup /home/deepframework/descriptor_tests/exe
 WORKDIR /home/deepframework/descriptor
 
 
+CMD python3 sub_agent.py
+
+
 
