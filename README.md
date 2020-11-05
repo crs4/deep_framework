@@ -29,7 +29,7 @@ A demo web app is also included.
 * Results and performance stats available via a [Server-Sent Event (SSE)](https://en.wikipedia.org/wiki/Server-sent_events) API. 
 * Can stream resulting data and input video to any web application via [WebRTC](https://en.wikipedia.org/wiki/WebRTC). It can also handle the video stream provided by a client web app via WebRTC.
 * It's possibile to develop and deploy your own detector. [Instructions](docs/develop_a_detector/how_to_develop_a_detector.md).
-* It's possibile to develop and deploy your own detector. [Instructions](docs/develop_a_descriptor/how_to_develop_a_descriptor.md).
+* It's possibile to develop and deploy your own descriptor. [Instructions](docs/develop_a_descriptor/how_to_develop_a_descriptor.md).
 
 ## Architecture
 ![alt text](docs/architettura.png)
