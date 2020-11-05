@@ -229,7 +229,7 @@ class ObjectProvider(Process):
             current_frame= None
 
             self.stats_maker.elaborated_frames += 1
-            self.stats_maker.stat_people = len(object_list)
+            self.stats_maker.object_counter = len(object_list)
             
             
 
@@ -244,7 +244,7 @@ class ObjectProvider(Process):
     def __send_stats(self):
         
         stats = self.stats_maker.create_stats()
-        stats_dict = {self.__class__.__name__:stats}
+        stats_dict = {self.det_name.lower()+'_detector':stats}
         send_data(self.monitor_stats_sender,None,0,False,**stats_dict)
 
     def __rescale_object(self,obj):

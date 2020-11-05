@@ -11,7 +11,7 @@ class StatsMaker:
 		self.skipped_frames = 0
 		self.received_frames = 0
 		self.start_time = 0
-		self.stat_people = 0
+		self.object_counter = 0
 
 	def create_stats(self):
 		stats = dict()
