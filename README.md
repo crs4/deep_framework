@@ -2,14 +2,21 @@
 
 The DEEP-Framework is a Python-based distributed and scalable framework for analyzing a real-time video stream. At its core, the framework provides a modular Docker-based pipeline that allows to distribute and parallelize all tasks from video capturing, to object detection, to information extraction, to  results collection, to output streaming.
 
-The current version includes an implementation of a face detector and various algorithms that extract information from faces like:
+The current version includes an implementation of following pipelines: 
+* A face detector and various algorithms that extract information from faces like:
+  * Age estimation
+  * Gender estimation
+  * Face recognition
+  * Glasses detection
+  * Yaw estimation
+  * Pitch estimation
 
-* Age estimation
-* Gender estimation
-* Face recognition
-* Glasses detection
-* Yaw estimation
-* Pitch estimation
+* A person detector and an algorithm that extract information about clothing.
+
+* A vehicle detector and an algorithm that performs a flux analysis of the scene.
+
+It's possible tu run multiple pipeline at the same time.
+
 
 A demo web app is also included.
 
@@ -17,9 +24,12 @@ A demo web app is also included.
 * Can handle video streams from IP cameras and webcams.
 * Frames are skipped dynamically according to user requirements and workload/network traffic.
 * Algorithms execution can be distributed across multiple nodes in a cluster.
+* Can create multiple worker for every algorithm.
 * Every algorithm can be executed in CPU and GPU modes.
 * Results and performance stats available via a [Server-Sent Event (SSE)](https://en.wikipedia.org/wiki/Server-sent_events) API. 
 * Can stream resulting data and input video to any web application via [WebRTC](https://en.wikipedia.org/wiki/WebRTC). It can also handle the video stream provided by a client web app via WebRTC.
+* It's possibile to develop and deploy your own detector. [Instructions](docs/develop_a_detector/how_to_develop_a_detector.md).
+* It's possibile to develop and deploy your own detector. [Instructions](docs/develop_a_descriptor/how_to_develop_a_descriptor.md).
 
 ## Architecture
 ![alt text](docs/architettura.png)
