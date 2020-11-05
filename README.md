@@ -32,7 +32,7 @@ A demo web app is also included.
 * It's possibile to develop and deploy your own descriptor. [Instructions](docs/develop_a_descriptor/how_to_develop_a_descriptor.md).
 
 ## Architecture
-![alt text](docs/architettura.png)
+![alt text](docs/architettura2_0.png)
 
 The architecture of Deep Framework is composed by the following generic components:
 
