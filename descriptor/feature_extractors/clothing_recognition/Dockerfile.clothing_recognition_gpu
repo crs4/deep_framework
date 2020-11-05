@@ -1,5 +1,5 @@
 
-FROM tensorflow/tensorflow:1.12.0-gpu-py3
+FROM tensorflow/tensorflow:1.12.0-gpu
 
 
 
@@ -29,7 +29,7 @@ COPY --from=descriptor_tests:deep_setup /home/deepframework/descriptor_tests/exe
 WORKDIR /home/deepframework/descriptor
 
 
-CMD python3 sub_agent.py
+CMD python sub_agent.py
 
 
 

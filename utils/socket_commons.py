@@ -124,7 +124,11 @@ def recv_data(socket,flags=0, copy=True, track=False):
 
     #msg = socket.recv(flags=flags, copy=copy, track=track)
     msg = msgs[i]
-    buf = memoryview(msg)
+    try:
+      buf = memoryview(msg)
+    except:
+      buf = buffer(msg)
+
     shape = list(payloads[i]['shape'])
     dtype = payloads[i]['dtype']
     img = numpy.frombuffer(buf, dtype=dtype)
