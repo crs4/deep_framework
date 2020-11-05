@@ -133,9 +133,10 @@ One of the services that are included in the DEEP-Framework once it's up and run
 You can interact directly with the Server and the Stream Manager from your browser-based application by using the [hyperpeer-js module](https://github.com/crs4/hyperpeer-js) (DEEP-Framework video streaming is based on [Hyperpeer](http://www.crs4.it/results/technology-catalogue/hyperpeer/) which in turn is based on [WebRTC](https://en.wikipedia.org/wiki/WebRTC)). You can install this javascript library (currently available only through its GitHub repo) and using it in your code using browserify or any other frontend package manager. [Here](docs/custom_app_example.js) you can find a simplified example that illustrates how to use [hyperpeer-js](https://github.com/crs4/hyperpeer-js) for sending the local webcam video stream and get the results as `data` events. See [hyperpeer-js](https://github.com/crs4/hyperpeer-js) documentation for more details. 
 
 ### 3. Using the SSE API
-The web app (either the demo or a custom one) is the main interface for controlling and monitoring the analysis of a video stream with the DEEP-Framework. However, it connects to the Stream Manager with a peer-to-peer connection so only one client application can be used at a time. If you need to send the video analysis results to another or many other applications you can use the SSE API which provides two endpoints (consider that analysis has been started through the web app first in order to receive any data):
-* `/api/faces_stream`
-* `/api/stats`
+The web app (either the demo or a custom one) is the main interface for controlling and monitoring the analysis of a video stream with the DEEP-Framework. However, it connects to the Stream Manager with a peer-to-peer connection so only one client application can be used at a time. If you need to send the video analysis results to another or many other applications you can use the SSE API which provides multiple endpoints (consider that analysis has been started through the web app first in order to receive any data):
+* `/api/stream_<DETECTOR_CATEGORY>`: there is an endpoint for every detector chosen.
+* `/api/stats`: it shows functioning statistics about the components running in the pipelines.
+* `/api/algs`: it shows running alghorithms.
 
 
 ## License
