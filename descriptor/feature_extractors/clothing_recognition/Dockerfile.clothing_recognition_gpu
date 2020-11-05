@@ -11,7 +11,7 @@ RUN apt-get update && apt-get install -y \
     iputils-ping \
     python-setuptools
 
-RUN pip3 install \
+RUN pip install \
     opencv-python==4.1.0.25 \
     pyzmq==18.0.1 \
     Keras==2.2.4 \
