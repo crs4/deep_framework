@@ -10,9 +10,11 @@ RUN apt-get update && apt-get install -y \
     python-setuptools
 
 RUN pip3 install \
-    pyzmq \
-    opencv-python \
-    keras
+    opencv-python==4.1.0.25 \
+    pyzmq==18.0.1 \
+    Keras==2.2.4
+
+
 
 COPY . /home/deepframework/descriptor/clothing_recognition
 COPY --from=utils:deep_setup /home/deepframework/utils /home/deepframework/descriptor/utils

@@ -12,10 +12,10 @@ RUN apt-get update && apt-get install -y \
     python-setuptools
 
 RUN pip3 install \
-    pyzmq \
-    opencv-python \
-    keras \
-    pyyaml
+    opencv-python==4.1.0.25 \
+    pyzmq==18.0.1 \
+    Keras==2.2.4 \
+    pyyaml==5.1
 
 
 
