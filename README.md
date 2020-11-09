@@ -2,14 +2,21 @@
 
 The DEEP-Framework is a Python-based distributed and scalable framework for analyzing a real-time video stream. At its core, the framework provides a modular Docker-based pipeline that allows to distribute and parallelize all tasks from video capturing, to object detection, to information extraction, to  results collection, to output streaming.
 
-The current version includes an implementation of a face detector and various algorithms that extract information from faces like:
+The current version includes an implementation of following pipelines: 
+* A face detector and various algorithms that extract information from faces like:
+  * Age estimation
+  * Gender estimation
+  * Face recognition
+  * Glasses detection
+  * Yaw estimation
+  * Pitch estimation
 
-* Age estimation
-* Gender estimation
-* Face recognition
-* Glasses detection
-* Yaw estimation
-* Pitch estimation
+* A person detector and an algorithm that extract information about clothing.
+
+* A vehicle detector and an algorithm that performs a flux analysis of the scene.
+
+It's possible tu run multiple pipeline at the same time.
+
 
 A demo web app is also included.
 
@@ -17,12 +24,15 @@ A demo web app is also included.
 * Can handle video streams from IP cameras and webcams.
 * Frames are skipped dynamically according to user requirements and workload/network traffic.
 * Algorithms execution can be distributed across multiple nodes in a cluster.
+* Can create multiple worker for every algorithm.
 * Every algorithm can be executed in CPU and GPU modes.
 * Results and performance stats available via a [Server-Sent Event (SSE)](https://en.wikipedia.org/wiki/Server-sent_events) API. 
 * Can stream resulting data and input video to any web application via [WebRTC](https://en.wikipedia.org/wiki/WebRTC). It can also handle the video stream provided by a client web app via WebRTC.
+* It's possibile to develop and deploy your own detector. [Instructions](docs/develop_a_detector/how_to_develop_a_detector.md).
+* It's possibile to develop and deploy your own descriptor. [Instructions](docs/develop_a_descriptor/how_to_develop_a_descriptor.md).
 
 ## Architecture
-![alt text](docs/architettura.png)
+![alt text](docs/architettura2_0.png)
 
 The architecture of Deep Framework is composed by the following generic components:
 
@@ -123,9 +133,10 @@ One of the services that are included in the DEEP-Framework once it's up and run
 You can interact directly with the Server and the Stream Manager from your browser-based application by using the [hyperpeer-js module](https://github.com/crs4/hyperpeer-js) (DEEP-Framework video streaming is based on [Hyperpeer](http://www.crs4.it/results/technology-catalogue/hyperpeer/) which in turn is based on [WebRTC](https://en.wikipedia.org/wiki/WebRTC)). You can install this javascript library (currently available only through its GitHub repo) and using it in your code using browserify or any other frontend package manager. [Here](docs/custom_app_example.js) you can find a simplified example that illustrates how to use [hyperpeer-js](https://github.com/crs4/hyperpeer-js) for sending the local webcam video stream and get the results as `data` events. See [hyperpeer-js](https://github.com/crs4/hyperpeer-js) documentation for more details. 
 
 ### 3. Using the SSE API
-The web app (either the demo or a custom one) is the main interface for controlling and monitoring the analysis of a video stream with the DEEP-Framework. However, it connects to the Stream Manager with a peer-to-peer connection so only one client application can be used at a time. If you need to send the video analysis results to another or many other applications you can use the SSE API which provides two endpoints (consider that analysis has been started through the web app first in order to receive any data):
-* `/api/faces_stream`
-* `/api/stats`
+The web app (either the demo or a custom one) is the main interface for controlling and monitoring the analysis of a video stream with the DEEP-Framework. However, it connects to the Stream Manager with a peer-to-peer connection so only one client application can be used at a time. If you need to send the video analysis results to another or many other applications you can use the SSE API which provides multiple endpoints (consider that analysis has been started through the web app first in order to receive any data):
+* `/api/stream_<DETECTOR_CATEGORY>`: there is an endpoint for every detector chosen.
+* `/api/stats`: it shows functioning statistics about the components running in the pipelines.
+* `/api/algs`: it shows running alghorithms.
 
 
 ## License

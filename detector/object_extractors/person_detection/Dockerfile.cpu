@@ -1,4 +1,4 @@
-FROM valian/docker-python-opencv-ffmpeg:py3
+FROM python:3.7-slim
 
 
 RUN apt-get update && apt-get install -y \ 
@@ -10,10 +10,15 @@ RUN apt-get update && apt-get install -y \
     python-setuptools
 
 RUN pip3 install \
+    cmake==3.18.2
+
+RUN pip3 install \
     imutils==0.5.2 \
     pyzmq==18.0.1 \
     dlib==19.17.0 \
-    scipy==1.2.1
+    scipy==1.2.1 \
+    opencv-python==4.1.0.25 \
+    opencv-contrib-python==4.2.0.34
 
 
 COPY . /home/deepframework/detector/person_detection

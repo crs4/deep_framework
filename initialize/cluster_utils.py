@@ -1,7 +1,7 @@
 
 
 from initialize.nodes_utils import LocalNode, RemoteNode, Cluster
-from initialize.configurator import Interviewer
+from initialize.interviewer import Interviewer
 
 from configparser import ConfigParser
 import os

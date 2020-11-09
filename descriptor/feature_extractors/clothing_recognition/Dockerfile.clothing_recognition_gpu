@@ -1,5 +1,5 @@
 
-FROM tensorflow/tensorflow:1.12.0-gpu-py3
+FROM tensorflow/tensorflow:1.12.0-gpu
 
 
 
@@ -11,22 +11,25 @@ RUN apt-get update && apt-get install -y \
     iputils-ping \
     python-setuptools
 
-RUN pip3 install \
-    pyzmq \
-    opencv-python \
-    keras \
-    pyyaml
+RUN pip install \
+    opencv-python==4.1.0.25 \
+    pyzmq==18.0.1 \
+    Keras==2.2.4 \
+    pyyaml==5.1
 
 
 
 COPY . /home/deepframework/descriptor/clothing_recognition
-COPY --from=utils:deep /home/deepframework/utils /home/deepframework/descriptor/utils
-COPY --from=agent:deep /home/deepframework/agent/. /home/deepframework/descriptor
+COPY --from=utils:deep_setup /home/deepframework/utils /home/deepframework/descriptor/utils
+COPY --from=agent:deep_setup /home/deepframework/agent/. /home/deepframework/descriptor
 COPY --from=descriptor_tests:deep_setup /home/deepframework/descriptor_tests/execute_test.py /home/deepframework/descriptor
 
 
 
 WORKDIR /home/deepframework/descriptor
+
+
+CMD python sub_agent.py
 
 
 

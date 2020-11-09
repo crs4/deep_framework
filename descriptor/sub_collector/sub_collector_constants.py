@@ -6,4 +6,8 @@ import os
 PROT = os.environ['PROT']
 
 COLLECTOR_ADDRESS = os.environ['COLLECTOR_ADDRESS']
-ALGS = os.environ['ALGS']
+
+
+SUB_COL_PORT = os.environ['SUB_COL_PORT']
+COL_PORT = os.environ['COL_PORT']
+WORKER = os.environ['WORKER']

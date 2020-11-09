@@ -1,19 +1,17 @@
-import subprocess
-import urllib
-import os
-import time
-import json
-import ruamel.yaml
-from pathlib import Path
-from config import *
 import argparse
 
 from configparser import ConfigParser
 from initialize.gputils import GPUallocator
-from initialize.configurator import Interviewer, Configurator
 from initialize.cluster_utils import ClusterManager
 from initialize.nodes_utils import Machine,Registry
 from initialize.starter import Starter
+
+from initialize.revealer import *
+from initialize.interviewer import *
+from initialize.gputils import *
+from initialize.pipeline import *
+from initialize.services import *
+from initialize.builder import *
 
 
 if __name__ == "__main__":
@@ -25,48 +23,53 @@ if __name__ == "__main__":
 	if args.run:
 		print('Using last configuration and settings...')
 
-	q = Interviewer()
 	machine = Machine()
 	cluster_manager = ClusterManager()
 	registry = Registry()
-	conf = Configurator(registry)
 	starter = Starter(machine,registry,cluster_manager,use_last_settings=args.run)
-
 	nodes_data = starter.get_nodes()
+
+
+		
+	rev = Revealer()
+	det_revealed = rev.reveal_detectors()
+	desc_revealed = rev.reveal_descriptors()
 	
-	print(nodes_data)
+	standard_revelead = rev.reveal_standard_components()
+	
+	par = ParamsProvider()
+	par.set_stream_params(use_last_settings=args.run)
+	
+	sp = SourceProvider()
+	sources = sp.get_sources(use_last_settings=args.run)
+	
+	det_prov = DetectorProvider(det_revealed)
+	dets = det_prov.get_detectors(use_last_settings=args.run)
 
+	
+	desc_prov = DescriptorProvider(desc_revealed,dets)
+	descs = desc_prov.get_descriptors(use_last_settings=args.run)
 
-	sources = starter.manage_sources()
-	detector = starter.manage_detector(conf)
-	starter.manage_algs(conf)
-	starter.manage_standard_images()
+	standard_prov = StandardProvider(standard_revelead)
+	stds = standard_prov.get_standard_components(use_last_settings=args.run)
 
-	execution_algs = starter.get_execution_algs()
-
-
-	gpu_alloc = GPUallocator(nodes_data,execution_algs,detector)
+	gpu_alloc = GPUallocator(nodes_data,descs,dets)
 	alg_gpu_matches = gpu_alloc.match_algs_gpus()
-	print(alg_gpu_matches)
 
-	det = starter.set_detector(alg_gpu_matches)
+	
+	p = PipelineManager(alg_gpu_matches)
+	pipeline = p.create_pipeline()
 
-	conf.set_main_compose_variables(execution_algs)
-	conf.set_compose_images(MAIN_COMPOSE_FILE, sources, nodes_data, det)
+	dm = DockerServicesManager(pipeline,registry.insecure_addr,sources)
+	docker_services = dm.get_services()
+	dm.write_services()
+	
+	img_man = ImageManager(machine,docker_services,registry.insecure_addr,stds)
+	img_man.start_build_routine()
 
-	"""
-	gpu_alloc = GPUallocator(nodes_data,execution_algs)
-	alg_gpu_matches = gpu_alloc.match_algs_gpus()
-	print(alg_gpu_matches)
-	"""
-
-	compose_command_string = conf.set_compose_algs_variables(execution_algs,alg_gpu_matches)
 	if not args.run:
-		starter.build_and_push(alg_gpu_matches)
-
-	
-
-	starter.start_framework(compose_command_string)
+		starter.create_source_volume(sources)
+	starter.start_framework()
 	
 
 

@@ -124,10 +124,15 @@ def recv_data(socket,flags=0, copy=True, track=False):
 
     #msg = socket.recv(flags=flags, copy=copy, track=track)
     msg = msgs[i]
-    buf = memoryview(msg)
     shape = list(payloads[i]['shape'])
     dtype = payloads[i]['dtype']
-    img = numpy.frombuffer(buf, dtype=dtype)
+    try:
+      buf = memoryview(msg)
+      img = numpy.frombuffer(buf, dtype=dtype)
+    except:
+      buf = buffer(msg)
+      img = numpy.frombuffer(buf, dtype=dtype)
+
     img = img.reshape(shape)
     imgs.append(img)
   

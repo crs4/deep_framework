@@ -96,7 +96,8 @@ if __name__ == '__main__':
 	dockerfiles = find_dockerfiles(MAIN_DIR)
 	for f in dockerfiles:
 		base, f_name = os.path.split(f)
-		if 'setup' in f_name:
+		if 'setup' in f_name or 'test' in f_name:
+			print(f)
 			setup_files.append(f)
 			continue
 

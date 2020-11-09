@@ -5,7 +5,7 @@ import os
 
 PROT= os.environ['PROT']
 MAX_ALLOWED_DELAY	= float(os.environ['MAX_ALLOWED_DELAY'])
-VC_OUT	= os.environ['VC_OUT']
+STREAM_OUT	= os.environ['STREAM_OUT']
 COLLECTOR_ADDRESS	= os.environ['COLLECTOR_ADDRESS']
 FP_OUT	= os.environ['FP_OUT']
 FP_OUT_TO_COL	= os.environ['FP_OUT_TO_COL']
