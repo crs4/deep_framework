@@ -33,7 +33,7 @@ The input parameters are:
 * **rect**: is an object of type Rect 
 * **points**: is a list of objects of type Point
 * **pid**: is the object's identifier. It can be set manually or it can be assigned automatically. It is set to None if whole_image is set to True and the pid field is not initialized.
-* **whole_image**: when set to True, indicates that the object is made up of the whole image
+* **whole_image**: when set to True, indicates that the object is made up of the whole image.
 The coordinates of the bounding boxes and/or keypoints must initialize Rect and Point objects respectively. The classes have the following interfaces.
 
 
