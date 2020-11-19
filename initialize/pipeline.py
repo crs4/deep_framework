@@ -2,10 +2,11 @@ from config import *
 
 class PipelineManager:
 
-	def __init__(self,matches):
+	def __init__(self,matches,sources):
 		self.__set_connection_ports()
 		self.detectors = matches['detectors']
 		self.descriptors = matches['descriptors']
+		self.sources = sources
 		self.__set_connection_ports()
 		
 

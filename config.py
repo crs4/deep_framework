@@ -9,5 +9,6 @@ CLUSTER_CONFIG_FILE = 'initialize/configuration_files/cluster_configuration.ini'
 DETECTOR_PATH = 'detector/object_extractors'
 DESCRITPTOR_PATH = 'descriptor/feature_extractors'
 ENV_PARAMS = 'env_params.list'
+ENV_SOURCES = 'env_sources.list'
 NETWORK = 'net_deep'
 APP_PORT = 8000
