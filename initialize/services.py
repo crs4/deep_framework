@@ -11,48 +11,52 @@ from config import *
 class DockerServicesManager:
 
 
-	def __init__(self,pipeline,registry_address,sources):
-		self.pipeline = pipeline
+	def __init__(self,deep_structure,registry_address,sources):
+		self.deep_structure = deep_structure
 		self.registry_address = registry_address
 		self.sources = sources
 		self.services = []
 		self.dict_services = dict()
-		self.extract_pipeline()
+		self.extract_structure()
 
 
 	
-	def extract_pipeline(self):
+	def extract_structure(self):
 
 		desc_name_list = []
 
+		pipelines = self.deep_structure['pipelines']
+		for pipeline in pipelines:
+			stream_manager_component = pipeline['stream_manager']
+			self.manage_stream_manager_services(stream_manager_component)
 
-		for chain in self.pipeline['chains']:
+			for chain in pipeline['chains']:
 
-			detector = chain['detector'] 
-			collector = chain['collector']
-			descriptor_chains = chain['descriptors']
-			
-			for desc_chain in descriptor_chains:
-				broker = desc_chain['broker']
-				subcollector = desc_chain['subcollector']
-				descriptor_list = desc_chain['descriptors']
-				for desc in descriptor_list:
-					desc_name = desc.params['name'] 
-					desc_name_list.append(desc_name)
+				detector = chain['detector'] 
+				collector = chain['collector']
+				descriptor_chains = chain['descriptors']
+				
+				for desc_chain in descriptor_chains:
+					broker = desc_chain['broker']
+					subcollector = desc_chain['subcollector']
+					descriptor_list = desc_chain['descriptors']
+					for desc in descriptor_list:
+						desc_name = desc.params['name'] 
+						desc_name_list.append(desc_name)
 
-				self.manage_broker_services(broker)
-			
-				self.manage_subcollector_services(subcollector)
-							
-				self.manage_descriptors_services(descriptor_list)
+					self.manage_broker_services(broker)
+				
+					self.manage_subcollector_services(subcollector)
+								
+					self.manage_descriptors_services(descriptor_list)
 
 
-			self.manage_detector_services(detector)
-			
-			self.manage_collector_services(collector)
-			
-			
-			
+				self.manage_detector_services(detector)
+				
+				self.manage_collector_services(collector)
+				
+				
+				
 
 		self.create_base_services(desc_name_list)
 
@@ -102,21 +106,20 @@ class DockerServicesManager:
 			#descriptor_service.write_service()
 
 
-
-
-
-	def create_base_services(self,desc_name_list):
-		stream_manager = self.pipeline['stream_manager']
-		stream_capture = self.pipeline['stream_capture']
-		monitor = self.pipeline['monitor']
-		server= self.pipeline['server']
-
-		stream_man_service = StreamManagerService(stream_manager,self.registry_address)
+	def manage_stream_manager_services(self,stream_manager_component):
+		stream_man_service = StreamManagerService(stream_manager_component,self.registry_address)
 		stream_man_dict = stream_man_service.create_stream_manager_service()
 		self.services.append(stream_man_service)
 		self.dict_services[stream_man_service.service_name] = stream_man_dict
 
 
+	def create_base_services(self,desc_name_list):
+		stream_capture = self.deep_structure['stream_capture']
+		monitor = self.deep_structure['monitor']
+		server = self.deep_structure['server']
+
+		
+		"""
 		for source in self.sources:
 			stream_cap_service = StreamCaptureService(stream_capture,source,self.registry_address)
 			stream_cap_dict = stream_cap_service.create_stream_capture_service()
@@ -124,6 +127,7 @@ class DockerServicesManager:
 			self.dict_services[stream_cap_service.service_name] = stream_cap_dict
 
 			#print(stream_cap_dict)
+		"""
 
 		monitor_service = MonitorService(monitor,desc_name_list,self.registry_address)
 		monitor_dict = monitor_service.create_monitor_service()
@@ -398,12 +402,12 @@ class StreamManagerService(DeepService):
 
 	def __init__(self,stream_manager_component,registry_address):
 		super().__init__()
-		self.service_name = stream_manager_component.component_type
+		self.service_name = stream_manager_component.component_name
 		self.image_tag = self.set_component_tag()
 		self.env_file = [ENV_PARAMS]
 		self.net = NETWORK
 		self.environments = self.__set_environments(stream_manager_component)
-		self.image_name = self.set_image_name(registry_address,self.service_name,self.image_tag)
+		self.image_name = self.set_image_name(registry_address,stream_manager_component.component_type,self.image_tag)
 
 	def __set_environments(self,stream_manager_component):
 		environments = []

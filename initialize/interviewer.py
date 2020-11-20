@@ -161,7 +161,8 @@ class SourceProvider(Interviewer):
 		source_folder = None
 		add_video_source_question = 'Do you want to add a video source? (y/n): \n'
 
-		
+		default_source = {'source_id': 'local', 'source_path': 'local', 'source_folder': None}
+		sources.append(default_source)
 
 
 		while self.get_acceptable_answer(add_video_source_question,['y','n']).lower() == 'y':
@@ -252,7 +253,7 @@ class DetectorProvider(Interviewer):
 		for source in self.sources:
 			source_detectors = []
 			while len(source_detectors) == 0:
-				print('Please, enter your wished detector for the following source: ',source['source_id'])
+				print('Please, enter your wished detector for the following source:',source['source_id'])
 				for det in self.available_detectors:
 					det_name = det['name']
 					answer_det = self.get_acceptable_answer('Do you want to execute '+det_name+' detector? (y/n): \n',['y','n']).lower()

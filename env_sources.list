@@ -1,4 +1,4 @@
 
-SOURCE_1=zio
+SOURCE_local=local
 
-SOURCE_4=p0pp0
+SOURCE_static=/mnt/remote_media/face.mov

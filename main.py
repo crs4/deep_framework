@@ -50,22 +50,18 @@ if __name__ == "__main__":
 	desc_prov = DescriptorProvider(desc_revealed,dets)
 	descs = desc_prov.get_descriptors(use_last_settings=args.run)
 
-	print(descs)
-	print(dets)
-	print(sources)
-	a = input('stop')
 
 	standard_prov = StandardProvider(standard_revelead)
 	stds = standard_prov.get_standard_components(use_last_settings=args.run)
 
 	gpu_alloc = GPUallocator(nodes_data,descs,dets)
 	alg_gpu_matches = gpu_alloc.match_algs_gpus()
-
+	
 	
 	p = PipelineManager(alg_gpu_matches,sources)
-	pipeline = p.create_pipeline()
+	deep_structure = p.create_deep_structure()
 
-	dm = DockerServicesManager(pipeline,registry.insecure_addr,sources)
+	dm = DockerServicesManager(deep_structure,registry.insecure_addr,sources)
 	docker_services = dm.get_services()
 	dm.write_services()
 	
