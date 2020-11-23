@@ -161,21 +161,23 @@ class SourceProvider(Interviewer):
 		source_folder = None
 		add_video_source_question = 'Do you want to add a video source? (y/n): \n'
 
-		default_source = {'source_id': 'local', 'source_path': 'local', 'source_folder': None}
-		sources.append(default_source)
+		
 
-
-		while self.get_acceptable_answer(add_video_source_question,['y','n']).lower() == 'y':
+		while self.get_acceptable_answer(add_video_source_question,['y','n']).lower() == 'y' or len(sources) == 0:
 			self.__rm_config()
 
-			source_type = self.get_acceptable_answer('Please enter the video source type (url/stored). \n',['url','stored']).lower()
+			source_type = self.get_acceptable_answer('Please enter the video source type (url/stored/cabled). \n',['url','stored','cabled']).lower()
 			if source_type == 'stored':
 				if source_folder is None:
 					source_folder = self.get_answer('Please, insert the absolute path of the cluster manager video folder.\n(It will be used for every stored video source.)\n')
 				source = self.get_answer('Please, insert the video name with its extension.\n')
 				source = self.remote_source_path+source
-			else:
+			elif source_type == 'url':
 				source = self.get_answer('Insert video source address/url: \n')
+			else:
+				source = 'local'
+				source_folder = None
+
 			source_id = self.get_answer('Give a unique name/ID to this video source: \n')
 			source_dict = {'source_id': source_id, 'source_path':source, 'source_folder': source_folder}
 			sources.append(source_dict)

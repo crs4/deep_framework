@@ -33,6 +33,7 @@
 docker-compose_main.yml
 docker_pull.sh
 env_params.list
+env_sources.list
 
 
 **/node_modules/

@@ -39,17 +39,27 @@ class PipelineManager:
 
 		deep_structure['server'] = server
 		deep_structure['monitor'] = MonitorComponent(self.ports)
-		deep_structure['stream_capture'] = StreamCaptureComponent(self.ports)
 
 		return deep_structure
 
 
 	def create_pipeline(self,source,server):
 		source_id = source['source_id']
+		source_path = source['source_path']
 		pipeline = dict()
 		pipeline['chains'] = []
 
 		stream_manager = StreamManagerComponent(self.ports,source_id)
+
+		if source_path != 'local':
+			stream_capture = StreamCaptureComponent(self.ports,source)
+			pipeline['stream_capture'] = stream_capture
+		else:
+			pipeline['stream_capture'] = None
+
+
+
+
 
 		for chain_id,det_params in enumerate(self.detectors):
 			chain_id+=1
@@ -62,14 +72,10 @@ class PipelineManager:
 
 			
 
-			chain = self.create_chain(det_params,chain_id,stream_manager, source_id) ###SOURCE_ID ??????????
+			chain = self.create_chain(det_params,chain_id,stream_manager, source_id)
 			pipeline['chains'].append(chain)
 
 		pipeline['stream_manager'] = stream_manager
-
-			
-		
-		
 
 		return pipeline
 
@@ -220,8 +226,9 @@ class StreamManagerComponent:
 
 class StreamCaptureComponent:
 
-	def __init__(self,ports):
+	def __init__(self,ports,params):
 		self.server_port = ports['server_port']
+		self.params = params
 		self.component_type = 'stream_capture'
 		self.component_name = self.component_type
 		self.connected_to = {'server':'server'}

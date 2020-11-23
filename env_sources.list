@@ -1,4 +1,4 @@
 
-SOURCE_local=local
+SOURCE_mycam=local
 
-SOURCE_static=/mnt/remote_media/face.mov
+SOURCE_myface=/mnt/remote_media/face.mov

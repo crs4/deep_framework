@@ -29,6 +29,9 @@ class DockerServicesManager:
 		for pipeline in pipelines:
 			stream_manager_component = pipeline['stream_manager']
 			self.manage_stream_manager_services(stream_manager_component)
+			stream_capture_component = pipeline['stream_capture']
+			if stream_capture_component is not None:
+				self.manage_stream_capture_services(stream_capture_component)
 
 			for chain in pipeline['chains']:
 
@@ -112,22 +115,17 @@ class DockerServicesManager:
 		self.services.append(stream_man_service)
 		self.dict_services[stream_man_service.service_name] = stream_man_dict
 
+	def manage_stream_capture_services(self, stream_capture_component):
+		stream_cap_service = StreamCaptureService(stream_capture_component,self.registry_address)
+		stream_cap_dict = stream_cap_service.create_stream_capture_service()
+		self.services.append(stream_cap_service)
+		self.dict_services[stream_cap_service.service_name] = stream_cap_dict
+
+
 
 	def create_base_services(self,desc_name_list):
-		stream_capture = self.deep_structure['stream_capture']
 		monitor = self.deep_structure['monitor']
 		server = self.deep_structure['server']
-
-		
-		"""
-		for source in self.sources:
-			stream_cap_service = StreamCaptureService(stream_capture,source,self.registry_address)
-			stream_cap_dict = stream_cap_service.create_stream_capture_service()
-			self.services.append(stream_cap_service)
-			self.dict_services[stream_cap_service.service_name] = stream_cap_dict
-
-			#print(stream_cap_dict)
-		"""
 
 		monitor_service = MonitorService(monitor,desc_name_list,self.registry_address)
 		monitor_dict = monitor_service.create_monitor_service()
@@ -434,13 +432,14 @@ class StreamManagerService(DeepService):
 
 class StreamCaptureService(DeepService):
 
-	def __init__(self,stream_capture_component,source,registry_address):
+	def __init__(self,stream_capture_component,registry_address):
 		super().__init__()
-		self.service_name = stream_capture_component.component_type+'_'+source['source_id']
+		self.source_params = stream_capture_component.params
+		self.service_name = stream_capture_component.component_type+'_'+self.source_params['source_id']
 		self.image_tag = self.set_component_tag()
-		self.env_file = [ENV_PARAMS]
+		self.env_file = [ENV_PARAMS,ENV_SOURCES]
 		self.net = NETWORK
-		self.environments = self.__set_environments(stream_capture_component,source)
+		self.environments = self.__set_environments(stream_capture_component,self.source_params)
 		self.image_name = self.set_image_name(registry_address,stream_capture_component.component_type,self.image_tag)
 
 	def __set_environments(self,stream_capture_component,source):
