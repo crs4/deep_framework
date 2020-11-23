@@ -401,20 +401,24 @@ class StreamManagerService(DeepService):
 	def __init__(self,stream_manager_component,registry_address):
 		super().__init__()
 		self.service_name = stream_manager_component.component_name
+		self.source_params = stream_manager_component.params
 		self.image_tag = self.set_component_tag()
 		self.env_file = [ENV_PARAMS]
 		self.net = NETWORK
-		self.environments = self.__set_environments(stream_manager_component)
+		self.environments = self.__set_environments(stream_manager_component,self.source_params)
 		self.image_name = self.set_image_name(registry_address,stream_manager_component.component_type,self.image_tag)
 
-	def __set_environments(self,stream_manager_component):
+	def __set_environments(self,stream_manager_component,source):
 		environments = []
 
 		hp_server = 'HP_SERVER='+stream_manager_component.connected_to['server']
 		collector_in_ports = 'COLLECTOR_PORTS='+','.join([str(col_port) for col_port in stream_manager_component.collector_ports])
 		server_port = 'SERVER_PORT='+str(stream_manager_component.server_port)
 		vc_out = 'STREAM_OUT='+str(stream_manager_component.detector_port)
-		environments = [hp_server,collector_in_ports,server_port,vc_out]
+		source_type = 'SOURCE_TYPE='+str(source['source_type'])
+		source_url = 'SOURCE_URL='+str(source['source_url'])
+		source_path = 'SOURCE_PATH='+str(source['source_path'])
+		environments = [hp_server,collector_in_ports,server_port,vc_out,source_type,source_url,source_path]
 		
 		return environments
 
@@ -435,9 +439,9 @@ class StreamCaptureService(DeepService):
 	def __init__(self,stream_capture_component,registry_address):
 		super().__init__()
 		self.source_params = stream_capture_component.params
-		self.service_name = stream_capture_component.component_type+'_'+self.source_params['source_id']
+		self.service_name = stream_capture_component.component_name
 		self.image_tag = self.set_component_tag()
-		self.env_file = [ENV_PARAMS,ENV_SOURCES]
+		self.env_file = [ENV_PARAMS]
 		self.net = NETWORK
 		self.environments = self.__set_environments(stream_capture_component,self.source_params)
 		self.image_name = self.set_image_name(registry_address,stream_capture_component.component_type,self.image_tag)
@@ -447,8 +451,9 @@ class StreamCaptureService(DeepService):
 
 		hp_server = 'HP_SERVER='+stream_capture_component.connected_to['server']
 		server_port = 'SERVER_PORT='+str(stream_capture_component.server_port)
-		stream_capture_id = 'STREAM_CAPTURE_ID='+source['source_id']
-		environments = [hp_server,server_port,stream_capture_id]
+		stream_capture_id = 'STREAM_CAPTURE_ID='+source['source_id'] ###### CHECK
+		source_url = 'SOURCE_'+source['source_id']+'='+source['source_path']
+		environments = [hp_server,server_port,stream_capture_id, source_url]
 		
 		return environments
 

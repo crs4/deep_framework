@@ -137,7 +137,6 @@ class SourceProvider(Interviewer):
 	def __init__(self):
 		super().__init__()
 		self.remote_source_path = '/mnt/remote_media/'
-		self.local_source_params_path = ENV_SOURCES
 
 
 	def __rm_config(self):
@@ -148,7 +147,7 @@ class SourceProvider(Interviewer):
 
 	def want_to_change(self):
 		config_question = 'Sources configuration file found. Do you want to change it? (y/n): \n'
-		if not os.path.isfile(self.local_source_params_path):
+		if not os.path.isfile(SOURCES_CONFIG_FILE):
 			return True
 
 		if self.get_acceptable_answer(config_question,['y','n']).lower() == 'n':
@@ -159,41 +158,84 @@ class SourceProvider(Interviewer):
 	def ask_for_sources(self):
 		sources = []
 		source_folder = None
+		
+
 		add_video_source_question = 'Do you want to add a video source? (y/n): \n'
 
 		
 
 		while self.get_acceptable_answer(add_video_source_question,['y','n']).lower() == 'y' or len(sources) == 0:
 			self.__rm_config()
+			source_url = None
+			source_path = None
 
-			source_type = self.get_acceptable_answer('Please enter the video source type (url/stored/cabled). \n',['url','stored','cabled']).lower()
-			if source_type == 'stored':
+			source_type_answer = self.get_acceptable_answer('Please enter the video source type (url/stored/cabled/remote). \n',['url','stored','cabled','remote']).lower()
+			if source_type_answer == 'stored':
 				if source_folder is None:
 					source_folder = self.get_answer('Please, insert the absolute path of the cluster manager video folder.\n(It will be used for every stored video source.)\n')
-				source = self.get_answer('Please, insert the video name with its extension.\n')
-				source = self.remote_source_path+source
-			elif source_type == 'url':
-				source = self.get_answer('Insert video source address/url: \n')
+				source_answer = self.get_answer('Please, insert the video name with its extension.\n')
+				source_path = self.remote_source_path+source_answer
+				source_type = 'local_file'
+			elif source_type_answer == 'url':
+				source_url = self.get_answer('Insert video source address/url: \n')
+				source_type = 'ip_stream'
+			elif source_type_answer == 'cabled':
+				source_type = 'remote_client'
 			else:
-				source = 'local'
-				source_folder = None
+				source_type = 'stream_capture'
 
 			source_id = self.get_answer('Give a unique name/ID to this video source: \n')
-			source_dict = {'source_id': source_id, 'source_path':source, 'source_folder': source_folder}
+			source_dict = {'source_id': source_id, 'source_path':source_path, 'source_folder': source_folder if source_path is not None else None, 'source_url': source_url, 'source_type':source_type }
 			sources.append(source_dict)
+
 
 		return sources
 
 	def write_sources(self,sources):
-		with open(self.local_source_params_path, 'w') as env_file:
+
+		sources_config = ConfigParser()
+		for source_conf  in sources:
+
+
+			section_name = source_conf['source_id']
+			sources_config[section_name] = {}
+			sources_config[section_name]['source_path'] = str(source_conf['source_path'])
+			sources_config[section_name]['source_url'] = str(source_conf['source_url'])
+			sources_config[section_name]['source_type'] = str(source_conf['source_type'])
+			sources_config[section_name]['source_folder'] = str(source_conf['source_folder'])
+
+			
+			with open(os.path.join(MAIN_DIR, SOURCES_CONFIG_FILE), 'w') as defaultconfigfile:
+				sources_config.write(defaultconfigfile)
+
+
+		"""
+		with open(SOURCES_CONFIG_FILE, 'w') as env_file:
 			for source_conf  in sources:
 				source_id = source_conf['source_id']
 				source_path = source_conf['source_path']
 				env_file.write('\nSOURCE_' + source_id + '=' + source_path + '\n')
+		"""
 
 	def read_sources(self):
+
 		sources = []
-		with open(self.local_source_params_path) as env_file:
+		reader_source_config = ConfigParser()
+
+		reader_source_config.read(SOURCES_CONFIG_FILE)
+		sources_list = reader_source_config.sections()
+		for source in sources_list:
+			source_dict = dict()
+			source_dict['source_id'] = source
+			for key in reader_source_config[source]:
+				val = reader_source_config[source][key]
+				source_dict[key] = val
+			sources.append(source_dict)
+		return sources
+
+		"""
+		sources = []
+		with open(SOURCES_CONFIG_FILE) as env_file:
 			content = env_file.read().splitlines()
 			for line in content:
 				if line.startswith('SOURCE_'):
@@ -203,6 +245,7 @@ class SourceProvider(Interviewer):
 					source_dict = {'source_id': source_id, 'source_path':source, 'source_folder': None}
 					sources.append(source_dict)
 		return sources
+		"""
 
 	def get_sources(self, use_last_settings):
 

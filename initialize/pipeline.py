@@ -45,13 +45,13 @@ class PipelineManager:
 
 	def create_pipeline(self,source,server):
 		source_id = source['source_id']
-		source_path = source['source_path']
+		source_type = source['source_type']
 		pipeline = dict()
 		pipeline['chains'] = []
 
-		stream_manager = StreamManagerComponent(self.ports,source_id)
+		stream_manager = StreamManagerComponent(self.ports,source)
 
-		if source_path != 'local':
+		if source_type == 'local_file':
 			stream_capture = StreamCaptureComponent(self.ports,source)
 			pipeline['stream_capture'] = stream_capture
 		else:
@@ -216,21 +216,22 @@ class CollectorComponent:
 
 class StreamManagerComponent:
 
-	def __init__(self,ports,source_id):
+	def __init__(self,ports,source_params):
+		self.params = source_params
 		self.detector_port = ports['stream_manager_detector_port']
 		self.collector_ports = []
 		self.server_port = ports['server_port']
 		self.component_type = 'stream_manager'
-		self.component_name = self.component_type + '_' + source_id
+		self.component_name = self.component_type + '_' + source_params['source_id']
 		self.connected_to = {'server':'server'}
 
 class StreamCaptureComponent:
 
-	def __init__(self,ports,params):
+	def __init__(self,ports,source_params):
 		self.server_port = ports['server_port']
-		self.params = params
+		self.params = source_params
 		self.component_type = 'stream_capture'
-		self.component_name = self.component_type
+		self.component_name = self.component_type + '_' + source_params['source_id']
 		self.connected_to = {'server':'server'}
 
 class MonitorComponent:
