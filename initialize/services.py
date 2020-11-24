@@ -418,7 +418,8 @@ class StreamManagerService(DeepService):
 		source_type = 'SOURCE_TYPE='+str(source['source_type'])
 		source_url = 'SOURCE_URL='+str(source['source_url'])
 		source_path = 'SOURCE_PATH='+str(source['source_path'])
-		environments = [hp_server,collector_in_ports,server_port,vc_out,source_type,source_url,source_path]
+		source_id = 'SOURCE_ID='+str(source['source_id'])
+		environments = [hp_server,collector_in_ports,server_port,vc_out,source_type,source_url,source_path,source_id]
 		
 		return environments
 
