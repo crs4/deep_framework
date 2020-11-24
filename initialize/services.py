@@ -29,9 +29,7 @@ class DockerServicesManager:
 		for pipeline in pipelines:
 			stream_manager_component = pipeline['stream_manager']
 			self.manage_stream_manager_services(stream_manager_component)
-			stream_capture_component = pipeline['stream_capture']
-			if stream_capture_component is not None:
-				self.manage_stream_capture_services(stream_capture_component)
+			
 
 			for chain in pipeline['chains']:
 
@@ -115,14 +113,7 @@ class DockerServicesManager:
 		self.services.append(stream_man_service)
 		self.dict_services[stream_man_service.service_name] = stream_man_dict
 
-	def manage_stream_capture_services(self, stream_capture_component):
-		stream_cap_service = StreamCaptureService(stream_capture_component,self.registry_address)
-		stream_cap_dict = stream_cap_service.create_stream_capture_service()
-		self.services.append(stream_cap_service)
-		self.dict_services[stream_cap_service.service_name] = stream_cap_dict
-
-
-
+	
 	def create_base_services(self,desc_name_list):
 		monitor = self.deep_structure['monitor']
 		server = self.deep_structure['server']
@@ -431,6 +422,7 @@ class StreamManagerService(DeepService):
 		stream_man_dict['image'] = self.image_name
 		stream_man_dict['networks'] = [self.net]
 		stream_man_dict['depends_on'] = ['server']
+		stream_man_dict['volumes'] = ['deep_media_volume:/mnt/remote_media']
 
 		return stream_man_dict
 

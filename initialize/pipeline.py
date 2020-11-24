@@ -50,12 +50,13 @@ class PipelineManager:
 		pipeline['chains'] = []
 
 		stream_manager = StreamManagerComponent(self.ports,source)
-
+		"""
 		if source_type == 'local_file':
 			stream_capture = StreamCaptureComponent(self.ports,source)
 			pipeline['stream_capture'] = stream_capture
 		else:
 			pipeline['stream_capture'] = None
+		"""
 
 
 

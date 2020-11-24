@@ -33,7 +33,7 @@ class Starter:
 		if len(sources) == 0:
 			return
 
-		path_list = [ s['source_folder'] for s in sources if s['source_folder'] is not None]
+		path_list = [ s['source_folder'] for s in sources if s['source_folder'] is not 'None']
 		if len(path_list) == 0:
 			return
 		else:

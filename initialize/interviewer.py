@@ -185,7 +185,7 @@ class SourceProvider(Interviewer):
 				source_type = 'stream_capture'
 
 			source_id = self.get_answer('Give a unique name/ID to this video source: \n')
-			source_dict = {'source_id': source_id, 'source_path':source_path, 'source_folder': source_folder if source_path is not None else None, 'source_url': source_url, 'source_type':source_type }
+			source_dict = {'source_id': source_id, 'source_path':source_path, 'source_folder': source_folder if source_path is not None else 'None', 'source_url': source_url, 'source_type':source_type }
 			sources.append(source_dict)
 
 
