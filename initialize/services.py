@@ -427,43 +427,6 @@ class StreamManagerService(DeepService):
 		return stream_man_dict
 
 
-class StreamCaptureService(DeepService):
-
-	def __init__(self,stream_capture_component,registry_address):
-		super().__init__()
-		self.source_params = stream_capture_component.params
-		self.service_name = stream_capture_component.component_name
-		self.image_tag = self.set_component_tag()
-		self.env_file = [ENV_PARAMS]
-		self.net = NETWORK
-		self.environments = self.__set_environments(stream_capture_component,self.source_params)
-		self.image_name = self.set_image_name(registry_address,stream_capture_component.component_type,self.image_tag)
-
-	def __set_environments(self,stream_capture_component,source):
-		environments = []
-
-		hp_server = 'HP_SERVER='+stream_capture_component.connected_to['server']
-		server_port = 'SERVER_PORT='+str(stream_capture_component.server_port)
-		stream_capture_id = 'STREAM_CAPTURE_ID='+source['source_id'] ###### CHECK
-		source_url = 'SOURCE_'+source['source_id']+'='+source['source_path']
-		environments = [hp_server,server_port,stream_capture_id, source_url]
-		
-		return environments
-
-	
-
-
-	def create_stream_capture_service(self):
-		stream_man_dict = dict()
-		stream_man_dict['environment'] = self.environments
-		stream_man_dict['env_file'] = self.env_file
-		stream_man_dict['image'] = self.image_name
-		stream_man_dict['networks'] = [self.net]
-		stream_man_dict['depends_on'] = ['server']
-		stream_man_dict['volumes'] = ['deep_media_volume:/mnt/remote_media']
-
-		return stream_man_dict
-
 
 class MonitorService(DeepService):
 
@@ -512,7 +475,7 @@ class ServerService(DeepService):
 		environments = []
 		server_out_port = 'SERVER_PORT='+str(APP_PORT)
 		algs = 'ALGS='+','.join(desc_name_list)
-		col_ports = 'COLLECTOR_PORTS='+','.join([det_name+':'+str(port) for det_name,port in server_component.collector_ports])
+		col_ports = 'COLLECTOR_PORTS='+','.join([det_name+':'+source_id+':'+str(port) for det_name,source_id,port in server_component.collector_ports])
 		monitor_out_port = 'MONITOR_STATS_OUT='+str(server_component.monitor_port)
 		monitor_address = 'MONITOR_ADDRESS='+server_component.connected_to['monitor']
 		environments = [col_ports,monitor_out_port,monitor_address,server_out_port,algs]

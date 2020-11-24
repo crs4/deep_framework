@@ -46,12 +46,13 @@ for (var i = 0; i < collector_port_arr.length; i++) {
 	col_name_port = collector_port_arr[i];
 	col_split = col_name_port.split(":");
 	det_name = col_split[0];
-	col_port = col_split[1]
+	source_id = col_split[1];
+	col_port = col_split[2]
 
 	const col_sock = zmq.socket('pair');
 	col_sock.bind(protocol +'*:'+ col_port);
 
-	app.get('/api/stream_'+det_name, function(request, response){
+	app.get('/api/stream_'+source_id+'/'+det_name, function(request, response){
 
 		response.writeHead(200, {
 		'Content-Type': 'text/event-stream',

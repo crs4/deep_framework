@@ -69,7 +69,7 @@ class PipelineManager:
 				continue
 
 			stream_manager.collector_ports.append(self.ports['collector_stream_manager_port'])
-			server.collector_ports.append((det_params['name'],self.ports['collector_server_port']))
+			server.collector_ports.append((det_params['name'],source_id,self.ports['collector_server_port']))
 
 			
 
@@ -226,14 +226,7 @@ class StreamManagerComponent:
 		self.component_name = self.component_type + '_' + source_params['source_id']
 		self.connected_to = {'server':'server'}
 
-class StreamCaptureComponent:
 
-	def __init__(self,ports,source_params):
-		self.server_port = ports['server_port']
-		self.params = source_params
-		self.component_type = 'stream_capture'
-		self.component_name = self.component_type + '_' + source_params['source_id']
-		self.connected_to = {'server':'server'}
 
 class MonitorComponent:
 
