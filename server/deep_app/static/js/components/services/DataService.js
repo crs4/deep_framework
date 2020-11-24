@@ -45,7 +45,7 @@ function dataService($window) {
   const username = 'webClient' + Date.now()
   let availableServers = []
   let availableCameras = []
-  let remotePeerType = 'stream_manager'
+  let remotePeerType = 'deep_output'
   let deepSourcePeerId = 'none'
   let localStream = null
   let remoteStream = null
@@ -119,7 +119,7 @@ function dataService($window) {
           .then((peers) => {
             peers.forEach((peer) => {
               if (peer.busy) return
-              if (peer.type === 'stream_manager') {
+              if (peer.type === 'deep_output') {
                 availableServers.push(peer)
               } else if (peer.type === 'stream_capture') {
                 availableCameras.push(peer)
