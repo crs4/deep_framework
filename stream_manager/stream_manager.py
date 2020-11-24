@@ -19,7 +19,7 @@ logging.basicConfig(level=logging.INFO)
 
 logging.info('*** DEEP STREAM MANAGER v1.0 ***')
 
-ID = os.environ.get('ID', f'sm_{int(time.time() * 1000)}')
+# SOURCE_ID = os.environ.get('ID', f'sm_{int(time.time() * 1000)}')
 
 #ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
 #ssl_context.load_verify_locations('cert.pem')
@@ -33,7 +33,7 @@ ssl_context.verify_mode = ssl.CERT_NONE
 class StreamManager:
 
     def __init__(self):        
-        self.id = ID
+        self.id = SOURCE_ID
         frame_consumer_to_client = None
         if SOURCE_TYPE == 'local_file':
             self.stream_capture = VideoCapture(SOURCE_PATH, frame_consumer=self.create_deep_message, is_file=True)
@@ -88,6 +88,7 @@ class StreamManager:
         self.round_trip = 0
         self.processing_period = 0
         self.core_watchdog = asyncio.Event()
+        self.source_ready = asyncio.Event()
         
 
     def __socket_setup(self):
@@ -125,15 +126,17 @@ class StreamManager:
         no_data_time = 0
         try:
             while True:
+                await self.source_ready.wait()
                 try:
                     received_data, __ = recv_data(socket,1,False)
+                    # logging.info(f'[{self.id}]: received_data: {str(received_data)}')
                     received_data["rec_time"] = time.time()
                     self.deep_delay = received_data["rec_time"] - received_data["vc_time"]
                     self.processing_period = received_data["rec_time"] - last_receive_time
                     no_data_time = 0
                     self.processed_frames += 1
                     last_receive_time = received_data["rec_time"]
-                    if self.peer.readyState == PeerState.ONLINE:
+                    if self.peer.readyState == PeerState.CONNECTED:
                         self.messages_sent += 1
                         data_to_send = {
                             'type': 'data',
@@ -147,28 +150,30 @@ class StreamManager:
                             'processing_period': self.processing_period
                         }
                         data_merged = {**data_to_send,**received_data}
-                        logging.info(f'[{self.id}]: Sending data: {str(data_merged)}')
+                        # logging.info(f'[{self.id}]: Sending data: {str(data_merged)}')
                         await self.peer.send(data_merged)
                 except Exception as e:
                     self.processing_period = time.time() - last_receive_time
                     no_data_time += self.processing_period
                     if no_data_time > float(MAX_ALLOWED_DELAY) * 1.2:
-                        if no_data_time > 10 * float(MAX_ALLOWED_DELAY):
-                            msg = f'No data from DEEP since  {str(no_data_time)} seconds. Reason: {str(e)}'
-                            if self.peer.readyState != PeerState.ONLINE:
-                                await self.peer.send({'type': 'error', 'messagge': msg })
-                            logging.error(msg)
-                            break
+                        # if no_data_time > 10 * float(MAX_ALLOWED_DELAY):
+                        #     msg = f'No data from DEEP since  {str(no_data_time)} seconds. Reason: {str(e)}'
+                        #     if self.peer.readyState == PeerState.CONNECTED:
+                        #         await self.peer.send({'type': 'warning', 'messagge': msg })
+                        #     logging.error(msg)
+                        #     await asyncio.sleep(float(MAX_ALLOWED_DELAY) * 2)
+                        #     # break
+                        # else:
 
-                        msg = f'High processing period: {str(no_data_time)}. Reason: {str(e)}' 
-                        if self.peer.readyState != PeerState.ONLINE:
-                            await self.peer.send({'type': 'warning', 'messagge': msg})
-                        logging.warning(msg)
+                        #     msg = f'High processing period: {str(no_data_time)}. Reason: {str(e)}' 
+                        #     if self.peer.readyState == PeerState.CONNECTED:
+                        #         await self.peer.send({'type': 'warning', 'messagge': msg})
+                        #     logging.warning(msg)
+                        #     await asyncio.sleep(float(MAX_ALLOWED_DELAY) * 0.5)
 
                         self.deep_delay = -1
                         self.processing_period = -1
                         last_receive_time = time.time()
-                        await asyncio.sleep(float(MAX_ALLOWED_DELAY) * 0.5)
 
                 await asyncio.sleep(0.05)
 
@@ -198,13 +203,13 @@ class StreamManager:
     async def on_capture_data(self, data):
         self.source_metadata = data['metadata']
         logging.info('Source metadata: ' + str(self.source_metadata))
-        if self.peer.readyState != PeerState.ONLINE:
+        if self.peer.readyState == PeerState.CONNECTED:
             await self.peer.send(data)
 
     async def task_monitor(self, tasks):
         while True:
             for task in tasks:
-                if tasks.done():
+                if task.done():
                     try:
                         res = task.result()
                         logging.info(f'[{self.id}]: Task result: {res}')
@@ -244,9 +249,10 @@ class StreamManager:
     async def start(self):
         tasks = []     
         if self.stream_capture != None:          
-            tasks.append(asyncio.create_task(self.stream_capture.start()))
+            tasks.append(asyncio.create_task(self.stream_capture.start(self.source_ready)))
         tasks.append(asyncio.create_task(self.core_watchdog_timer()))
         for coll in self.collectors:
+            logging.info(f'[{self.id}]: creating receiver for collector: {str(coll)}')
             receiver_task = asyncio.create_task(self.receiver(coll['socket']))
             tasks.append(receiver_task)
 
@@ -261,7 +267,12 @@ class StreamManager:
 
                 logging.info(f'[{self.id}]: Connection request from peer: {self.remotePeerId}')
                 await self.peer.accept_connection()
+                if SOURCE_TYPE == 'remote_client':
+                    self.source_ready.set()
+
                 await self.peer.disconnection_event.wait()
+                if SOURCE_TYPE == 'remote_client':
+                    self.source_ready.clear()
 
                 while self.peer.readyState != PeerState.ONLINE:
                     await asyncio.sleep(1)
@@ -289,8 +300,8 @@ except KeyboardInterrupt:
 finally:
     # cleanup
     logging.info(' -> Cleaning...')
-    loop.run_until_complete(stream_manager.stop())
     tasks = asyncio.all_tasks()
     for t in [t for t in tasks if not (t.done() or t.cancelled())]:
         # give canceled tasks the last chance to run
         loop.run_until_complete(t)
+    loop.run_until_complete(stream_manager.stop())

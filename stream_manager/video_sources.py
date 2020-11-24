@@ -32,27 +32,32 @@ class VideoCapture:
         self.last_frame_time = time.time()
         # self.frame_period = 1 / self.fps
          
-    async def start(self):
-        while True:
-            if self.is_file:
-                elapsed_frame_time = time.time() - self.last_frame_time
-                if elapsed_frame_time < 1 / self.fps:
-                    await asyncio.sleep(1 / self.fps - elapsed_frame_time)
+    async def start(self, ready_event):
+        ready_event.set()
+        try:
+            while True:
+                if self.is_file:
+                    elapsed_frame_time = time.time() - self.last_frame_time
+                    if elapsed_frame_time < 1 / self.fps:
+                        await asyncio.sleep(1 / self.fps - elapsed_frame_time)
 
-            # if self.frame_index == self.num_frames:
-            #     self.frame_index = 1 #Or whatever as long as it is the same as next line
-            #     self.video.set(cv2.CAP_PROP_POS_FRAMES, self.frame_index)
+                # if self.frame_index == self.num_frames:
+                #     self.frame_index = 1 #Or whatever as long as it is the same as next line
+                #     self.video.set(cv2.CAP_PROP_POS_FRAMES, self.frame_index)
 
-            # for frame_index in range(1, num_frames + 1):
-            # Read a new frame
-            frame_ok, self.current_frame = self.video.read()
-            if not frame_ok:
-                await asyncio.sleep(0.01)
-            else:
-                # self.frame_index += 1
-                # self.timestamp = self.frame_index / self.fps
-                self.last_frame_time = time.time()
-                self.frame_consumer(self.current_frame)
+                # for frame_index in range(1, num_frames + 1):
+                # Read a new frame
+                frame_ok, self.current_frame = self.video.read()
+                if not frame_ok:
+                    await asyncio.sleep(0.01)
+                else:
+                    # self.frame_index += 1
+                    # self.timestamp = self.frame_index / self.fps
+                    self.last_frame_time = time.time()
+                    self.frame_consumer(self.current_frame)
+        except:
+            ready_event.clear()
+            raise
 
 class StreamCapture:
     def __init__(self, peer_id, frame_consumer, data_handler=None):
@@ -65,13 +70,15 @@ class StreamCapture:
         self.peer.add_data_handler(data_handler)
         self.remotePeerId = None
 
-    async def start(self):
+    async def start(self, ready_event):
         await self.peer.open()
         while True:
             self.remotePeerId = await self.peer.listen_connections()
             logging.info(f'[Stream_capture]: Connection request from peer: {self.remotePeerId}')
             await self.peer.accept_connection()
+            ready_event.set()
             await self.peer.disconnection_event.wait()
+            ready_event.clear()
             while self.peer.readyState != PeerState.ONLINE:
                 await asyncio.sleep(0.2)
 
