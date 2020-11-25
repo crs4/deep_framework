@@ -17,7 +17,7 @@ from utils.socket_commons import send_data, recv_data
 ROOT = os.path.dirname(__file__)
 logging.basicConfig(level=logging.INFO)
 
-logging.info('*** DEEP STREAM MANAGER v1.0 ***')
+logging.info('*** DEEP STREAM MANAGER v1.0.4 ***')
 
 # SOURCE_ID = os.environ.get('ID', f'sm_{int(time.time() * 1000)}')
 
@@ -44,6 +44,9 @@ class StreamManager:
         else: #-> SOURCE_TYPE == 'remote_client'
             frame_consumer_to_client = lambda f: self.create_deep_message(f)
             self.stream_capture = None
+        
+        self.source_ready = asyncio.Event()
+        self.core_watchdog = asyncio.Event()
         self.__connection_reset()
         self.__socket_setup()
 
@@ -87,8 +90,6 @@ class StreamManager:
         self.deep_delay = 0
         self.round_trip = 0
         self.processing_period = 0
-        self.core_watchdog = asyncio.Event()
-        self.source_ready = asyncio.Event()
         
 
     def __socket_setup(self):
@@ -247,6 +248,9 @@ class StreamManager:
         await self.peer.close()
 
     async def start(self):
+        logging.info(f'[{self.id}]: Open connection with peer server...')
+        await self.peer.open()
+        logging.info(f'[{self.id}]: Open video source...')
         tasks = []     
         if self.stream_capture != None:          
             tasks.append(asyncio.create_task(self.stream_capture.start(self.source_ready)))
@@ -258,7 +262,6 @@ class StreamManager:
 
         tasks.append(asyncio.create_task(self.task_monitor(tasks)))
 
-        await self.peer.open()
         self.peer.add_data_handler(self.on_remote_data)
         try:
             while True:
