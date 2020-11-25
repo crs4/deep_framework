@@ -398,6 +398,7 @@ class StreamManagerService(DeepService):
 		self.net = NETWORK
 		self.environments = self.__set_environments(stream_manager_component,self.source_params)
 		self.image_name = self.set_image_name(registry_address,stream_manager_component.component_type,self.image_tag)
+		self.volume = True if self.source_params['source_folder'] != 'None' else False
 
 	def __set_environments(self,stream_manager_component,source):
 		environments = []
@@ -422,7 +423,8 @@ class StreamManagerService(DeepService):
 		stream_man_dict['image'] = self.image_name
 		stream_man_dict['networks'] = [self.net]
 		stream_man_dict['depends_on'] = ['server']
-		stream_man_dict['volumes'] = ['deep_media_volume:/mnt/remote_media']
+		if self.volume:
+			stream_man_dict['volumes'] = ['deep_media_volume:/mnt/remote_media']
 
 		return stream_man_dict
 

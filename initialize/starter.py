@@ -33,7 +33,7 @@ class Starter:
 		if len(sources) == 0:
 			return
 
-		path_list = [ s['source_folder'] for s in sources if s['source_folder'] is not 'None']
+		path_list = [ s['source_folder'] for s in sources if s['source_folder'] != 'None']
 		if len(path_list) == 0:
 			return
 		else:
@@ -51,8 +51,8 @@ class Starter:
 				rm_volume_command = "ssh %s@%s '%s'" % (top_manager_node['user'], top_manager_node['ip'], rm_volume_command)
 
 			self.machine.exec_shell_command(rm_volume_command)
-
-			self.machine.exec_shell_command(create_volume_command+path)
+			com = create_volume_command+path
+			self.machine.exec_shell_command(com)
 		except Exception as e:
 			print(e)
 

@@ -173,6 +173,8 @@ class SourceProvider(Interviewer):
 			if source_type_answer == 'stored':
 				if source_folder is None:
 					source_folder = self.get_answer('Please, insert the absolute path of the cluster manager video folder.\n(It will be used for every stored video source.)\n')
+					if source_folder[-1] == '/':
+						source_folder = source_folder[:-1]
 				source_answer = self.get_answer('Please, insert the video name with its extension.\n')
 				source_path = self.remote_source_path+source_answer
 				source_type = 'local_file'
@@ -209,13 +211,7 @@ class SourceProvider(Interviewer):
 				sources_config.write(defaultconfigfile)
 
 
-		"""
-		with open(SOURCES_CONFIG_FILE, 'w') as env_file:
-			for source_conf  in sources:
-				source_id = source_conf['source_id']
-				source_path = source_conf['source_path']
-				env_file.write('\nSOURCE_' + source_id + '=' + source_path + '\n')
-		"""
+		
 
 	def read_sources(self):
 
@@ -233,19 +229,7 @@ class SourceProvider(Interviewer):
 			sources.append(source_dict)
 		return sources
 
-		"""
-		sources = []
-		with open(SOURCES_CONFIG_FILE) as env_file:
-			content = env_file.read().splitlines()
-			for line in content:
-				if line.startswith('SOURCE_'):
-					source_path_split = line.split('=')
-					source_id = source_path_split[0].split('_')[1]
-					source = source_path_split[1]
-					source_dict = {'source_id': source_id, 'source_path':source, 'source_folder': None}
-					sources.append(source_dict)
-		return sources
-		"""
+		
 
 	def get_sources(self, use_last_settings):
 
