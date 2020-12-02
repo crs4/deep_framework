@@ -129,6 +129,25 @@ class DockerServicesManager:
 		self.services.append(server_service)
 		self.dict_services[server_service.service_name] = server_dict
 
+		#self.create_api_ui_service(server_service.service_name)
+
+
+
+	"""
+	def create_api_ui_service(self,server_service_name):
+		api_ui = dict()
+		api_ui['links'] = [server_service_name+':'+'deep_server']
+		server_addr = 'deep_server' + ':' + str(APP_PORT)
+		api_ui['environment'] = ['SWAGGER_JSON=https://'+server_addr+'/swagger.json']
+		api_ui['image'] = 'swaggerapi/swagger-ui:latest'
+		api_ui['networks'] = [NETWORK]
+		api_ui['ports'] = [str(API_PORT)+":8080"]
+		api_ui['depends_on'] = [server_service_name]
+		self.dict_services['swagger'] = api_ui
+	"""
+
+
+
 	def get_services(self):
 		return self.services
 

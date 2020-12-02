@@ -8,12 +8,14 @@ COPY . /server
 
 WORKDIR /server/deep_app/static
 RUN yarn install
-RUN npm install -g browserify
+RUN npm install -g browserify swagger-ui-express@4.1.2
 RUN yarn run build
 
 WORKDIR /server
 RUN npm install
 
+RUN touch swagger.json
+ 
 CMD ["node", "server.js"]
 
 

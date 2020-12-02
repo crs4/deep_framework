@@ -166,8 +166,8 @@ class Starter:
 
 		config_app.read(CLUSTER_CONFIG_FILE)
 		node_ip = config_app[node_name]['ip']
-		app_address = 'https://'+node_ip+':'+str(APP_PORT)
-		return app_address
+		
+		return node_ip
 
 
 
@@ -199,9 +199,11 @@ class Starter:
 			else:
 				res_status = self.check_framework_started()
 				if res_status == 'OK':
-					address = self.find_server()
+					server_address = self.find_server()
+					app_address = 'https://'+server_address+':'+str(APP_PORT)
 					print('### DEEP FRAMEWORK STARTED ###')
-					print('Check your stream at: ', address)
+					print('Check your stream at: ', app_address)
+					print('Check available APIs at: ', app_address+'/api/docs')
 				else:
 					print(res_status)
 					command = 'python3 rm_services.py'
