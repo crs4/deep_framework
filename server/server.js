@@ -6,6 +6,9 @@ const algs = process.env.ALGS
 const collector_ports = process.env.COLLECTOR_PORTS
 const collector_port_arr = collector_ports.split(",");
 
+const stream_man_pair_ports = process.env.STREAM_MANAGER_PAIR_PORTS
+const stream_man_pair_ports_arr = stream_man_pair_ports.split(",");
+
 const protocol = process.env.PROT || 'tcp://'
 
 const appPath = process.cwd() + '/deep_app/static/index.html' // '/home/deepframework/server/deep_app/templates/index.html'
@@ -46,8 +49,36 @@ const monitor_sock = zmq.socket('sub');
 monitor_sock.connect(protocol + monitor_address + ':' + monitor_port);
 monitor_sock.subscribe('');
 
+var stream_man_sock_list = [];
+for (var i = 0; i < stream_man_pair_ports_arr.length; i++) {
+
+	var stream_man = stream_man_pair_ports_arr[i];
+	var stream_man_split = stream_man.split(":");
+	const source_id = stream_man_split[0];
+	var stream_man_pair_port = stream_man_split[1];
+	const stream_man_pair_sock = zmq.socket('pair');
+	stream_man_pair_sock.bind(protocol +'*:'+ stream_man_pair_port);
+	stream_man_sock_list.push(stream_man_pair_sock)
+
+	app.post('/api/stream_'+source_id+'/start', function(request, response){
+
+		stream_man_pair_sock.send('START');
+		return response.send(source_id+ ' started');
 
 
+	});
+
+	app.post('/api/stream_'+source_id+'/stop', function(request, response){
+		stream_man_pair_sock.send('STOP');
+		return response.send(source_id+ ' stopped');
+	});
+};
+	
+
+
+
+
+var source_id_list = []
 
 for (var i = 0; i < collector_port_arr.length; i++) {
 
@@ -55,6 +86,7 @@ for (var i = 0; i < collector_port_arr.length; i++) {
 	col_split = col_name_port.split(":");
 	det_name = col_split[0];
 	source_id = col_split[1];
+	source_id_list.push(source_id);
 	col_port = col_split[2]
 
 	const col_sock = zmq.socket('pair');
@@ -73,6 +105,24 @@ for (var i = 0; i < collector_port_arr.length; i++) {
 		});
 	});
 }
+
+app.post('/api/start', function(request, response){
+	for (var i = 0; i < stream_man_sock_list.length; i++) {
+		var sock = stream_man_sock_list[i];
+		sock.send('START_ALL');
+	};	
+	return response.send('All sources started');
+
+
+});
+
+app.post('/api/stop', function(request, response){
+	for (var i = 0; i < stream_man_sock_list.length; i++) {
+		var sock = stream_man_sock_list[i];
+		sock.send('STOP_ALL');
+	};
+	return response.send('All sources stopped');
+});
 
 
 app.get('/api/algs', function(request, response){
@@ -115,7 +165,7 @@ app._router.stack.forEach(function(r){
   }
 })
 
-const apis_map_dict = create_api_map(apis_list);
+const apis_map_dict = create_api_map(apis_list,source_id_list);
 write_apis_file(apis_map_dict);
 var options = {
   swaggerOptions: {
@@ -131,8 +181,18 @@ server.listen(serverPort, function(err){
 	console.log((new Date()) + 'DEEP Data Server is listening on https://localhost:' + serverPort);
 });
 
-function create_api_map(endpoints_list) {
-	
+
+
+function create_api_map(endpoints_list,source_id_list) {
+
+	var tags = [];
+	for (var i = 0; i < source_id_list.length; i++) {
+		console.log(source_id_list[i]);
+		var source_tag = {"name": "Source_"+source_id_list[i],"description": "List of api available for source with ID "+source_id_list[i]};
+		tags.push(source_tag);
+	}
+	tags.push({"name":"pipeline_info","description":"information and statistics about pipeline execution"});
+	tags.push({"name":"pipeline_operations","description":"List of operation available on pipeline"});
 	const apis_map = {
 		"swagger":"2.0",
 		"info": {
@@ -142,37 +202,62 @@ function create_api_map(endpoints_list) {
 				"name": "MIT"
 			}
 		},
-		"tags":[{"name":"results","description":"results of source information extraction"},{"name":"pipeline_info","description":"information and statistics about pipeline execution"}],
+		"tags":tags,
 
 		"paths": {}
 		
 
 	};
-  	responses = {"200":{"description": "Successful operation"},"400":{"description": "Invalid status value"}};
-	produces = ['text/event-stream'];
+  	var responses = {"200":{"description": "Successful operation"},"400":{"description": "Invalid status value"}};
+	
 	for (var i = 0; i < endpoints_list.length; i++) {
 		end_p = endpoints_list[i];
 
 
 		
 		if (end_p == '/api/algs'){
+			produces = ['application/json'];
 			info = {"get": { "summary": "List all descriptors","tags":["pipeline_info"],"responses":responses,"produces":produces}};
 			apis_map['paths'][end_p] = info;
 			continue
 		}
 		if (end_p == '/api/stats'){
+			produces = ['application/json'];
 			info = {"get": { "summary": "List all component statistics","tags":["pipeline_info"],"responses":responses,"produces":produces}};
 			apis_map['paths'][end_p] = info;
 			continue
 		}
+		if (end_p == '/api/start'){
+			produces = ['application/json'];
+			info = {"post": { "summary": "Start all sources","tags":["pipeline_operations"],"responses":responses,"produces":produces}};
+			apis_map['paths'][end_p] = info;
+			continue
+		}
+		if (end_p == '/api/stop'){
+			produces = ['application/json'];
+			info = {"post": { "summary": "Stop all sources","tags":["pipeline_operations"],"responses":responses,"produces":produces}};
+			apis_map['paths'][end_p] = info;
+			continue
+		}
 		if (end_p.includes('stream')){
+
 			end_p_split = end_p.split("/");
-			
 			stream_id = end_p_split[2].split('_')[1];
-			det_name = end_p_split[3];
-			summary = `List results for source ${stream_id} analyzed with detector ${det_name}`;
-			responses = {"200":{"description": "successful operation"},"400":{"description": "Invalid status value"}};
-			info = {"get": { "summary": summary, "responses":responses,"tags":["results"],"produces":produces}};
+			spec = end_p_split[3];
+			
+
+			if (end_p.includes('start') || end_p.includes('stop')){
+				var summary = `It sends ${spec} signal to the source with ID ${stream_id}`;
+				var produces = ['application/json'];
+				var info = {"post": { "summary": summary, "responses":responses,"tags":["Source_"+stream_id],"produces":produces}};
+
+			}
+			else {
+				var summary = `List results for source with ID ${stream_id} analyzed by the detector with CATEGORY ${spec}`;
+				var produces = ['text/event-stream'];
+				var info = {"get": { "summary": summary, "responses":responses,"tags":["Source_"+stream_id],"produces":produces}};
+
+			}
 			apis_map['paths'][end_p] = info;
 		}
 	}
@@ -183,7 +268,7 @@ function create_api_map(endpoints_list) {
 
 function write_apis_file(data_apis){
 	const data_apis_json = JSON.stringify(data_apis);
-	console.log(data_apis_json);
+	//console.log(data_apis_json);
 
 
 	// write file to disk
@@ -191,9 +276,7 @@ function write_apis_file(data_apis){
 
 	    if (err) {
 	        console.log(`Error writing file: ${err}`);
-	    } else {
-	        console.log(`File is written successfully!`);
-	    }
+	    };
 
 	});
 }

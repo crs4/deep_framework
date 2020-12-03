@@ -425,12 +425,13 @@ class StreamManagerService(DeepService):
 		hp_server = 'HP_SERVER='+stream_manager_component.connected_to['server']
 		collector_in_ports = 'COLLECTOR_PORTS='+','.join([str(col_port) for col_port in stream_manager_component.collector_ports])
 		server_port = 'SERVER_PORT='+str(stream_manager_component.server_port)
+		server_pair_port = 'SERVER_PAIR_PORT='+str(stream_manager_component.server_pair_port)
 		vc_out = 'STREAM_OUT='+str(stream_manager_component.detector_port)
 		source_type = 'SOURCE_TYPE='+str(source['source_type'])
 		source_url = 'SOURCE_URL='+str(source['source_url'])
 		source_path = 'SOURCE_PATH='+str(source['source_path'])
 		source_id = 'SOURCE_ID='+str(source['source_id'])
-		environments = [hp_server,collector_in_ports,server_port,vc_out,source_type,source_url,source_path,source_id]
+		environments = [hp_server,collector_in_ports,server_port,vc_out,source_type,source_url,source_path,source_id,server_pair_port]
 		
 		return environments
 
@@ -497,9 +498,10 @@ class ServerService(DeepService):
 		server_out_port = 'SERVER_PORT='+str(APP_PORT)
 		algs = 'ALGS='+','.join(desc_name_list)
 		col_ports = 'COLLECTOR_PORTS='+','.join([det_name+':'+source_id+':'+str(port) for det_name,source_id,port in server_component.collector_ports])
+		stream_man_pair_ports = 'STREAM_MANAGER_PAIR_PORTS='+','.join([source_id+':'+str(port) for source_id,port in server_component.server_pair_ports])
 		monitor_out_port = 'MONITOR_STATS_OUT='+str(server_component.monitor_port)
 		monitor_address = 'MONITOR_ADDRESS='+server_component.connected_to['monitor']
-		environments = [col_ports,monitor_out_port,monitor_address,server_out_port,algs]
+		environments = [col_ports,monitor_out_port,monitor_address,server_out_port,algs,stream_man_pair_ports]
 
 		return environments
 

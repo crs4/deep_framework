@@ -21,6 +21,7 @@ class PipelineManager:
 		self.ports['subcollector_collector_port'] = 7000
 		self.ports['collector_stream_manager_port'] = 7050
 		self.ports['collector_server_port'] = 4050
+		self.ports['stream_manager_server_port'] = 4200
 		self.ports['server_port'] = APP_PORT
 		self.ports['monitor_in_port'] = 5550
 		self.ports['monitor_out_port'] = 5551
@@ -50,14 +51,8 @@ class PipelineManager:
 		pipeline['chains'] = []
 
 		stream_manager = StreamManagerComponent(self.ports,source)
-		"""
-		if source_type == 'local_file':
-			stream_capture = StreamCaptureComponent(self.ports,source)
-			pipeline['stream_capture'] = stream_capture
-		else:
-			pipeline['stream_capture'] = None
-		"""
-
+		server.server_pair_ports.append((source_id,self.ports['stream_manager_server_port']))
+		
 
 
 
@@ -77,6 +72,7 @@ class PipelineManager:
 			pipeline['chains'].append(chain)
 
 		pipeline['stream_manager'] = stream_manager
+		self.ports['stream_manager_server_port'] += 1
 
 		return pipeline
 
@@ -200,14 +196,7 @@ class CollectorComponent:
 	def __init__(self,ports,prefix,source_id):
 		self.detector_port = ports['detector_collector_port']
 		self.subcollector_collector_port = []
-
-
-
 		self.stream_manager_port = ports['collector_stream_manager_port']
-
-
-
-
 		self.server_port = ports['collector_server_port']
 		self.monitor_in_port = ports['monitor_in_port']
 		self.component_type = 'collector'
@@ -222,6 +211,7 @@ class StreamManagerComponent:
 		self.detector_port = ports['stream_manager_detector_port']
 		self.collector_ports = []
 		self.server_port = ports['server_port']
+		self.server_pair_port = ports['stream_manager_server_port']
 		self.component_type = 'stream_manager'
 		self.component_name = self.component_type + '_' + source_params['source_id']
 		self.connected_to = {'server':'server'}
@@ -242,6 +232,7 @@ class ServerComponent:
 	def __init__(self,ports):
 		self.server_port = ports['server_port']
 		self.monitor_port = ports['monitor_out_port']
+		self.server_pair_ports = []
 		self.connected_to = {'monitor':'monitor'}
 		self.collector_ports = []
 		self.component_type = 'server'

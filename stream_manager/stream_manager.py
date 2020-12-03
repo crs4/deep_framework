@@ -106,6 +106,10 @@ class StreamManager:
             receiver_socket.bind(PROT +'*:'+ coll_port)
             self.collectors.append({'socket':receiver_socket})
 
+        self.server_pair_socket = self.context.socket(zmq.PAIR)
+        self.server_pair_socket.connect(PROT + HP_SERVER + ':' +SERVER_PAIR_PORT)
+
+
     def create_deep_message(self, frame):
         self.received_frame = frame
         self.received_frames += 1
@@ -237,7 +241,15 @@ class StreamManager:
                             logging.info(f'[{self.id}]: Watchdog: received collector data')  
                     except:
                         logging.info(f'[{self.id}]: Watchdog: collector socket empty')  
-            self.core_watchdog.clear()          
+            self.core_watchdog.clear()
+
+    async def receive_server_signaling(self,server_socket):
+        logging.info('server_signaling started')
+        while True:
+            message = server_socket.recv()
+            logging.info(message)
+
+
 
     async def stop(self):
         self.sender_socket.close()
@@ -261,6 +273,8 @@ class StreamManager:
             tasks.append(receiver_task)
 
         tasks.append(asyncio.create_task(self.task_monitor(tasks)))
+        
+        tasks.append(asyncio.create_task(self.receive_server_signaling(self.server_pair_socket)))
 
         self.peer.add_data_handler(self.on_remote_data)
         try:
