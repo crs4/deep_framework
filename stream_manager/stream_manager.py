@@ -246,8 +246,14 @@ class StreamManager:
     async def receive_server_signaling(self,server_socket):
         logging.info('server_signaling started')
         while True:
-            message = server_socket.recv()
-            logging.info(message)
+            try:
+                message = server_socket.recv(flags=zmq.NOBLOCK)
+                logging.info(message)
+            except Exception as e:
+                await asyncio.sleep(0.5)
+
+
+            
 
 
 
@@ -272,9 +278,11 @@ class StreamManager:
             receiver_task = asyncio.create_task(self.receiver(coll['socket']))
             tasks.append(receiver_task)
 
+
+        tasks.append(asyncio.create_task(self.receive_server_signaling(self.server_pair_socket)))
+
         tasks.append(asyncio.create_task(self.task_monitor(tasks)))
         
-        tasks.append(asyncio.create_task(self.receive_server_signaling(self.server_pair_socket)))
 
         self.peer.add_data_handler(self.on_remote_data)
         try:
