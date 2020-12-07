@@ -109,7 +109,7 @@ for (var i = 0; i < collector_port_arr.length; i++) {
 app.post('/api/start', function(request, response){
 	for (var i = 0; i < stream_man_sock_list.length; i++) {
 		var sock = stream_man_sock_list[i];
-		sock.send('START_ALL');
+		sock.send('START');
 	};	
 	return response.send('All sources started');
 
@@ -119,7 +119,7 @@ app.post('/api/start', function(request, response){
 app.post('/api/stop', function(request, response){
 	for (var i = 0; i < stream_man_sock_list.length; i++) {
 		var sock = stream_man_sock_list[i];
-		sock.send('STOP_ALL');
+		sock.send('STOP');
 	};
 	return response.send('All sources stopped');
 });
