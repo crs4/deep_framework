@@ -158,13 +158,13 @@ class SourceProvider(Interviewer):
 	def ask_for_sources(self):
 		sources = []
 		source_folder = None
-		
+		cycle_counter = 0
 
 		add_video_source_question = 'Do you want to add a video source? (y/n): \n'
 
 		
 
-		while self.get_acceptable_answer(add_video_source_question,['y','n']).lower() == 'y' or len(sources) == 0:
+		while self.get_acceptable_answer(add_video_source_question,['y','n']).lower() == 'y' or len(sources) == 0 and cycle_counter>0:
 			self.__rm_config()
 			source_url = None
 			source_path = None
@@ -189,6 +189,7 @@ class SourceProvider(Interviewer):
 			source_id = self.get_answer('Give a unique name/ID to this video source: \n')
 			source_dict = {'source_id': source_id, 'source_path':source_path, 'source_folder': source_folder if source_path is not None else 'None', 'source_url': source_url, 'source_type':source_type }
 			sources.append(source_dict)
+			cycle_counter+=1
 
 
 		return sources
