@@ -47,6 +47,7 @@ class StreamManager:
         
         self.source_ready = asyncio.Event()
         self.core_watchdog = asyncio.Event()
+        self.stream_enable = asyncio.Event()
         self.__connection_reset()
         self.__socket_setup()
 
@@ -111,6 +112,8 @@ class StreamManager:
 
 
     def create_deep_message(self, frame):
+        if not self.stream_enable.is_set():
+            return
         self.received_frame = frame
         self.received_frames += 1
         capture_time = time.time()
@@ -132,6 +135,7 @@ class StreamManager:
         try:
             while True:
                 await self.source_ready.wait()
+                await self.stream_enable.wait()
                 try:
                     received_data, __ = recv_data(socket,1,False)
                     # logging.info(f'[{self.id}]: received_data: {str(received_data)}')
@@ -247,14 +251,17 @@ class StreamManager:
         logging.info('server_signaling started')
         while True:
             try:
-                message = server_socket.recv(flags=zmq.NOBLOCK)
-                logging.info(message)
+                message = str(server_socket.recv(flags=zmq.NOBLOCK), encoding='utf-8')
+                logging.info(f'Server message: {message}')
+                if message == 'START':
+                    self.stream_enable.set()
+                else:
+                    self.stream_enable.clear()
+                    if self.peer.readyState == PeerState.CONNECTED:
+                        await self.peer.send({'type': 'warning', 'messagge': 'Stream manager deactivated'})
+                        await self.peer.disconnect()
             except Exception as e:
                 await asyncio.sleep(0.5)
-
-
-            
-
 
 
     async def stop(self):
@@ -273,6 +280,7 @@ class StreamManager:
         if self.stream_capture != None:          
             tasks.append(asyncio.create_task(self.stream_capture.start(self.source_ready)))
         tasks.append(asyncio.create_task(self.core_watchdog_timer()))
+
         for coll in self.collectors:
             logging.info(f'[{self.id}]: creating receiver for collector: {str(coll)}')
             receiver_task = asyncio.create_task(self.receiver(coll['socket']))
@@ -282,11 +290,11 @@ class StreamManager:
         tasks.append(asyncio.create_task(self.receive_server_signaling(self.server_pair_socket)))
 
         tasks.append(asyncio.create_task(self.task_monitor(tasks)))
-        
 
         self.peer.add_data_handler(self.on_remote_data)
         try:
             while True:
+                await self.stream_enable.wait()
                 logging.info(f'[{self.id}]: Waiting peer connections...')
                 self.remotePeerId = await self.peer.listen_connections()
 
