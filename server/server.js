@@ -20,8 +20,6 @@ const https = require("https")
 const fs = require("fs")
 
 const swaggerUi = require('swagger-ui-express');
-const swagger_file_path = process.cwd() + '/swagger.json';
-var swaggerDoc = require.resolve(swagger_file_path);
 
 const server = https.createServer({
 	key: fs.readFileSync('./cert/key.pem'),
@@ -153,10 +151,6 @@ app.get('/', function(req, res) {
 	res.sendFile(appPath);
 });
 
-app.get('/swagger.json', function(req, res) {
-	res.setHeader("Access-Control-Allow-Origin", "*");
-	res.sendFile(swagger_file_path);
-});
 
 
 app._router.stack.forEach(function(r){
@@ -166,15 +160,7 @@ app._router.stack.forEach(function(r){
 })
 
 const apis_map_dict = create_api_map(apis_list,source_id_list);
-write_apis_file(apis_map_dict);
-var options = {
-  swaggerOptions: {
-    url: 'https://localhost:8000/swagger.json'
-  }
-}
-// app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(null,options));
 
-// app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerDoc));
 app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(apis_map_dict));
 
 server.listen(serverPort, function(err){
@@ -243,7 +229,7 @@ function create_api_map(endpoints_list,source_id_list) {
 		if (end_p.includes('stream')){
 
 			end_p_split = end_p.split("/");
-			stream_id = end_p_split[2].split('_')[1];
+			stream_id = end_p_split[2].slice(7,);
 			spec = end_p_split[3];
 			
 
@@ -265,20 +251,5 @@ function create_api_map(endpoints_list,source_id_list) {
 	return apis_map
 		
 
-}
-
-function write_apis_file(data_apis){
-	const data_apis_json = JSON.stringify(data_apis);
-	//console.log(data_apis_json);
-
-
-	// write file to disk
-	fs.writeFile(swagger_file_path, data_apis_json, 'utf8', (err) => {
-
-	    if (err) {
-	        console.log(`Error writing file: ${err}`);
-	    };
-
-	});
 }
 
