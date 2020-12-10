@@ -63,8 +63,9 @@ class VideoCapture:
                     self.last_frame_time = time.time()
                     # logging.info('frame forwarding...')
                     self.frame_consumer(self.current_frame)
-        except:
-            raise
+        except asyncio.CancelledError as c:
+            self.video.release()
+            raise c
         finally:
             logging.info('Reader exit')
             ready_event.clear()
@@ -82,15 +83,21 @@ class StreamCapture:
 
     async def start(self, ready_event):
         await self.peer.open()
-        while True:
-            self.remotePeerId = await self.peer.listen_connections()
-            logging.info(f'[Stream_capture]: Connection request from peer: {self.remotePeerId}')
-            await self.peer.accept_connection()
-            ready_event.set()
-            await self.peer.disconnection_event.wait()
-            ready_event.clear()
-            while self.peer.readyState != PeerState.ONLINE:
-                await asyncio.sleep(0.2)
+        try:
+            while True:
+                self.remotePeerId = await self.peer.listen_connections()
+                logging.info(f'[Stream_capture]: Connection request from peer: {self.remotePeerId}')
+                await self.peer.accept_connection()
+                ready_event.set()
+                await self.peer.disconnection_event.wait()
+                ready_event.clear()
+                while self.peer.readyState != PeerState.ONLINE:
+                    await asyncio.sleep(0.2)
+        except asyncio.CancelledError as c:
+            if self.peer.readyState == PeerState.CONNECTED:
+                await self.peer.disconnect()
+                ready_event.clear()
+            raise c
 
     
 

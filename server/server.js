@@ -172,9 +172,10 @@ var options = {
     url: 'https://localhost:8000/swagger.json'
   }
 }
-app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(null,options));
+// app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(null,options));
 
-//app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerDoc));
+// app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerDoc));
+app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(apis_map_dict));
 
 server.listen(serverPort, function(err){
 	if (err) return console.error(err)

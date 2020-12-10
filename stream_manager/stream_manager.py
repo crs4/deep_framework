@@ -17,9 +17,7 @@ from utils.socket_commons import send_data, recv_data
 ROOT = os.path.dirname(__file__)
 logging.basicConfig(level=logging.INFO)
 
-logging.info('*** DEEP STREAM MANAGER v1.0.4 ***')
-
-# SOURCE_ID = os.environ.get('ID', f'sm_{int(time.time() * 1000)}')
+logging.info('*** DEEP STREAM MANAGER v1.0.6 ***')
 
 #ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
 #ssl_context.load_verify_locations('cert.pem')
@@ -35,16 +33,10 @@ class StreamManager:
     def __init__(self):        
         self.id = SOURCE_ID
         frame_consumer_to_client = None
-        if SOURCE_TYPE == 'local_file':
-            self.stream_capture = VideoCapture(SOURCE_PATH, frame_consumer=self.create_deep_message, is_file=True)
-        elif SOURCE_TYPE == 'ip_stream':
-            self.stream_capture = VideoCapture(SOURCE_URL, frame_consumer=self.create_deep_message, is_file=False)
-        elif SOURCE_TYPE == 'stream_capture':
-            self.stream_capture = StreamCapture(peer_id=self.id, frame_consumer=self.create_deep_message, data_handler=self.on_capture_data)
-        else: #-> SOURCE_TYPE == 'remote_client'
+        if SOURCE_TYPE == 'remote_client':
             frame_consumer_to_client = lambda f: self.create_deep_message(f)
-            self.stream_capture = None
         
+        self.stream_capture = None
         self.source_ready = asyncio.Event()
         self.core_watchdog = asyncio.Event()
         self.stream_enable = asyncio.Event()
@@ -255,14 +247,35 @@ class StreamManager:
                 logging.info(f'Server message: {message}')
                 if message == 'START':
                     self.stream_enable.set()
+                    self.start_stream_capture()
                 else:
                     self.stream_enable.clear()
                     if self.peer.readyState == PeerState.CONNECTED:
                         await self.peer.send({'type': 'warning', 'messagge': 'Stream manager deactivated'})
                         await self.peer.disconnect()
+                    await self.stop_stream_capture()
             except Exception as e:
                 await asyncio.sleep(0.5)
+    
+    def start_stream_capture(self):
+        if SOURCE_TYPE == 'remote_client':
+            self.stream_capture = None
+            return
+        if SOURCE_TYPE == 'local_file':
+            stream_capture = VideoCapture(SOURCE_PATH, frame_consumer=self.create_deep_message, is_file=True)
+        elif SOURCE_TYPE == 'ip_stream':
+            stream_capture = VideoCapture(SOURCE_URL, frame_consumer=self.create_deep_message, is_file=False)
+        elif SOURCE_TYPE == 'stream_capture':
+            stream_capture = StreamCapture(peer_id=self.id, frame_consumer=self.create_deep_message, data_handler=self.on_capture_data)
+        
+        self.stream_capture = asyncio.create_task(stream_capture.start(self.source_ready))
 
+    async def stop_stream_capture(self):
+        self.stream_capture.cancel()
+        try:
+            await self.stream_capture
+        except asyncio.CancelledError:
+            pass
 
     async def stop(self):
         self.sender_socket.close()
@@ -277,8 +290,6 @@ class StreamManager:
         await self.peer.open()
         logging.info(f'[{self.id}]: Open video source...')
         tasks = []     
-        if self.stream_capture != None:          
-            tasks.append(asyncio.create_task(self.stream_capture.start(self.source_ready)))
         tasks.append(asyncio.create_task(self.core_watchdog_timer()))
 
         for coll in self.collectors:
@@ -295,6 +306,8 @@ class StreamManager:
         try:
             while True:
                 await self.stream_enable.wait()
+                
+                
                 logging.info(f'[{self.id}]: Waiting peer connections...')
                 self.remotePeerId = await self.peer.listen_connections()
 
@@ -311,6 +324,8 @@ class StreamManager:
                     await asyncio.sleep(1)
                 
                 self.__connection_reset()
+
+
                 
         except Exception as err:
             logging.info(f'[{self.id}]: Execution error: {err}')
