@@ -1,7 +1,7 @@
 'use strict';
 var angular = require('../../../node_modules/@bower_components/angular')
 angular.module('app')
-  .service('dataService', ['$window',
+  .service('dataService', ['$window', '$http',
     dataService
   ]);
 console.log('Hyperpeer ...')
@@ -36,7 +36,7 @@ if (!supports["width"] || !supports["height"] || !supports["frameRate"] || !supp
  *
  * @returns
  */
-function dataService($window) {
+function dataService($window, $http) {
   const hostname = location.hostname;
   console.log(hostname)
   const serverAddress = `wss://${hostname}:8000`; //156.148.132.107
@@ -207,8 +207,17 @@ function dataService($window) {
       hp.send({ type: 'metadata', metadata: { type: 'browser_video'} })
     },
     setRemotePeerType: (peerType) => remotePeerType = peerType,
-    setRemotePeer: (peer) => remotePeer = peer
-  };
+    setRemotePeer: (peer) => remotePeer = peer,
+    startStreams: () => {
+      return $http.post("/api/start", null)
+    },
+    stopStreams: () => {
+      return $http.post("/api/stop", null)
+    },
+    getStreams: () => {
+      
+    }
+  }
 
 
 

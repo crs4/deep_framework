@@ -124,6 +124,22 @@ function ControlsController($scope, $timeout, dataService) {
         })
     }
 
+    $scope.startStreams = function() {
+        dataService.startStreams()
+        .then(()=>{
+            console.log('Streams started')
+        })
+        .catch(alert)
+    }
+
+    $scope.stopStreams = function () {
+        dataService.stopStreams()
+            .then(() => {
+                console.log('Streams stoped')
+            })
+            .catch(alert)
+    }
+
 
     $scope.stop = function () {
         dataService.stop()
