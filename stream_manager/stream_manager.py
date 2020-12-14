@@ -17,7 +17,7 @@ from utils.socket_commons import send_data, recv_data
 ROOT = os.path.dirname(__file__)
 logging.basicConfig(level=logging.INFO)
 
-logging.info('*** DEEP STREAM MANAGER v1.0.6 ***')
+logging.info('*** DEEP STREAM MANAGER v1.0.8 ***')
 
 #ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
 #ssl_context.load_verify_locations('cert.pem')
@@ -246,21 +246,24 @@ class StreamManager:
                 message = str(server_socket.recv(flags=zmq.NOBLOCK), encoding='utf-8')
                 logging.info(f'Server message: {message}')
                 if message == 'START':
+                    await self.peer.open()
                     self.stream_enable.set()
-                    self.start_stream_capture()
+                    await self.start_stream_capture()
                 else:
                     self.stream_enable.clear()
                     if self.peer.readyState == PeerState.CONNECTED:
                         await self.peer.send({'type': 'warning', 'messagge': 'Stream manager deactivated'})
                         await self.peer.disconnect()
                     await self.stop_stream_capture()
+                    await self.peer.close()
             except Exception as e:
                 await asyncio.sleep(0.5)
     
-    def start_stream_capture(self):
+    async def start_stream_capture(self):
         if SOURCE_TYPE == 'remote_client':
             self.stream_capture = None
             return
+        logging.info(f'[{self.id}]: Open video source...')
         if SOURCE_TYPE == 'local_file':
             stream_capture = VideoCapture(SOURCE_PATH, frame_consumer=self.create_deep_message, is_file=True)
         elif SOURCE_TYPE == 'ip_stream':
@@ -269,13 +272,19 @@ class StreamManager:
             stream_capture = StreamCapture(peer_id=self.id, frame_consumer=self.create_deep_message, data_handler=self.on_capture_data)
         
         self.stream_capture = asyncio.create_task(stream_capture.start(self.source_ready))
+        logging.info(f'[{self.id}]: Open connection with peer server...')
+        
 
     async def stop_stream_capture(self):
+        if SOURCE_TYPE == 'remote_client':
+            return
         self.stream_capture.cancel()
         try:
             await self.stream_capture
         except asyncio.CancelledError:
             pass
+        except Exception as e:
+            logging.error(str(e))
 
     async def stop(self):
         self.sender_socket.close()
@@ -286,9 +295,7 @@ class StreamManager:
         await self.peer.close()
 
     async def start(self):
-        logging.info(f'[{self.id}]: Open connection with peer server...')
-        await self.peer.open()
-        logging.info(f'[{self.id}]: Open video source...')
+        
         tasks = []     
         tasks.append(asyncio.create_task(self.core_watchdog_timer()))
 
@@ -306,22 +313,25 @@ class StreamManager:
         try:
             while True:
                 await self.stream_enable.wait()
+
+                try:
                 
-                
-                logging.info(f'[{self.id}]: Waiting peer connections...')
-                self.remotePeerId = await self.peer.listen_connections()
+                    logging.info(f'[{self.id}]: Waiting peer connections...')
+                    self.remotePeerId = await self.peer.listen_connections()
 
-                logging.info(f'[{self.id}]: Connection request from peer: {self.remotePeerId}')
-                await self.peer.accept_connection()
-                if SOURCE_TYPE == 'remote_client':
-                    self.source_ready.set()
+                    logging.info(f'[{self.id}]: Connection request from peer: {self.remotePeerId}')
+                    await self.peer.accept_connection()
+                    if SOURCE_TYPE == 'remote_client':
+                        self.source_ready.set()
 
-                await self.peer.disconnection_event.wait()
-                if SOURCE_TYPE == 'remote_client':
-                    self.source_ready.clear()
+                    await self.peer.disconnection_event.wait()
+                    if SOURCE_TYPE == 'remote_client':
+                        self.source_ready.clear()
 
-                while self.peer.readyState != PeerState.ONLINE:
-                    await asyncio.sleep(1)
+                    while self.peer.readyState != PeerState.ONLINE:
+                        await asyncio.sleep(1)
+                except Exception as e:
+                    logging.warning(f'[{self.id}]: Peer Exception: {str(e)}')
                 
                 self.__connection_reset()
 

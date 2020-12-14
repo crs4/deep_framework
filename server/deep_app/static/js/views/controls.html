@@ -1,5 +1,7 @@
 <div id='lilo' style='height: 2000px; width: 2000;' 
     ng-controller="ControlsController">
+    <button id="start-all" ng-click="startStreams()">Start all streams</button>
+    <button id="stop-all" ng-click="stopStreams()">Stop all streams</button>
 
     <h2>Connection Settings</h1>
     <div>
@@ -10,6 +12,10 @@
     </div>
     <br>
     <div id="demo" ng-show="online">
+        <div ng-repeat="peer in allServers">
+            <label for="peer.id">  </label>
+            <input id="peer.id" type="checkbox" ng-model="">
+        </div>
         <label >Remote peer type: </label>
         <input type="radio" name="remotePeerType" ng-model="remotePeerType" value="stream_manager" ng-disabled="status == 'connected'">
         Stream Manager
@@ -28,14 +34,14 @@
                 ng-disabled="status == 'connected'">
             </select>
         </div>
-        <div id="deep-controls" ng-show="remotePeerType == 'stream_manager' && status == 'connected'">
+        <!-- <div id="deep-controls" ng-show="remotePeerType == 'stream_manager' && status == 'connected'">
             <label for="deep-source">Stream Manager Video Source: </label>
             <select id="deep-source" ng-model='deepVideoSource'>
                 <option ng-value="'none'">None (Pause streaming)</option>
                 <option ng-value="myPeerId">Local webcam</option>
                 <option ng-value="peer.id" ng-repeat="peer in cameras">Camera {{peer.id}}</option>
             </select>
-        </div>
+        </div> -->
         <br>
         <button id="start" ng-if="status != 'connected' && remotePeer" ng-click="start()">Connect</button>
         <button id="stop" ng-if="status == 'connected'" ng-click="stop()">Stop remote connection</button>
