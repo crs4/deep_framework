@@ -3,6 +3,8 @@ const monitor_address = process.env.MONITOR_ADDRESS || '0.0.0.0'
 const monitor_port = process.env.MONITOR_STATS_OUT || '3000'
 const algs = process.env.ALGS
 
+const sources = process.env.SOURCES
+
 const collector_ports = process.env.COLLECTOR_PORTS
 const collector_port_arr = collector_ports.split(",");
 
@@ -28,7 +30,6 @@ const server = https.createServer({
 }, app);
 
 const apis_list = [];
-const apis_map = [];
 
 /**
  * Hyperpeer server
@@ -124,8 +125,33 @@ app.post('/api/stop', function(request, response){
 
 
 app.get('/api/algs', function(request, response){
-	const algs_arr = algs.split(",");
-	response.json({algs_list: algs_arr});
+	var algs_arr = algs.split(",");
+	var alg_list = [];
+	for (var i = 0; i < algs_arr.length; i++) {
+		var alg = algs_arr[i];
+		var alg_split = alg.split(":");
+		var alg_name =alg_split[0];
+		var related_to =alg_split[1];
+		var source_id =alg_split[2];
+		var alg_json = {'name': alg_name, 'detector_connected': related_to, 'source_connected':source_id };
+		alg_list.push(alg_json);
+	};
+	response.json({algs_list: alg_list});
+
+});
+
+app.get('/api/sources', function(request, response){
+	var sources_arr = sources.split(",");
+	var source_list = [];
+	for (var i = 0; i < sources_arr.length; i++) {
+		var source = sources_arr[i];
+		var source_split = source.split(":");
+		var source_id =source_split[0];
+		var source_type =source_split[1];
+		var source_json = {'source_id': source_id, 'source_type': source_type};
+		source_list.push(source_json);
+	};
+	response.json({source_list: source_list});
 
 });
 

@@ -23,7 +23,7 @@ class DockerServicesManager:
 	
 	def extract_structure(self):
 
-		desc_name_list = []
+		desc_params_list = []
 
 		pipelines = self.deep_structure['pipelines']
 		for pipeline in pipelines:
@@ -36,14 +36,17 @@ class DockerServicesManager:
 				detector = chain['detector'] 
 				collector = chain['collector']
 				descriptor_chains = chain['descriptors']
+
+
 				
 				for desc_chain in descriptor_chains:
 					broker = desc_chain['broker']
 					subcollector = desc_chain['subcollector']
 					descriptor_list = desc_chain['descriptors']
+
+
 					for desc in descriptor_list:
-						desc_name = desc.params['name'] 
-						desc_name_list.append(desc_name)
+						desc_params_list.append(desc.params)
 
 					self.manage_broker_services(broker)
 				
@@ -59,7 +62,8 @@ class DockerServicesManager:
 				
 				
 
-		self.create_base_services(desc_name_list)
+		self.create_base_services(desc_params_list)
+
 
 
 	def manage_detector_services(self,detector_component):
@@ -114,37 +118,22 @@ class DockerServicesManager:
 		self.dict_services[stream_man_service.service_name] = stream_man_dict
 
 	
-	def create_base_services(self,desc_name_list):
+	def create_base_services(self,desc_params_list):
 		monitor = self.deep_structure['monitor']
 		server = self.deep_structure['server']
 
-		monitor_service = MonitorService(monitor,desc_name_list,self.registry_address)
+		monitor_service = MonitorService(monitor,desc_params_list,self.registry_address)
 		monitor_dict = monitor_service.create_monitor_service()
 		self.services.append(monitor_service)
 		self.dict_services[monitor_service.service_name] = monitor_dict
 
 
-		server_service = ServerService(server,desc_name_list,self.registry_address)
+		server_service = ServerService(server,desc_params_list, self.sources,self.registry_address)
 		server_dict = server_service.create_server_service()
 		self.services.append(server_service)
 		self.dict_services[server_service.service_name] = server_dict
 
-		#self.create_api_ui_service(server_service.service_name)
-
-
-
-	"""
-	def create_api_ui_service(self,server_service_name):
-		api_ui = dict()
-		api_ui['links'] = [server_service_name+':'+'deep_server']
-		server_addr = 'deep_server' + ':' + str(APP_PORT)
-		api_ui['environment'] = ['SWAGGER_JSON=https://'+server_addr+'/swagger.json']
-		api_ui['image'] = 'swaggerapi/swagger-ui:latest'
-		api_ui['networks'] = [NETWORK]
-		api_ui['ports'] = [str(API_PORT)+":8080"]
-		api_ui['depends_on'] = [server_service_name]
-		self.dict_services['swagger'] = api_ui
-	"""
+		
 
 
 
@@ -452,19 +441,22 @@ class StreamManagerService(DeepService):
 
 class MonitorService(DeepService):
 
-	def __init__(self,monitor_component,desc_name_list,registry_address):
+	def __init__(self,monitor_component,desc_params_list,registry_address):
 		super().__init__()
 		self.service_name = monitor_component.component_type
 		self.image_tag = self.set_component_tag()
 		self.env_file = [ENV_PARAMS]
 		self.net = NETWORK
-		self.environments = self.__set_environments(monitor_component,desc_name_list)
+		self.environments = self.__set_environments(monitor_component,desc_params_list)
 		self.image_name = self.set_image_name(registry_address,self.service_name,self.image_tag)
 
-	def __set_environments(self,monitor_component,desc_name_list):
+	def __set_environments(self,monitor_component,desc_params_list):
 		environments = []
 
-		algs = 'ALGS='+','.join(desc_name_list)
+		algs = 'ALGS='+','.join([desc['name']for desc in desc_params_list])
+
+
+
 		monitor_stats_in = 'MONITOR_STATS_IN='+str(monitor_component.monitor_in_port)
 		monitor_stats_out = 'MONITOR_STATS_OUT='+str(monitor_component.monitor_out_port)
 		environments = [algs,monitor_stats_in,monitor_stats_out] 
@@ -483,25 +475,31 @@ class MonitorService(DeepService):
 
 class ServerService(DeepService):
 
-	def __init__(self,server_component,desc_name_list,registry_address):
+	def __init__(self,server_component,desc_params,sources,registry_address):
 		super().__init__()
 		self.service_name = server_component.component_type
 		self.image_tag = self.set_component_tag()
 		self.env_file = [ENV_PARAMS]
 		self.net = NETWORK
-		self.environments = self.__set_environments(server_component,desc_name_list)
+		self.environments = self.__set_environments(server_component,desc_params,sources)
 		self.image_name = self.set_image_name(registry_address,self.service_name,self.image_tag)
 		self.server_port =  str(server_component.server_port)
 
-	def __set_environments(self,server_component,desc_name_list):
+	def __set_environments(self,server_component,desc_params,sources):
 		environments = []
 		server_out_port = 'SERVER_PORT='+str(APP_PORT)
-		algs = 'ALGS='+','.join(desc_name_list)
+
+		
+
+		algs = 'ALGS='+','.join( [desc['name']+':'+ desc['related_to']+':'+desc['source_id'] for desc in desc_params] )
+		sources = 'SOURCES='+','.join( [source['source_id']+':'+ source['source_type'] for source in sources])
+
+
 		col_ports = 'COLLECTOR_PORTS='+','.join([det_name+':'+source_id+':'+str(port) for det_name,source_id,port in server_component.collector_ports])
 		stream_man_pair_ports = 'STREAM_MANAGER_PAIR_PORTS='+','.join([source_id+':'+str(port) for source_id,port in server_component.server_pair_ports])
 		monitor_out_port = 'MONITOR_STATS_OUT='+str(server_component.monitor_port)
 		monitor_address = 'MONITOR_ADDRESS='+server_component.connected_to['monitor']
-		environments = [col_ports,monitor_out_port,monitor_address,server_out_port,algs,stream_man_pair_ports]
+		environments = [col_ports,monitor_out_port,monitor_address,server_out_port,algs,stream_man_pair_ports,sources]
 
 		return environments
 

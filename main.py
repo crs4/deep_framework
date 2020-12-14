@@ -43,6 +43,7 @@ if __name__ == "__main__":
 	sp = SourceProvider()
 	sources = sp.get_sources(use_last_settings=args.run)
 	
+	
 	det_prov = DetectorProvider(det_revealed,sources)
 	dets = det_prov.get_detectors(use_last_settings=args.run)
 
@@ -64,7 +65,6 @@ if __name__ == "__main__":
 	dm = DockerServicesManager(deep_structure,registry.insecure_addr,sources)
 	docker_services = dm.get_services()
 	dm.write_services()
-	
 	img_man = ImageManager(machine,docker_services,registry.insecure_addr,stds)
 	img_man.start_build_routine()
 
