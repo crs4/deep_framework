@@ -240,6 +240,12 @@ function create_api_map(endpoints_list,source_id_list) {
 			apis_map['paths'][end_p] = info;
 			continue
 		}
+		if (end_p == '/api/sources'){
+			produces = ['application/json'];
+			info = {"get": { "summary": "List all sources available","tags":["pipeline_info"],"responses":responses,"produces":produces}};
+			apis_map['paths'][end_p] = info;
+			continue
+		}
 		if (end_p == '/api/start'){
 			produces = ['application/json'];
 			info = {"post": { "summary": "Start all sources","tags":["pipeline_operations"],"responses":responses,"produces":produces}};
