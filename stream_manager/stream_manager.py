@@ -249,7 +249,7 @@ class StreamManager:
                     await self.peer.open()
                     self.stream_enable.set()
                     await self.start_stream_capture()
-                else:
+                if message == 'STOP':
                     self.stream_enable.clear()
                     if self.peer.readyState == PeerState.CONNECTED:
                         await self.peer.send({'type': 'warning', 'messagge': 'Stream manager deactivated'})

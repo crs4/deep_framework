@@ -214,11 +214,10 @@ class ObjectProvider(Process):
             res['vc_time'] = vc_time
             res['frame_shape'] = frame_shape
 
-            #print('det res: ',obj_list_serialized)
             
-            # send images to descriptors only if objects are detected
-            if len(crops) > 0:
-                send_data(publisher,crops,0,False,**res)
+          
+
+            send_data(publisher,crops,0,False,**res)
 
             # send data to collector
             send_data(col_socket,None,0,False,**res)

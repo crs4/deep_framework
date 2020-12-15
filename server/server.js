@@ -285,3 +285,12 @@ function create_api_map(endpoints_list,source_id_list) {
 
 }
 
+setInterval(function () {
+
+    for (var i = 0; i < stream_man_sock_list.length; i++) {
+		var sock = stream_man_sock_list[i];
+		sock.send('keep-alive-msg');
+	};
+
+}, 60000); 
+
