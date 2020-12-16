@@ -34,6 +34,9 @@ function ControlsController($scope, $timeout, dataService) {
             dataService.getActiveStreams()
                 .then((activeStreams) => {
                     $scope.streams.forEach((stream, index, streams) => {
+                        streams[index].active = false
+                        streams[index].busy = true
+                        streams[index].connected = false
                         activeStreams.forEach((s) => {
                             if (stream.id == s.id) {
                                 streams[index].active = true

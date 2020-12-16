@@ -4,7 +4,7 @@ angular.module('app')
   .service('dataService', ['$window', '$http',
     dataService
   ]);
-console.log('Hyperpeer ...')
+console.log('Data Service')
 const Hyperpeer = require('hyperpeer-js');
 let supports = navigator.mediaDevices.getSupportedConstraints()
 let constraints
