@@ -12,33 +12,57 @@ angular
 
 function ControlsController($scope, $timeout, dataService) {
     let deepConnection = dataService.getConnection()
-    $scope.servers = dataService.getServers()
-    $scope.cameras = dataService.getCameras()
-    $scope.myPeerId = dataService.getMyPeerId()
-    $scope.remotePeer = dataService.getRemotePeer()
-    $scope.remotePeerType = dataService.getRemotePeerType()
-    $scope.deepVideoSource = dataService.getDeepVideoSource()
-    $scope.online = dataService.isOnline()
-    $scope.status = dataService.getStatus()
+    $scope.streams = []
+    dataService.getStreams().then((streams) => {
+        $scope.streams = streams.map((s) => {
+            return {
+                id: s.id,
+                type: s.type,
+                active: false,
+                busy: true,
+                showData: false,
+                connected: false
+            }
+        })
+    })
+    $scope.online = false
+    $scope.status = 'offline'
+    function update() {
+        $scope.online = dataService.isOnline()
+        $scope.status = dataService.getStatus()
+        if ($scope.online) {
+            dataService.getActiveStreams()
+                .then((activeStreams) => {
+                    $scope.streams.forEach((stream, index, streams) => {
+                        activeStreams.forEach((s) => {
+                            if (stream.id == s.id) {
+                                streams[index].active = true
+                                streams[index].busy = s.busy
+                                if ($scope.status == 'connected' && dataService.getRemotePeer().id == stream.id){
+                                    streams[index].connected = true
+                                }
+                            }
+                        })
+                    })
+                })
+        }
+        // $scope.$apply()
+    }
+    update()
+    if (!$scope.online) {
+        dataService.connect()
+        .then(() => {
+            $scope.online = true
+            
+        })
+        .catch((e) => alert(JSON.stringify(e)))
+    }
+    setInterval(update, 1000)
+
     $scope.lastData = {}
     $scope.showLocalVideo = false
     $scope.showRemoteVideo = false
-    $scope.showData = false
-
-    $scope.$watch('deepVideoSource', (newValue, oldValue) => {
-        if ($scope.status == 'connected') {
-            console.log('** DeepVideoSource: ' + newValue)
-            dataService.setDeepVideoSource(newValue)
-        }
-    })
-
-    $scope.$watch('remotePeerType', (newValue, oldValue) => {
-        dataService.setRemotePeerType(newValue)
-    })
-
-    $scope.$watch('remotePeer', (newValue, oldValue) => {
-        dataService.setRemotePeer(newValue)
-    })
+    $scope.showingData = false
 
     $scope.disconnect = function () {
         dataService.disconnect(() => {
@@ -49,7 +73,6 @@ function ControlsController($scope, $timeout, dataService) {
 
     // const ringtone = angular.element('//ringtone')//$document.getElementById('//ringtone');
     let video = ($('#video'))[0]
-    let localVideo = ($('#local_video'))[0]
     let frame_rates = []
     $scope.connectionData = {}
 
@@ -84,7 +107,6 @@ function ControlsController($scope, $timeout, dataService) {
     }
 
     if ($scope.status === 'connected') {
-        localVideo.srcObject = dataService.getLocalStream()
         video.srcObject = dataService.getRemoteStream()
         deepConnection.onAny(handleConnectionChange)
         deepConnection.on('data', handleIncomingData)
@@ -95,34 +117,8 @@ function ControlsController($scope, $timeout, dataService) {
             deepConnection.offAny(handleConnectionChange)
             deepConnection.removeListener('data', handleIncomingData)
         }
+        if ($scope.showingData) dataService.hideDataStream()
     })
-
-    $scope.connect = function () {
-        if (dataService.isOnline()) {
-            dataService.disconnect(() => {
-                $scope.connect();
-            })
-        }
-        dataService.connect((error, localStream) => {
-            if (error) {
-                alert(JSON.stringify(error))
-            }
-            console.log('connected')
-            localVideo.srcObject = localStream
-
-
-            deepConnection = dataService.getConnection()
-            $scope.servers = dataService.getServers()
-            $scope.cameras = dataService.getCameras()
-            $scope.online = dataService.isOnline()
-
-            $scope.status = dataService.getStatus()
-            $scope.$apply()
-
-            deepConnection.onAny(handleConnectionChange)
-            deepConnection.on('data', handleIncomingData)
-        })
-    }
 
     $scope.startStreams = function() {
         dataService.startStreams()
@@ -140,23 +136,62 @@ function ControlsController($scope, $timeout, dataService) {
             .catch(alert)
     }
 
-
-    $scope.stop = function () {
-        dataService.stop()
-        $scope.deepVideoSource = dataService.getDeepVideoSource()
-    };
-
-    $scope.start = function () {
-        if (!$scope.remotePeer) return alert('No server available');
-        dataService.start((error, remoteStream) => {
-            if (error) return alert(JSON.stringify(error))
-            video.srcObject = remoteStream
-            deepConnection.once('disconnect', () => {
-                video.pause()
-                video.srcObject = undefined
+    $scope.startStream = function (streamId) {
+        dataService.startStream(streamId)
+            .then(() => {
+                console.log('Stream started')
             })
+            .catch(alert)
+    }
+
+    $scope.stopStream = function (streamId) {
+        dataService.stopStream(streamId)
+            .then(() => {
+                console.log('Stream stoped')
+            })
+            .catch(alert)
+    }
+
+
+    $scope.stopPeerConnection = function (stream) {
+        dataService.stopPeerConnection()
+            .then(() => stream.connected = false)
+    }
+
+    $scope.startPeerConnection = function (stream) {
+        dataService.startPeerConnection(stream)
+            .then((remoteStream) => {
+                video.srcObject = remoteStream
+                deepConnection = dataService.getConnection()
+                deepConnection.onAny(handleConnectionChange)
+                deepConnection.on('data', handleIncomingData)
+                deepConnection.once('disconnect', () => {
+                    video.pause()
+                    video.srcObject = undefined
+                })
+                stream.connected = true
+            })
+            .catch((error) => alert(JSON.stringify(error)))
+    }
+
+    $scope.dataMessage = {}
+    $scope.showDataStream = function (stream) {
+        dataService.hideDataStream()
+        $scope.streams.forEach((stream) => {
+            stream.showData = false
         })
-    };
+        dataService.showDataStream(stream.id, (event) => {
+            $scope.dataMessage = JSON.parse(event.data)
+        })
+        stream.showData = true
+        $scope.showingData = true
+    }
+
+    $scope.hideDataStream = function(stream) {
+        dataService.hideDataStream()
+        stream.showData = false
+        $scope.showingData = false
+    }
 
 
     let videoEvents = ['play', 'pause', 'stalled', 'ended', 'waiting', 'canplay', 'canplaythrough', 'connected', 'suspend', 'loadeddata']
@@ -166,11 +201,6 @@ function ControlsController($scope, $timeout, dataService) {
             if (event === 'canplaythrough') playVideo(video)
             if (event === 'pause') video.controls = true
 
-        }, false)
-        localVideo.addEventListener(event, () => {
-            console.log('*** Local video event: ' + event)
-            if (event === 'canplaythrough') playVideo(localVideo)
-            if (event === 'pause') localVideo.controls = true
         }, false)
     })
     $scope.manualPlay = false

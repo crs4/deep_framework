@@ -148,10 +148,10 @@ app.get('/api/sources', function(request, response){
 		var source_split = source.split(":");
 		var source_id =source_split[0];
 		var source_type =source_split[1];
-		var source_json = {'source_id': source_id, 'source_type': source_type};
+		var source_json = {'id': source_id, 'type': source_type};
 		source_list.push(source_json);
 	};
-	response.json({source_list: source_list});
+	response.json(source_list);
 
 });
 

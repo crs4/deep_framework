@@ -511,7 +511,7 @@ class ServerService(DeepService):
 		server_dict['image'] = self.image_name
 		server_dict['networks'] = [self.net]
 		server_dict['ports'] = [self.server_port+':'+self.server_port]
-		
+
 
 		return server_dict
 

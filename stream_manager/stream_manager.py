@@ -17,7 +17,7 @@ from utils.socket_commons import send_data, recv_data
 ROOT = os.path.dirname(__file__)
 logging.basicConfig(level=logging.INFO)
 
-logging.info('*** DEEP STREAM MANAGER v1.0.8 ***')
+logging.info('*** DEEP STREAM MANAGER v1.0.9 ***')
 
 #ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
 #ssl_context.load_verify_locations('cert.pem')
@@ -60,7 +60,7 @@ class StreamManager:
                 yield self.received_frame
 
         self.hp_server_address = HP_SERVER +':'+ SERVER_PORT
-        self.peer = Peer('wss://' + self.hp_server_address, peer_type='deep_output', id=self.id,
+        self.peer = Peer('wss://' + self.hp_server_address, peer_type=SOURCE_TYPE, id=self.id,
                         frame_generator=frame_generator_to_client, frame_consumer=frame_consumer_to_client, ssl_context=ssl_context,
                         datachannel_options=datachannel_options, frame_rate=FRAME_RATE)
         self.capture_peer = None
