@@ -3,6 +3,8 @@ const monitor_address = process.env.MONITOR_ADDRESS || '0.0.0.0'
 const monitor_port = process.env.MONITOR_STATS_OUT || '3000'
 const algs = process.env.ALGS
 
+const dets = process.env.DETS
+
 const sources = process.env.SOURCES
 
 const collector_ports = process.env.COLLECTOR_PORTS
@@ -30,7 +32,7 @@ const server = https.createServer({
 }, app);
 
 const apis_list = [];
-
+const algs_source_map = create_algs_sources_map(algs,sources)
 /**
  * Hyperpeer server
  */
@@ -77,7 +79,6 @@ for (var i = 0; i < stream_man_pair_ports_arr.length; i++) {
 
 
 
-var source_id_list = []
 
 for (var i = 0; i < collector_port_arr.length; i++) {
 
@@ -85,7 +86,6 @@ for (var i = 0; i < collector_port_arr.length; i++) {
 	col_split = col_name_port.split(":");
 	det_name = col_split[0];
 	source_id = col_split[1];
-	source_id_list.push(source_id);
 	col_port = col_split[2]
 
 	const col_sock = zmq.socket('pair');
@@ -140,15 +140,31 @@ app.get('/api/algs', function(request, response){
 
 });
 
+var source_id_list = []
 app.get('/api/sources', function(request, response){
 	var sources_arr = sources.split(",");
+	var dets_arr = dets.split(",");
 	var source_list = [];
+
 	for (var i = 0; i < sources_arr.length; i++) {
 		var source = sources_arr[i];
 		var source_split = source.split(":");
 		var source_id =source_split[0];
+		source_id_list.push(source_id);
+
 		var source_type =source_split[1];
 		var source_json = {'id': source_id, 'type': source_type};
+
+		for (var i = 0; i < dets_arr.length; i++) {
+			var det = dets_arr[i];
+			var det_split = det.split(":");
+			var det_name = det_split[0];
+			var source_id_det =det_split[1];
+			if (source_id_det == source_id){
+				source_json['detector'] = det_name
+			}
+		}
+
 		source_list.push(source_json);
 	};
 	response.json(source_list);
@@ -282,6 +298,42 @@ function create_api_map(endpoints_list,source_id_list) {
 	}
 	return apis_map
 		
+
+}
+
+function create_algs_sources_map(algs,sources){
+	var algs_arr = algs.split(",");
+
+	var algs_source_map = []
+
+	var sources_arr = sources.split(",");
+	
+
+	for (var i = 0; i < algs_arr.length; i++) {
+		var alg = algs_arr[i];
+		var alg_split = alg.split(":");
+		var alg_name =alg_split[0];
+		var related_to =alg_split[1];
+		var source_id_alg =alg_split[2];
+		var alg_source_json = {'name': alg_name, 'detector_connected': related_to};
+
+
+		for (var i = 0; i < sources_arr.length; i++) {
+			var source = sources_arr[i];
+			var source_split = source.split(":");
+			var temp_source_id =source_split[0];
+			var source_type =source_split[1];
+			if (source_id_alg == temp_source_id){
+				alg_source_json['source_connected_id'] = temp_source_id;
+				alg_source_json['source_connected_type'] = source_type;
+
+			}
+			
+		};
+		algs_source_map.push(alg_source_json);
+
+	};
+	return algs_source_map
 
 }
 

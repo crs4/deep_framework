@@ -14,7 +14,6 @@ RUN yarn run build
 WORKDIR /server
 RUN npm install
 
-RUN touch swagger.json
  
 CMD ["node", "server.js"]
 

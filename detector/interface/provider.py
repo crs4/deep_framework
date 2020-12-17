@@ -161,8 +161,12 @@ class ObjectProvider(Process):
             
             print(f'Frames skipped: {skip_counter}')
             skip_counter = 0
-            last_vc_time = rec_dict['vc_time']
 
+            # core watch dog
+            #
+            #
+
+            last_vc_time = rec_dict['vc_time']
             self.stats_maker.received_frames += 1
             current_frame = imgs[0]
             vc_frame_idx = rec_dict['frame_idx']
