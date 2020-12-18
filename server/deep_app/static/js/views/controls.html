@@ -3,16 +3,16 @@
 
     <div layout-gt-md="row" layout="column">
         <div flex="" flex-gt-md="60" >
-            <h2>Streams settings</h1>
+            <h2>Stream settings</h1>
             <div class="table-responsive-vertical md-whiteframe-z1">
                 <table id="table" class="table table-hover table-bordered">
                     <thead>
                         <tr>
-                            <th>ID</th>
+                            <th>Stream ID</th>
                             <th>Type</th>
                             <th>Status</th>
                             <th>Action</th>
-                            <th>Data stream</th>
+                            <th>Data streams</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -29,7 +29,8 @@
                                 <button ng-if="stream.active && !stream.connected" ng-click="stopStream(stream.id)">Stop</button>
                                 <button ng-if="stream.connected" ng-click="stopPeerConnection(stream)">Disconnect</button>
                             </td>
-                            <td data-title="Data stream (SSE)">
+                            <td data-title="Data streams">
+                                {{stream.detector}}
                                 <button ng-if="stream.active && !showingData" ng-click="showDataStream(stream)">Show</button>
                                 <button ng-if="stream.showData && showingData" ng-click="hideDataStream(stream)">Hide</button>
                             </td>
@@ -39,10 +40,13 @@
             </div>
         </div>
         <div flex="" flex-gt-md="40" flex-offset="5" ng-if="showingData">
-            <h2>Data Stream</h2>
-            <md-content layout-padding="" md-force-height="'300px'">
-                <pre>{{dataMessage | json}}</pre>
-            </md-content>
+            <h2>Data Streams</h2>
+            <div ng-repeat="(detector, message) in dataMessages">
+                <h4>Pipeline of {{detector}} detector:</h4>
+                <md-content  md-force-height="'150px'">
+                    <pre>{{message | json}}</pre>
+                </md-content>
+            </div>
         </div>
     </div>
     <button id="start-all" ng-click="startStreams()">Start all streams</button>

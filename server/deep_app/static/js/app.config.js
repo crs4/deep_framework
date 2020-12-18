@@ -35,7 +35,15 @@ angular
                 data: {
                     title: 'Viewer'
                 }
-            });
+            })
+            .state('home.docs', {
+                url: '/docs',
+
+                templateUrl: '/static/js/views/docs.html',
+                data: {
+                    title: 'API Docs'
+                }
+            })
 
         $urlRouterProvider.otherwise('/controls');
 

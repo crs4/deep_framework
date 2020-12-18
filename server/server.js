@@ -142,32 +142,26 @@ app.get('/api/algs', function(request, response){
 
 var source_id_list = []
 app.get('/api/sources', function(request, response){
-	var sources_arr = sources.split(",");
-	var dets_arr = dets.split(",");
-	var source_list = [];
+	const sources_arr = sources.split(",")
+	const dets_arr = dets.split(",")
+	response.json(sources_arr.map((source)=> {
+		let source_split = source.split(":")
+		let source_id =source_split[0]
+		source_id_list.push(source_id)
 
-	for (var i = 0; i < sources_arr.length; i++) {
-		var source = sources_arr[i];
-		var source_split = source.split(":");
-		var source_id =source_split[0];
-		source_id_list.push(source_id);
+		var source_type =source_split[1]
+		var source_json = { 'id': source_id, 'type': source_type, 'detector': []};
 
-		var source_type =source_split[1];
-		var source_json = {'id': source_id, 'type': source_type};
-
-		for (var i = 0; i < dets_arr.length; i++) {
-			var det = dets_arr[i];
-			var det_split = det.split(":");
-			var det_name = det_split[0];
-			var source_id_det =det_split[1];
-			if (source_id_det == source_id){
-				source_json['detector'] = det_name
+		dets_arr.forEach((det) => {
+			var det_split = det.split(":")
+			var det_name = det_split[0]
+			var source_id_det =det_split[1]
+			if (source_id_det == source_id) {
+				source_json['detector'].push(det_name)
 			}
-		}
-
-		source_list.push(source_json);
-	};
-	response.json(source_list);
+		})
+		return source_json
+	}))
 
 });
 

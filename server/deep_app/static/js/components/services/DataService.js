@@ -44,7 +44,7 @@ function dataService($window, $http) {
   const userType = 'web_client'
   const username = 'webClient' + Date.now()
   let remoteStream = null
-  let dataStream = null
+  let dataStreams = []
   let remotePeer = null
   return {
     getConnection: () => hp,
@@ -198,14 +198,18 @@ function dataService($window, $http) {
     stopStream: (streamId) => {
       return $http.post("/api/stream_" + streamId + "/stop", null)
     },
-    showDataStream: (streamId, callback) => {
-      if (dataStream) dataStream.close()
-      dataStream = new EventSource('/api/stream_'+streamId+'/drone_objects')
-      dataStream.addEventListener('message', callback, false)
+    showDataStream: (stream, callback) => {
+      dataStreams.forEach((ds) => ds.close())
+      dataStreams = stream.detector.map((det) => {
+        let dataStream = new EventSource('/api/stream_' + stream.id + '/' + det)
+        dataStream.addEventListener('message', callback.bind(null, det), false)
+        return dataStream
+      })
+      
     },
     hideDataStream: () => {
-      if (dataStream) dataStream.close()
-      dataStream = null
+      dataStreams.forEach((ds) => ds.close())
+      dataStreams = []
     }
   }
 

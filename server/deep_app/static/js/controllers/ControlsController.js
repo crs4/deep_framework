@@ -18,6 +18,7 @@ function ControlsController($scope, $timeout, dataService) {
             return {
                 id: s.id,
                 type: s.type,
+                detector: s.detector,
                 active: false,
                 busy: true,
                 showData: false,
@@ -177,14 +178,15 @@ function ControlsController($scope, $timeout, dataService) {
             .catch((error) => alert(JSON.stringify(error)))
     }
 
-    $scope.dataMessage = {}
+    $scope.dataMessages = {}
     $scope.showDataStream = function (stream) {
         dataService.hideDataStream()
         $scope.streams.forEach((stream) => {
             stream.showData = false
         })
-        dataService.showDataStream(stream.id, (event) => {
-            $scope.dataMessage = JSON.parse(event.data)
+        $scope.dataMessages = {}
+        dataService.showDataStream(stream, (detector, event) => {
+            $scope.dataMessages[detector] = JSON.parse(event.data)
         })
         stream.showData = true
         $scope.showingData = true
