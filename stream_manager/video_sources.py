@@ -77,13 +77,14 @@ class StreamCapture:
         ssl_context.check_hostname = False
         ssl_context.verify_mode = ssl.CERT_NONE
         hp_server_address = HP_SERVER +':'+ SERVER_PORT
-        self.peer = Peer('wss://' + hp_server_address, peer_type='deep_input', id=peer_id + '_input', frame_consumer=frame_consumer, ssl_context=ssl_context)
+        pid = peer_id + '_input'
+        self.peer = Peer('wss://' + hp_server_address, peer_type='deep_input', id=pid, frame_consumer=frame_consumer, ssl_context=ssl_context)
         self.peer.add_data_handler(data_handler)
         self.remotePeerId = None
 
     async def start(self, ready_event):
-        await self.peer.open()
         try:
+            await self.peer.open()
             while True:
                 self.remotePeerId = await self.peer.listen_connections()
                 logging.info(f'[Stream_capture]: Connection request from peer: {self.remotePeerId}')

@@ -264,15 +264,18 @@ class StreamManager:
             self.stream_capture = None
             return
         logging.info(f'[{self.id}]: Open video source...')
-        if SOURCE_TYPE == 'local_file':
-            stream_capture = VideoCapture(SOURCE_PATH, frame_consumer=self.create_deep_message, is_file=True)
-        elif SOURCE_TYPE == 'ip_stream':
-            stream_capture = VideoCapture(SOURCE_URL, frame_consumer=self.create_deep_message, is_file=False)
-        elif SOURCE_TYPE == 'stream_capture':
-            stream_capture = StreamCapture(peer_id=self.id, frame_consumer=self.create_deep_message, data_handler=self.on_capture_data)
-        
-        self.stream_capture = asyncio.create_task(stream_capture.start(self.source_ready))
-        logging.info(f'[{self.id}]: Open connection with peer server...')
+        try:
+            if SOURCE_TYPE == 'local_file':
+                stream_capture = VideoCapture(SOURCE_PATH, frame_consumer=self.create_deep_message, is_file=True)
+            elif SOURCE_TYPE == 'ip_stream':
+                stream_capture = VideoCapture(SOURCE_URL, frame_consumer=self.create_deep_message, is_file=False)
+            elif SOURCE_TYPE == 'stream_capture':
+                stream_capture = StreamCapture(peer_id=self.id, frame_consumer=self.create_deep_message, data_handler=self.on_capture_data)
+            
+            self.stream_capture = asyncio.create_task(stream_capture.start(self.source_ready))
+        except Exception as e:
+            logging.error(f'[{self.id}]: Can not open video source. Reason: {str(e)}')
+        logging.info(f'[{self.id}]: Video source STARTED!s')
         
 
     async def stop_stream_capture(self):
