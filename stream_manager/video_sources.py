@@ -78,6 +78,7 @@ class StreamCapture:
         ssl_context.verify_mode = ssl.CERT_NONE
         hp_server_address = HP_SERVER +':'+ SERVER_PORT
         pid = peer_id + '_input'
+        frame_consumer_to_remote = lambda f: frame_consumer(f)
         self.peer = Peer('wss://' + hp_server_address, peer_type='deep_input', id=pid, frame_consumer=frame_consumer, ssl_context=ssl_context)
         self.peer.add_data_handler(data_handler)
         self.remotePeerId = None

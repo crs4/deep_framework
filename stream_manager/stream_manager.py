@@ -17,7 +17,7 @@ from utils.socket_commons import send_data, recv_data
 ROOT = os.path.dirname(__file__)
 logging.basicConfig(level=logging.INFO)
 
-logging.info('*** DEEP STREAM MANAGER v1.0.9 ***')
+logging.info('*** DEEP STREAM MANAGER v1.0.11 ***')
 
 #ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
 #ssl_context.load_verify_locations('cert.pem')
@@ -273,9 +273,9 @@ class StreamManager:
                 stream_capture = StreamCapture(peer_id=self.id, frame_consumer=self.create_deep_message, data_handler=self.on_capture_data)
             
             self.stream_capture = asyncio.create_task(stream_capture.start(self.source_ready))
+            logging.info(f'[{self.id}]: Video source STARTED!')
         except Exception as e:
             logging.error(f'[{self.id}]: Can not open video source. Reason: {str(e)}')
-        logging.info(f'[{self.id}]: Video source STARTED!s')
         
 
     async def stop_stream_capture(self):
