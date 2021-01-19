@@ -77,7 +77,7 @@ class StreamCapture:
         ssl_context.check_hostname = False
         ssl_context.verify_mode = ssl.CERT_NONE
         hp_server_address = HP_SERVER +':'+ SERVER_PORT
-        self.peer = Peer('wss://' + hp_server_address, peer_type='deep_input', id=peer_id, frame_consumer=frame_consumer, ssl_context=ssl_context)
+        self.peer = Peer('wss://' + hp_server_address, peer_type='deep_input', id=peer_id + '_input', frame_consumer=frame_consumer, ssl_context=ssl_context)
         self.peer.add_data_handler(data_handler)
         self.remotePeerId = None
 
