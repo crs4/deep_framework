@@ -17,7 +17,7 @@ from utils.socket_commons import send_data, recv_data
 ROOT = os.path.dirname(__file__)
 logging.basicConfig(level=logging.INFO)
 
-logging.info('*** DEEP STREAM MANAGER v1.0.11 ***')
+logging.info('*** DEEP STREAM MANAGER v1.0.12 ***')
 
 #ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
 #ssl_context.load_verify_locations('cert.pem')
@@ -63,7 +63,11 @@ class StreamManager:
         self.peer = Peer('wss://' + self.hp_server_address, peer_type=SOURCE_TYPE, id=self.id,
                         frame_generator=frame_generator_to_client, frame_consumer=frame_consumer_to_client, ssl_context=ssl_context,
                         datachannel_options=datachannel_options, frame_rate=FRAME_RATE)
-        self.capture_peer = None
+        if SOURCE_TYPE == 'stream_capture':
+            frame_consumer_to_remote = lambda f: frame_consumer(f)
+            self.capture_peer =  Peer('wss://' + hp_server_address, peer_type='deep_input', id=self.id+'_input', frame_consumer=frame_consumer_to_remote, ssl_context=ssl_context)
+        else:
+            self.capture_peer = None
     
     def __connection_reset(self):
         logging.info(f'[{self.id}]: Initializing connection variables')
@@ -270,7 +274,7 @@ class StreamManager:
             elif SOURCE_TYPE == 'ip_stream':
                 stream_capture = VideoCapture(SOURCE_URL, frame_consumer=self.create_deep_message, is_file=False)
             elif SOURCE_TYPE == 'stream_capture':
-                stream_capture = StreamCapture(peer_id=self.id, frame_consumer=self.create_deep_message, data_handler=self.on_capture_data)
+                stream_capture = StreamCapture(capture_peer=self.capture_peer, frame_consumer=self.create_deep_message, data_handler=self.on_capture_data)
             
             self.stream_capture = asyncio.create_task(stream_capture.start(self.source_ready))
             logging.info(f'[{self.id}]: Video source STARTED!')

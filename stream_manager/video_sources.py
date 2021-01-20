@@ -71,15 +71,8 @@ class VideoCapture:
             ready_event.clear()
 
 class StreamCapture:
-    def __init__(self, peer_id, frame_consumer, data_handler=None):
-        ssl_context = ssl.create_default_context()
-        ssl_context.options |= ssl.OP_ALL
-        ssl_context.check_hostname = False
-        ssl_context.verify_mode = ssl.CERT_NONE
-        hp_server_address = HP_SERVER +':'+ SERVER_PORT
-        pid = peer_id + '_input'
-        frame_consumer_to_remote = lambda f: frame_consumer(f)
-        self.peer = Peer('wss://' + hp_server_address, peer_type='deep_input', id=pid, frame_consumer=frame_consumer_to_remote, ssl_context=ssl_context)
+    def __init__(self, capture_peer, frame_consumer, data_handler=None):
+        self.peer = capture_peer
         self.peer.add_data_handler(data_handler)
         self.remotePeerId = None
 
@@ -88,7 +81,7 @@ class StreamCapture:
             await self.peer.open()
             while True:
                 self.remotePeerId = await self.peer.listen_connections()
-                logging.info(f'[Stream_capture]: Connection request from peer: {self.remotePeerId}')
+                logging.info(f'[{self.peer.id}]: Connection request from peer: {self.remotePeerId}')
                 await self.peer.accept_connection()
                 ready_event.set()
                 await self.peer.disconnection_event.wait()
@@ -100,6 +93,8 @@ class StreamCapture:
                 await self.peer.disconnect()
                 ready_event.clear()
             raise c
+        finally:
+            await self.peer.close()
 
     
 
