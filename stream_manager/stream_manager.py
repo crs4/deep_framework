@@ -17,7 +17,7 @@ from utils.socket_commons import send_data, recv_data
 ROOT = os.path.dirname(__file__)
 logging.basicConfig(level=logging.INFO)
 
-logging.info('*** DEEP STREAM MANAGER v1.0.13 ***')
+logging.info('*** DEEP STREAM MANAGER v1.0.14 ***')
 
 #ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
 #ssl_context.load_verify_locations('cert.pem')
@@ -64,7 +64,7 @@ class StreamManager:
                         frame_generator=frame_generator_to_client, frame_consumer=frame_consumer_to_client, ssl_context=ssl_context,
                         datachannel_options=datachannel_options, frame_rate=FRAME_RATE)
         if SOURCE_TYPE == 'stream_capture':
-            frame_consumer_to_remote = lambda f: frame_consumer(f)
+            frame_consumer_to_remote = lambda f: self.create_deep_message(f)
             def frame_generator_to_remote():
                 logging.info(f'[input]: Generator started')
 
