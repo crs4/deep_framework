@@ -17,7 +17,7 @@ from utils.socket_commons import send_data, recv_data
 ROOT = os.path.dirname(__file__)
 logging.basicConfig(level=logging.INFO)
 
-logging.info('*** DEEP STREAM MANAGER v1.0.12 ***')
+logging.info('*** DEEP STREAM MANAGER v1.0.13 ***')
 
 #ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
 #ssl_context.load_verify_locations('cert.pem')
@@ -65,7 +65,14 @@ class StreamManager:
                         datachannel_options=datachannel_options, frame_rate=FRAME_RATE)
         if SOURCE_TYPE == 'stream_capture':
             frame_consumer_to_remote = lambda f: frame_consumer(f)
-            self.capture_peer =  Peer('wss://' + self.hp_server_address, peer_type='deep_input', id=self.id+'_input', frame_consumer=frame_consumer_to_remote, ssl_context=ssl_context)
+            def frame_generator_to_remote():
+                logging.info(f'[{'_input'}]: Generator started')
+
+                while True:
+                    yield self.received_frame
+            self.capture_peer =  Peer('wss://' + self.hp_server_address, peer_type='deep_input', 
+                id=self.id+'_input', frame_generator=frame_generator_to_remote,
+                frame_consumer=frame_consumer_to_remote, ssl_context=ssl_context)
         else:
             self.capture_peer = None
     
