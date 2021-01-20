@@ -65,7 +65,7 @@ class StreamManager:
                         datachannel_options=datachannel_options, frame_rate=FRAME_RATE)
         if SOURCE_TYPE == 'stream_capture':
             frame_consumer_to_remote = lambda f: frame_consumer(f)
-            self.capture_peer =  Peer('wss://' + hp_server_address, peer_type='deep_input', id=self.id+'_input', frame_consumer=frame_consumer_to_remote, ssl_context=ssl_context)
+            self.capture_peer =  Peer('wss://' + self.hp_server_address, peer_type='deep_input', id=self.id+'_input', frame_consumer=frame_consumer_to_remote, ssl_context=ssl_context)
         else:
             self.capture_peer = None
     
