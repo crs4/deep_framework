@@ -66,13 +66,13 @@ class StreamManager:
         if SOURCE_TYPE == 'stream_capture':
             frame_consumer_to_remote = lambda f: frame_consumer(f)
             def frame_generator_to_remote():
-                logging.info(f'[{'_input'}]: Generator started')
+                logging.info(f'[input]: Generator started')
 
                 while True:
                     yield self.received_frame
             self.capture_peer =  Peer('wss://' + self.hp_server_address, peer_type='deep_input', 
                 id=self.id+'_input', frame_generator=frame_generator_to_remote,
-                frame_consumer=frame_consumer_to_remote, ssl_context=ssl_context)
+                frame_consumer=frame_consumer_to_remote, datachannel_options=datachannel_options, ssl_context=ssl_context)
         else:
             self.capture_peer = None
     
@@ -304,8 +304,8 @@ class StreamManager:
         self.sender_socket.close()
         for collector in self.collectors:
             collector['socket'].close()
-        if self.capture_peer:
-            await self.capture_peer.close()
+        # if self.capture_peer:
+        #     await self.capture_peer.close()
         await self.peer.close()
 
     async def start(self):
