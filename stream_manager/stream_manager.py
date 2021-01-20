@@ -17,7 +17,7 @@ from utils.socket_commons import send_data, recv_data
 ROOT = os.path.dirname(__file__)
 logging.basicConfig(level=logging.INFO)
 
-logging.info('*** DEEP STREAM MANAGER v1.0.14 ***')
+logging.info('*** DEEP STREAM MANAGER v1.0.16 ***')
 
 #ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
 #ssl_context.load_verify_locations('cert.pem')
@@ -32,9 +32,6 @@ class StreamManager:
 
     def __init__(self):        
         self.id = SOURCE_ID
-        frame_consumer_to_client = None
-        if SOURCE_TYPE == 'remote_client':
-            frame_consumer_to_client = lambda f: self.create_deep_message(f)
         
         self.stream_capture = None
         self.source_ready = asyncio.Event()
@@ -61,17 +58,20 @@ class StreamManager:
 
         self.hp_server_address = HP_SERVER +':'+ SERVER_PORT
         self.peer = Peer('wss://' + self.hp_server_address, peer_type=SOURCE_TYPE, id=self.id,
-                        frame_generator=frame_generator_to_client, frame_consumer=frame_consumer_to_client, ssl_context=ssl_context,
+                        frame_generator=frame_generator_to_client, ssl_context=ssl_context,
                         datachannel_options=datachannel_options, frame_rate=FRAME_RATE)
-        if SOURCE_TYPE == 'stream_capture':
-            frame_consumer_to_remote = lambda f: self.create_deep_message(f)
-            def frame_generator_to_remote():
-                logging.info(f'[input]: Generator started')
 
+        if SOURCE_TYPE == 'webrtc_stream':
+            frame_consumer_to_remote = lambda f: self.create_deep_message(f)
+            capture_peer_id = self.id + '_input'
+
+            def frame_generator_to_remote():
+                logging.info(f'[{capture_peer_id}]: Generator started')
                 while True:
                     yield self.received_frame
+
             self.capture_peer =  Peer('wss://' + self.hp_server_address, peer_type='deep_input', 
-                id=self.id+'_input', frame_generator=frame_generator_to_remote,
+                id=capture_peer_id, frame_generator=frame_generator_to_remote,
                 frame_consumer=frame_consumer_to_remote, datachannel_options=datachannel_options, ssl_context=ssl_context)
         else:
             self.capture_peer = None
@@ -148,22 +148,25 @@ class StreamManager:
                     no_data_time = 0
                     self.processed_frames += 1
                     last_receive_time = received_data["rec_time"]
+                    self.messages_sent += 1
+                    data_to_send = {
+                        'type': 'data',
+                        'received_frames': self.received_frames,
+                        'processed_frames': self.processed_frames,
+                        'generated_frames': self.generated_frames,
+                        'messages_sent': self.messages_sent,
+                        'last_frame_shape': self.received_frame.shape,
+                        'round_trip': self.round_trip,
+                        'deep_delay': self.deep_delay,
+                        'processing_period': self.processing_period
+                    }
+                    data_merged = {**data_to_send,**received_data}
                     if self.peer.readyState == PeerState.CONNECTED:
-                        self.messages_sent += 1
-                        data_to_send = {
-                            'type': 'data',
-                            'received_frames': self.received_frames,
-                            'processed_frames': self.processed_frames,
-                            'generated_frames': self.generated_frames,
-                            'messages_sent': self.messages_sent,
-                            'last_frame_shape': self.received_frame.shape,
-                            'round_trip': self.round_trip,
-                            'deep_delay': self.deep_delay,
-                            'processing_period': self.processing_period
-                        }
-                        data_merged = {**data_to_send,**received_data}
                         # logging.info(f'[{self.id}]: Sending data: {str(data_merged)}')
                         await self.peer.send(data_merged)
+                    if self.capture_peer != None:
+                        if self.capture_peer.readyState == PeerState.CONNECTED:
+                            await self.capture_peer.send(data_merged)
                 except Exception as e:
                     self.processing_period = time.time() - last_receive_time
                     no_data_time += self.processing_period
@@ -213,8 +216,10 @@ class StreamManager:
             logging.info('Source metadata: ' + str(self.source_metadata))
     
     async def on_capture_data(self, data):
-        self.source_metadata = data['metadata']
-        logging.info('Source metadata: ' + str(self.source_metadata))
+        data_type = data['type']
+        if data_type == 'metadata':
+            self.source_metadata = data['metadata']
+            logging.info('Source metadata: ' + str(self.source_metadata))
         if self.peer.readyState == PeerState.CONNECTED:
             await self.peer.send(data)
 
@@ -271,17 +276,16 @@ class StreamManager:
                 await asyncio.sleep(0.5)
     
     async def start_stream_capture(self):
-        if SOURCE_TYPE == 'remote_client':
-            self.stream_capture = None
-            return
         logging.info(f'[{self.id}]: Open video source...')
         try:
-            if SOURCE_TYPE == 'local_file':
+            if SOURCE_TYPE == 'file':
                 stream_capture = VideoCapture(SOURCE_PATH, frame_consumer=self.create_deep_message, is_file=True)
             elif SOURCE_TYPE == 'ip_stream':
                 stream_capture = VideoCapture(SOURCE_URL, frame_consumer=self.create_deep_message, is_file=False)
-            elif SOURCE_TYPE == 'stream_capture':
+            elif SOURCE_TYPE == 'webrtc_stream':
                 stream_capture = StreamCapture(capture_peer=self.capture_peer, frame_consumer=self.create_deep_message, data_handler=self.on_capture_data)
+            else:
+                raise Exception(f'Invalid SOURCE_TYPE: {SOURCE_TYPE}')
             
             self.stream_capture = asyncio.create_task(stream_capture.start(self.source_ready))
             logging.info(f'[{self.id}]: Video source STARTED!')
@@ -290,8 +294,6 @@ class StreamManager:
         
 
     async def stop_stream_capture(self):
-        if SOURCE_TYPE == 'remote_client':
-            return
         self.stream_capture.cancel()
         try:
             await self.stream_capture
@@ -335,12 +337,8 @@ class StreamManager:
 
                     logging.info(f'[{self.id}]: Connection request from peer: {self.remotePeerId}')
                     await self.peer.accept_connection()
-                    if SOURCE_TYPE == 'remote_client':
-                        self.source_ready.set()
 
                     await self.peer.disconnection_event.wait()
-                    if SOURCE_TYPE == 'remote_client':
-                        self.source_ready.clear()
 
                     while self.peer.readyState != PeerState.ONLINE:
                         await asyncio.sleep(1)
