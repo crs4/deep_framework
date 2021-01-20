@@ -169,22 +169,21 @@ class SourceProvider(Interviewer):
 			source_url = None
 			source_path = None
 
-			source_type_answer = self.get_acceptable_answer('Please enter the video source type (url/stored/cabled/remote). \n',['url','stored','cabled','remote']).lower()
-			if source_type_answer == 'stored':
+			#source_type_answer = self.get_acceptable_answer('Please enter the video source type (url/stored/cabled/remote). \n',['url','stored','cabled','remote']).lower()
+			source_type_answer = self.get_acceptable_answer('Please enter the video source type (file/ip/webrtc): \n',['file','ip','webrtc']).lower()
+			if source_type_answer == 'file':
 				if source_folder is None:
 					source_folder = self.get_answer('Please, insert the absolute path of the cluster manager video folder.\n(It will be used for every stored video source.)\n')
 					if source_folder[-1] == '/':
 						source_folder = source_folder[:-1]
 				source_answer = self.get_answer('Please, insert the video name with its extension.\n')
 				source_path = self.remote_source_path+source_answer
-				source_type = 'local_file'
-			elif source_type_answer == 'url':
+				source_type = 'file'
+			elif source_type_answer == 'ip':
 				source_url = self.get_answer('Insert video source address/url: \n')
 				source_type = 'ip_stream'
-			elif source_type_answer == 'cabled':
-				source_type = 'remote_client'
-			else:
-				source_type = 'stream_capture'
+			elif source_type_answer == 'webrtc':
+				source_type = 'webrtc_stream'
 
 			source_id = self.get_answer('Give a unique name/ID to this video source: \n')
 			source_dict = {'source_id': source_id, 'source_path':source_path, 'source_folder': source_folder if source_path is not None else 'None', 'source_url': source_url, 'source_type':source_type }
