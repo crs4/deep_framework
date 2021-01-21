@@ -43,27 +43,28 @@ if __name__ == "__main__":
 	sp = SourceProvider()
 	sources = sp.get_sources(use_last_settings=args.run)
 	
-	det_prov = DetectorProvider(det_revealed)
+	
+	det_prov = DetectorProvider(det_revealed,sources)
 	dets = det_prov.get_detectors(use_last_settings=args.run)
 
 	
 	desc_prov = DescriptorProvider(desc_revealed,dets)
 	descs = desc_prov.get_descriptors(use_last_settings=args.run)
 
+
 	standard_prov = StandardProvider(standard_revelead)
 	stds = standard_prov.get_standard_components(use_last_settings=args.run)
 
 	gpu_alloc = GPUallocator(nodes_data,descs,dets)
 	alg_gpu_matches = gpu_alloc.match_algs_gpus()
-
 	
-	p = PipelineManager(alg_gpu_matches)
-	pipeline = p.create_pipeline()
+	
+	p = PipelineManager(alg_gpu_matches,sources)
+	deep_structure = p.create_deep_structure()
 
-	dm = DockerServicesManager(pipeline,registry.insecure_addr,sources)
+	dm = DockerServicesManager(deep_structure,registry.insecure_addr,sources)
 	docker_services = dm.get_services()
 	dm.write_services()
-	
 	img_man = ImageManager(machine,docker_services,registry.insecure_addr,stds)
 	img_man.start_build_routine()
 

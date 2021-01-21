@@ -20,8 +20,13 @@ function navService($q){
     },
     {
       name: 'Viewer',
-      icon: 'view_module',
+      icon: 'visibility',
       sref: '.viewer'
+    },
+    {
+      name: 'API Docs',
+      icon: 'menu_book',
+      sref: '.docs'
     }
   ];
 

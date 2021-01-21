@@ -1,44 +1,58 @@
 <div id='lilo' style='height: 2000px; width: 2000;' 
     ng-controller="ControlsController">
 
-    <h2>Connection Settings</h1>
-    <div>
-        <form name="user-form" id="user-form" ng-hide="online">
-            <button ng-click="connect()">Connect to Server</button>
-        </form>
-        <button id="disconnect" ng-if="online" ng-click="disconnect()">Disconnect from Server</button>
+    <div layout-gt-md="row" layout="column">
+        <div flex="" flex-gt-md="60" >
+            <h2>Stream settings</h1>
+            <div class="table-responsive-vertical md-whiteframe-z1">
+                <table id="table" class="table table-hover table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Stream ID</th>
+                            <th>Type</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                            <th>Data streams</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr ng-repeat="stream in streams track by stream.id">
+                            <td data-title="ID">{{stream.id}}</td>                                
+                            <td data-title="Type">{{stream.type}}</td>
+                            <td data-title="Status">
+                                <i class="material-icons" style="color: green" ng-if="stream.active">check_circle</i>
+                                <i class="material-icons" style="color: red" ng-if="!stream.active">unpublished</i>
+                            </td>
+                            <td data-title="Action">
+                                <button ng-if="!stream.active" ng-click="startStream(stream.id)">Start</button>
+                                <button ng-if="stream.active && !stream.busy" ng-click="startPeerConnection(stream)">Connect</button>
+                                <button ng-if="stream.active && !stream.connected" ng-click="stopStream(stream.id)">Stop</button>
+                                <button ng-if="stream.connected" ng-click="stopPeerConnection(stream)">Disconnect</button>
+                            </td>
+                            <td data-title="Data streams">
+                                {{stream.detector}}
+                                <button ng-if="stream.active && !showingData" ng-click="showDataStream(stream)">Show</button>
+                                <button ng-if="stream.showData && showingData" ng-click="hideDataStream(stream)">Hide</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div flex="" flex-gt-md="40" flex-offset="5" ng-if="showingData">
+            <h2>Data Streams</h2>
+            <div ng-repeat="(detector, message) in dataMessages">
+                <h4>Pipeline of {{detector}} detector:</h4>
+                <md-content  md-force-height="'150px'">
+                    <pre>{{message | json}}</pre>
+                </md-content>
+            </div>
+        </div>
     </div>
+    <button id="start-all" ng-click="startStreams()">Start all streams</button>
+    <button id="stop-all" ng-click="stopStreams()">Stop all streams</button>
     <br>
     <div id="demo" ng-show="online">
-        <label >Remote peer type: </label>
-        <input type="radio" name="remotePeerType" ng-model="remotePeerType" value="stream_manager" ng-disabled="status == 'connected'">
-        Stream Manager
-        <input type="radio" name="remotePeerType" ng-model="remotePeerType" value="stream_capture" ng-disabled="status == 'connected'"> Stream
-        Capture (IP camera)
-        <br>
-        <div ng-show="remotePeerType == 'stream_manager'">
-            <label for="remotePeerSelect"> Stream Manager ID: </label>
-            <select ng-model="remotePeer" id="remotePeerSelect" ng-options="peer.id for peer in servers"
-                ng-disabled="status == 'connected'">
-            </select>
-        </div>
-        <div ng-show="remotePeerType == 'stream_capture'">
-            <label for="remotePeerSelect">Camera ID: </label>
-            <select ng-model="remotePeer" id="remotePeerSelect" ng-options="peer.id for peer in cameras"
-                ng-disabled="status == 'connected'">
-            </select>
-        </div>
-        <div id="deep-controls" ng-show="remotePeerType == 'stream_manager' && status == 'connected'">
-            <label for="deep-source">Stream Manager Video Source: </label>
-            <select id="deep-source" ng-model='deepVideoSource'>
-                <option ng-value="'none'">None (Pause streaming)</option>
-                <option ng-value="myPeerId">Local webcam</option>
-                <option ng-value="peer.id" ng-repeat="peer in cameras">Camera {{peer.id}}</option>
-            </select>
-        </div>
-        <br>
-        <button id="start" ng-if="status != 'connected' && remotePeer" ng-click="start()">Connect</button>
-        <button id="stop" ng-if="status == 'connected'" ng-click="stop()">Stop remote connection</button>
         <br>
         <p>
             Connection status: <span>{{status}}</span>
@@ -56,15 +70,8 @@
                 <pre>{{lastData | json}}</pre>
             </div>
         </div>
-        <div ng-show="online">
-            <h2>Video</h2>
-            <label>Show local video:
-                <input type="checkbox" ng-model="showLocalVideo">
-            </label><br />
-            <video id="local_video" muted autoplay ng-show="showLocalVideo" style="float: left; width: 320px;"
-                width='320px' height='240px'></video>
-        </div>
         <div ng-show="status == 'connected'">
+            <h2>Video</h2>
             <label>Show remote video:
                 <input type="checkbox" ng-model="showRemoteVideo">
             </label><br />

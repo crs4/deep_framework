@@ -12,15 +12,13 @@ angular
 
 function ViewerController($scope, $timeout, dataService) {
     let deepConnection = dataService.getConnection()
-    $scope.remotePeerType = dataService.getRemotePeerType()
-    $scope.deepVideoSource = dataService.getDeepVideoSource()
     $scope.status = dataService.getStatus()
     $scope.faces = []
     $scope.showDetails = false
     
     let video = ($('#video'))[0]
     let canvas = $('#canvas')[0] //$document.getElementById('canvas');
-    $scope.demoVideoCanvas = $scope.remotePeerType == 'stream_manager' ? new EnhancedFacesVideoCanvas(video, canvas) : new EnhancedVideoCanvas(video, canvas)
+    $scope.demoVideoCanvas = new EnhancedFacesVideoCanvas(video, canvas) 
     
     function handleConnectionChange() {
         $timeout(() => {

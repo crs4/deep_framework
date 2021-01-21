@@ -161,8 +161,12 @@ class ObjectProvider(Process):
             
             print(f'Frames skipped: {skip_counter}')
             skip_counter = 0
-            last_vc_time = rec_dict['vc_time']
 
+            # core watch dog
+            #
+            #
+
+            last_vc_time = rec_dict['vc_time']
             self.stats_maker.received_frames += 1
             current_frame = imgs[0]
             vc_frame_idx = rec_dict['frame_idx']
@@ -214,11 +218,10 @@ class ObjectProvider(Process):
             res['vc_time'] = vc_time
             res['frame_shape'] = frame_shape
 
-            #print('det res: ',obj_list_serialized)
             
-            # send images to descriptors only if objects are detected
-            if len(crops) > 0:
-                send_data(publisher,crops,0,False,**res)
+          
+
+            send_data(publisher,crops,0,False,**res)
 
             # send data to collector
             send_data(col_socket,None,0,False,**res)

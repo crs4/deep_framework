@@ -3,8 +3,15 @@ const monitor_address = process.env.MONITOR_ADDRESS || '0.0.0.0'
 const monitor_port = process.env.MONITOR_STATS_OUT || '3000'
 const algs = process.env.ALGS
 
+const dets = process.env.DETS
+
+const sources = process.env.SOURCES
+
 const collector_ports = process.env.COLLECTOR_PORTS
 const collector_port_arr = collector_ports.split(",");
+
+const stream_man_pair_ports = process.env.STREAM_MANAGER_PAIR_PORTS
+const stream_man_pair_ports_arr = stream_man_pair_ports.split(",");
 
 const protocol = process.env.PROT || 'tcp://'
 
@@ -15,12 +22,17 @@ const express  = require('express');
 const app = express();
 const https = require("https")
 const fs = require("fs")
+
+const swaggerUi = require('swagger-ui-express');
+
 const server = https.createServer({
 	key: fs.readFileSync('./cert/key.pem'),
 	cert: fs.readFileSync('./cert/cert.pem'),
 	// ca: fs.readFileSync('./cert/ca.cert.pem')
 }, app);
 
+const apis_list = [];
+const algs_source_map = create_algs_sources_map(algs,sources)
 /**
  * Hyperpeer server
  */
@@ -32,13 +44,40 @@ const hpServer = new HpServer({ server: server, verifyPeer: verifyPeer });
 
 const zmq = require('zeromq');
 
-// const person_sock = zmq.socket('pair');
 const monitor_sock = zmq.socket('sub');
 
 
-// person_sock.bind(protocol +'*:'+ person_port.toString());
 monitor_sock.connect(protocol + monitor_address + ':' + monitor_port);
 monitor_sock.subscribe('');
+
+var stream_man_sock_list = [];
+for (var i = 0; i < stream_man_pair_ports_arr.length; i++) {
+
+	var stream_man = stream_man_pair_ports_arr[i];
+	var stream_man_split = stream_man.split(":");
+	const source_id = stream_man_split[0];
+	var stream_man_pair_port = stream_man_split[1];
+	const stream_man_pair_sock = zmq.socket('pair');
+	stream_man_pair_sock.bind(protocol +'*:'+ stream_man_pair_port);
+	stream_man_sock_list.push(stream_man_pair_sock)
+
+	app.post('/api/stream_'+source_id+'/start', function(request, response){
+
+		stream_man_pair_sock.send('START');
+		return response.send(source_id+ ' started');
+
+
+	});
+
+	app.post('/api/stream_'+source_id+'/stop', function(request, response){
+		stream_man_pair_sock.send('STOP');
+		return response.send(source_id+ ' stopped');
+	});
+};
+	
+
+
+
 
 
 for (var i = 0; i < collector_port_arr.length; i++) {
@@ -46,12 +85,13 @@ for (var i = 0; i < collector_port_arr.length; i++) {
 	col_name_port = collector_port_arr[i];
 	col_split = col_name_port.split(":");
 	det_name = col_split[0];
-	col_port = col_split[1]
+	source_id = col_split[1];
+	col_port = col_split[2]
 
 	const col_sock = zmq.socket('pair');
 	col_sock.bind(protocol +'*:'+ col_port);
 
-	app.get('/api/stream_'+det_name, function(request, response){
+	app.get('/api/stream_'+source_id+'/'+det_name, function(request, response){
 
 		response.writeHead(200, {
 		'Content-Type': 'text/event-stream',
@@ -64,21 +104,64 @@ for (var i = 0; i < collector_port_arr.length; i++) {
 		});
 	});
 }
-// app.get('/api/body_stream', function(request, response){
 
-// 	response.writeHead(200, {
-// 	'Content-Type': 'text/event-stream',
-// 	'Cache-Control': 'no-cache',
-// 	'Connection': 'keep-alive'
-// 	});
+app.post('/api/start', function(request, response){
+	for (var i = 0; i < stream_man_sock_list.length; i++) {
+		var sock = stream_man_sock_list[i];
+		sock.send('START');
+	};	
+	return response.send('All sources started');
 
-// 	person_sock.on("message", function(data) {
-// 		response.write("data: " + data.toString() + "\n\n");
-// 	});
-// });
+
+});
+
+app.post('/api/stop', function(request, response){
+	for (var i = 0; i < stream_man_sock_list.length; i++) {
+		var sock = stream_man_sock_list[i];
+		sock.send('STOP');
+	};
+	return response.send('All sources stopped');
+});
+
+
 app.get('/api/algs', function(request, response){
-	const algs_arr = algs.split(",");
-	response.json({algs_list: algs_arr});
+	var algs_arr = algs.split(",");
+	var alg_list = [];
+	for (var i = 0; i < algs_arr.length; i++) {
+		var alg = algs_arr[i];
+		var alg_split = alg.split(":");
+		var alg_name =alg_split[0];
+		var related_to =alg_split[1];
+		var source_id =alg_split[2];
+		var alg_json = {'name': alg_name, 'detector_connected': related_to, 'source_connected':source_id };
+		alg_list.push(alg_json);
+	};
+	response.json({algs_list: alg_list});
+
+});
+
+var source_id_list = []
+app.get('/api/sources', function(request, response){
+	const sources_arr = sources.split(",")
+	const dets_arr = dets.split(",")
+	response.json(sources_arr.map((source)=> {
+		let source_split = source.split(":")
+		let source_id =source_split[0]
+		source_id_list.push(source_id)
+
+		var source_type =source_split[1]
+		var source_json = { 'id': source_id, 'type': source_type, 'detector': []};
+
+		dets_arr.forEach((det) => {
+			var det_split = det.split(":")
+			var det_name = det_split[0]
+			var source_id_det =det_split[1]
+			if (source_id_det == source_id) {
+				source_json['detector'].push(det_name)
+			}
+		})
+		return source_json
+	}))
 
 });
 
@@ -95,87 +178,9 @@ app.get('/api/stats', function(request, response){
 	});
 });
 
-/*
-
-io.on('connection',function(socket){
-
-	console.log('connection');
-
-    socket.on('start stream',function(image){
-        
-    	console.log('stream');
-
-
-	    source_sock.on("message", function(data,frame) {
-
-			data = data.toString();
-			json_data = JSON.parse(data);
-			frame_data = json_data["payloads"][0]
-			frame_type = frame_data["dtype"]; 
-			frame_shape = frame_data["shape"];
-			frame_height = parseInt(frame_shape[0], 10);
-			frame_width = parseInt(frame_shape[1], 10);
-			
-
-			const view = new Uint8Array(frame);
-			const frame_uint8 = nj.uint8(view); 
-			const res_frame = frame_uint8.reshape(frame_width,frame_height,3);
-			
-
-			
-			// const rawImageData = {
-			//   data: res_frame.selection.data,
-			//   width: frame_width,
-			//   height: frame_height
-			// };
-			// const jpegImageData = jpeg.encode(rawImageData, 50);
-			
-
-			//buf = Buffer.from(jpegImageData.data);
-
-
-			//buf = Buffer.from(res_frame.selection.data);
-			//console.log(buf);
-			//const buffer_img = res_frame.selection.data;
-			//const b64encoded = Uint8ToString(jpegImageData);
-			//console.log(b64encoded);
-
-			//const frame_array = nj.array(frame);
-			//const frame_uint8 = nj.uint8(frame_array); 
-			//console.log(frame.readInt8());
-
-			//const res_frame = frame_array.reshape(frame_width,frame_height,3);
-			//console.log(res_frame);
-
-			//const res_uint8 = nj.uint8(res_frame);
-
-
-			//const buffer_img = frame_uint8.selection.data;
-
-			//const buffer_img = res_frame.selection.data;
-			//console.log(res_uint8);
-
-			
-			socket.emit('streaming',  { image: true, buffer: 'lil'}); 
-		});
-
-	});
 
 
 
-});
-*/
-
-/*
-function Uint8ToString(u8a){
-  const CHUNK_SZ = 0x8000;
-  const c = [];
-  for (const i=0; i < u8a.length; i+=CHUNK_SZ) {
-    c.push(String.fromCharCode.apply(null, u8a.subarray(i, i+CHUNK_SZ)));
-  }
-  return c.join("");
-}
-*/
 app.use(express.static(__dirname + '/deep_app'))
 
 app.get('/', function(req, res) {
@@ -183,7 +188,155 @@ app.get('/', function(req, res) {
 });
 
 
+
+app._router.stack.forEach(function(r){
+  if (r.route && r.route.path){
+    apis_list.push(r.route.path)
+  }
+})
+
+const apis_map_dict = create_api_map(apis_list,source_id_list);
+
+app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(apis_map_dict));
+
 server.listen(serverPort, function(err){
 	if (err) return console.error(err)
 	console.log((new Date()) + 'DEEP Data Server is listening on https://localhost:' + serverPort);
 });
+
+
+
+function create_api_map(endpoints_list,source_id_list) {
+
+	var tags = [];
+	for (var i = 0; i < source_id_list.length; i++) {
+		console.log(source_id_list[i]);
+		var source_tag = {"name": "Source_"+source_id_list[i],"description": "List of api available for source with ID "+source_id_list[i]};
+		tags.push(source_tag);
+	}
+	tags.push({"name":"pipeline_info","description":"information and statistics about pipeline execution"});
+	tags.push({"name":"pipeline_operations","description":"List of operation available on pipeline"});
+	const apis_map = {
+		"swagger":"2.0",
+		"info": {
+			"version": "1.0.0",
+			"title": "DeepFramework APIs",
+			"license": {
+				"name": "MIT"
+			}
+		},
+		"tags":tags,
+
+		"paths": {}
+		
+
+	};
+  	var responses = {"200":{"description": "Successful operation"},"400":{"description": "Invalid status value"}};
+	
+	for (var i = 0; i < endpoints_list.length; i++) {
+		end_p = endpoints_list[i];
+
+
+		
+		if (end_p == '/api/algs'){
+			produces = ['application/json'];
+			info = {"get": { "summary": "List all descriptors","tags":["pipeline_info"],"responses":responses,"produces":produces}};
+			apis_map['paths'][end_p] = info;
+			continue
+		}
+		if (end_p == '/api/stats'){
+			produces = ['application/json'];
+			info = {"get": { "summary": "List all component statistics","tags":["pipeline_info"],"responses":responses,"produces":produces}};
+			apis_map['paths'][end_p] = info;
+			continue
+		}
+		if (end_p == '/api/sources'){
+			produces = ['application/json'];
+			info = {"get": { "summary": "List all sources available","tags":["pipeline_info"],"responses":responses,"produces":produces}};
+			apis_map['paths'][end_p] = info;
+			continue
+		}
+		if (end_p == '/api/start'){
+			produces = ['application/json'];
+			info = {"post": { "summary": "Start all sources","tags":["pipeline_operations"],"responses":responses,"produces":produces}};
+			apis_map['paths'][end_p] = info;
+			continue
+		}
+		if (end_p == '/api/stop'){
+			produces = ['application/json'];
+			info = {"post": { "summary": "Stop all sources","tags":["pipeline_operations"],"responses":responses,"produces":produces}};
+			apis_map['paths'][end_p] = info;
+			continue
+		}
+		if (end_p.includes('stream')){
+
+			end_p_split = end_p.split("/");
+			stream_id = end_p_split[2].slice(7,);
+			spec = end_p_split[3];
+			
+
+			if (end_p.includes('start') || end_p.includes('stop')){
+				var summary = `It sends ${spec} signal to the source with ID ${stream_id}`;
+				var produces = ['application/json'];
+				var info = {"post": { "summary": summary, "responses":responses,"tags":["Source_"+stream_id],"produces":produces}};
+
+			}
+			else {
+				var summary = `List results for source with ID ${stream_id} analyzed by the detector with CATEGORY ${spec}`;
+				var produces = ['text/event-stream'];
+				var info = {"get": { "summary": summary, "responses":responses,"tags":["Source_"+stream_id],"produces":produces}};
+
+			}
+			apis_map['paths'][end_p] = info;
+		}
+	}
+	return apis_map
+		
+
+}
+
+function create_algs_sources_map(algs,sources){
+	var algs_arr = algs.split(",");
+
+	var algs_source_map = []
+
+	var sources_arr = sources.split(",");
+	
+
+	for (var i = 0; i < algs_arr.length; i++) {
+		var alg = algs_arr[i];
+		var alg_split = alg.split(":");
+		var alg_name =alg_split[0];
+		var related_to =alg_split[1];
+		var source_id_alg =alg_split[2];
+		var alg_source_json = {'name': alg_name, 'detector_connected': related_to};
+
+
+		for (var i = 0; i < sources_arr.length; i++) {
+			var source = sources_arr[i];
+			var source_split = source.split(":");
+			var temp_source_id =source_split[0];
+			var source_type =source_split[1];
+			if (source_id_alg == temp_source_id){
+				alg_source_json['source_connected_id'] = temp_source_id;
+				alg_source_json['source_connected_type'] = source_type;
+
+			}
+			
+		};
+		algs_source_map.push(alg_source_json);
+
+	};
+	return algs_source_map
+
+}
+
+setInterval(function () {
+
+    for (var i = 0; i < stream_man_sock_list.length; i++) {
+		var sock = stream_man_sock_list[i];
+		sock.send('keep-alive-msg');
+	};
+
+}, 60000); 
+

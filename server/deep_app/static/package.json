@@ -22,7 +22,6 @@
     "@bower_components/jquery": "jquery/jquery-dist#^3.3.1",
     "@bower_components/moment": "moment/moment#~2.9.0",
     "@bower_components/nvd3": "novus/nvd3#^1.7.1",
-    "@bower_components/socket.io": "LearnBoost/socket.io#^2.0.4",
     "hyperpeer-js": "git+https://github.com/crs4/hyperpeer-js.git"
   },
   "engines": {
