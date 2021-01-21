@@ -1,7 +1,7 @@
 # Use hyperpeer-py image as a parent image
-FROM 156.148.14.162/hyperpeer-py:latest
+# FROM 156.148.14.162/hyperpeer-py:latest
 
-# FROM python:3.7-slim
+FROM python:3.7
 
 # RUN apt-get update --fix-missing
 # RUN apt-get install libavdevice-dev libavfilter-dev libopus-dev libvpx-dev pkg-config -y
@@ -14,7 +14,7 @@ WORKDIR /app
 
 # Copy the current directory contents into the container at /app
 ADD . /app
-COPY --from=utils:deep /home/deepframework/utils /app/utils
+COPY --from=utils:deep_setup /home/deepframework/utils /app/utils
 
 # Install any needed packages specified in requirements.txt
 RUN pip install --trusted-host pypi.python.org -r requirements.txt

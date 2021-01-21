@@ -1,4 +1,4 @@
-# git+https://github.com/crs4/hyperpeer-py
-numpy
+numpy == 1.19.1
+git+https://github.com/crs4/hyperpeer-py
 #opencv-python
-pyzmq
+pyzmq == 18.0.1

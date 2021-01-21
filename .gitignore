@@ -12,19 +12,26 @@
 
 
 
+.vscode/
+
+*.png
+*.jpg
 
 *.pyc
 *~
 *.part
 *.pdf
+*.sh
 
 **/descriptor/feature_extractors/face_recognition/template_models/images/
 
 
 **/compose-files/*.yml
 **/compose-files/*.list
-cluster_configuration.ini
-algorithms_configuration.ini
+**/initialize/configuration_files/*.ini
+
+docker-compose_main.yml
+docker_pull.sh
 env_params.list
 
 
@@ -32,3 +39,4 @@ env_params.list
 **/bower_components/
 **/bower_components
 .vscode/
+*.local

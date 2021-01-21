@@ -39,8 +39,9 @@ class SubCollector(Process):
         col_socket = context.socket(zmq.PAIR)
         col_socket.connect(PROT+COLLECTOR_ADDRESS+':'+self.send_port)
 
-
-
+        ordered_buffer = []
+        sub_buffer = []
+        sub_max_size = int(WORKER)
         while True:
             
 
@@ -48,10 +49,24 @@ class SubCollector(Process):
             #get message from sub collector
             
             rec_dict, __ = recv_data(sub_col_socket,0,False)
+            if len(sub_buffer) < sub_max_size:
+                sub_buffer.append(rec_dict)
+                continue
+            else:
+                ordered_buffer = sorted(sub_buffer, key=lambda k: k['vc_time'])
+                sub_buffer = []
+
+
+
 
 
             #sends results to main collector
-            col_socket.send_pyobj(rec_dict)
+            for msg_dict in ordered_buffer:
+                #print(msg_dict)
+                send_data(col_socket,None,0,False,**msg_dict)
+
+            ordered_buffer = []
+
 
         print("subs collector: interrupt received, stopping")
         # clean up
@@ -67,22 +82,14 @@ if __name__ == '__main__':
     """
     Load configuration of descriptors installed
     """
-    subs = []
     
-    ALGS=os.environ['ALGS']
-    alg_list=ALGS.split(',')
     
 
-    for alg in alg_list:
-        alg_name,broker_port, sub_col_port, col_port = alg.split(':')
-        sub = SubCollector({'in':sub_col_port,'out':col_port,'alg':alg_name})
-        subs.append(sub)
+    
+    sub = SubCollector({'in':SUB_COL_PORT,'out':COL_PORT})
+    sub.start()
 
-
-    # start worker 
-    for s in subs:
-        s.start()
-   
+  
 
 
 

@@ -19,7 +19,7 @@ RUN mkdir -p /home/deepframework/sub_collector
 
 COPY . /home/deepframework/sub_collector
 
-COPY --from=utils:deep /home/deepframework/utils/. /home/deepframework/sub_collector/utils
+COPY --from=utils:deep_setup /home/deepframework/utils/. /home/deepframework/sub_collector/utils
 
 
 WORKDIR /home/deepframework/sub_collector

@@ -24,12 +24,11 @@ Every class must have:
 
 class PitchNet(AbstractDescriptor):
 
-    
+    win_size = PITCH_WIN_SIZE
     def __init__(self):
       """
       Load pose model.
       """
-      self.win_size = PITCH_WIN_SIZE
       
       self.__setup_net()
 
@@ -52,7 +51,7 @@ class PitchNet(AbstractDescriptor):
 
 
 
-    def detect_batch(self,images):
+    def detect_batch(self,detector_results,images):
       """
       Evaluates pose (pitch) for each person detected in images
 

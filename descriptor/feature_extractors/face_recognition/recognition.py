@@ -25,12 +25,12 @@ Every class must have:
 
 class FaceRecognition(AbstractDescriptor):
 
-    
+    win_size = RECOG_WIN_SIZE
     def __init__(self):
       """
       Load face recognition model.
       """
-      self.win_size = RECOG_WIN_SIZE
+      
       self.template_models = load_models()
       self.tags = get_tags()
       self.probabilities = load_probabilities()
@@ -108,7 +108,7 @@ class FaceRecognition(AbstractDescriptor):
       return result
     
 
-    def detect_batch(self,images):
+    def detect_batch(self,detector_results,images):
       """
       Assigns a label to each person detected in images
 

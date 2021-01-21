@@ -22,7 +22,8 @@ Every class must have:
 
 class AgeNet(AbstractDescriptor):
 
-
+	win_size = AGE_WIN_SIZE
+	
 	def __init__(self):
 		"""
 		Load age model.
@@ -31,7 +32,7 @@ class AgeNet(AbstractDescriptor):
 
 		self.interval = AGE_INTERVAL
 		self.categories = [(i,i+(self.interval-1)) for i in range(0,101,self.interval)]
-		self.win_size = AGE_WIN_SIZE
+		
 		self.__setup_net(AGE_MODEL)
 	
 	
@@ -42,7 +43,7 @@ class AgeNet(AbstractDescriptor):
 
                                           
 
-	def detect_batch(self,images):
+	def detect_batch(self,detector_results,images):
 		"""
 		It assigns an interval of ages to each person detected in images
 

@@ -20,7 +20,7 @@ RUN mkdir -p /home/deepframework/broker
 COPY . /home/deepframework/broker
 
 
-COPY --from=utils:deep /home/deepframework/utils /home/deepframework/broker/utils
+COPY --from=utils:deep_setup /home/deepframework/utils /home/deepframework/broker/utils
 
 
 WORKDIR /home/deepframework/broker

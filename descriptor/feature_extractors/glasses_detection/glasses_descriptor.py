@@ -20,13 +20,12 @@ from .glasses_constants import *
 
 class GlassesDescriptor(AbstractDescriptor):
 
-
+	win_size = WIN_SIZE	
 	def __init__(self):
 		"""
 		Create descriptor network
 		"""
 		self.__setup_net()
-		self.win_size = WIN_SIZE	
 		
 
 
@@ -50,7 +49,7 @@ class GlassesDescriptor(AbstractDescriptor):
 
 
 
-	def detect_batch(self,images):
+	def detect_batch(self,detector_results,images):
 		"""
 		Assign a class to each object detected in images
 

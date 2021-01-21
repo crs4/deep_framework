@@ -1,0 +1,46 @@
+detector:
+    short_name: FCOS
+    type: "One Stage Detector"
+    long_name: FCOS_RT_MS_DLA_34_4x_syncbn
+    description_url: "https://arxiv.org/abs/1904.01355"
+    source_code_repo: "https://github.com/aim-uofa/AdelaiDet"
+    training_dataset: "Visdrone2019-DET-train"
+    trainnig_description: "Using orignal Visdrone dataset without modifications"
+    base_params: "{repo_folder}/configs/FCOS-Detection/FCOS-RT/MS_DLA_34_4x_syncbn.yaml"
+tracker:
+    short_name: Deep_Sort
+    type: "Tracking-by-detection MOT"
+    long_name: Deep_Sort_original_ckpt_w_class_association
+    description_url: "https://arxiv.org/abs/1703.07402"
+    source_code_repo: "https://github.com/ZQPei/deep_sort_pytorch"
+    training_dataset: "Market1501 and MARS datasets"
+    trainnig_description: "Using orignal RE-ID model weigths trained on Market1501 and MARS re-identification datasets"
+    base_params: "{repo_folder}/configs/deep_sort.yaml"
+experiment:
+    video: "visdrone_crossroad1_static"
+    machine: "ROG Strix GL504W with 1x GPU NVIDIA GeForce 2070 CUDA 10.1"
+    detection_description: "Using detector without modifications"
+    detection_params:
+        confidence_threshold: 0.1
+    tracking_description: "Implemented lapsolver to associate detections and tracks in a frame. Increased by 0.2 the confidence score of all objects with score below 0.8."
+    tracking_params:
+        confidence_threshold: 0.3
+    detection_fps:
+        mean: 2.7815043715049024
+        max: 8.228184607977783
+        min: 1.3948340415927034
+        std: 7.994484314549821
+    tracking_fps:
+        mean: 0.47203446685529116
+        max: 9.246829551110444
+        min: 0.27331913151638493
+        std: 2.082407989461982
+    total_fps:
+        mean: 0.40355010291523746
+        max: 4.0237079447276765
+        min: 0.25029672476483966
+        std: 2.090355598198381
+
+
+    
+

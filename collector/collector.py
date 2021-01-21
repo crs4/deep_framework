@@ -69,8 +69,10 @@ class Collector(Process):
 
        
         subs_output = dict()
+        subs_image_attributes = dict()
+        subs_image_attributes['image_attributes'] = dict()
 
-        people_res = []
+        objects_res = []
         mess = None
         
         # run timer for stats computation
@@ -80,16 +82,16 @@ class Collector(Process):
         while True:
 
             result = dict()
-            people_res = []
+            objects_res = []
 
             # receive frame and data from frame provider
             fp_dict,__= recv_data(fp_socket,0,False)
             frame_id = fp_dict['frame_idx']
-            fp_people = fp_dict['people']
+            fp_objects = fp_dict['objects']
             vc_time = fp_dict['vc_time']
 
 
-            pids_fp = list(map(lambda x: x['pid'], fp_people)) # id of new people in the scene
+            pids_fp = list(map(lambda x: x['pid'], fp_objects)) # id of new objects in the scene
             for p in pids_fp:
                 if p not in subs_output.keys():
                     subs_output[p] = dict()
@@ -100,8 +102,12 @@ class Collector(Process):
                
                 name, rec = rec_tuple
                 if rec in socks and socks[rec] == zmq.POLLIN:
-                    mess = rec.recv_pyobj(zmq.DONTWAIT)
-                    res_dict = mess['sub_res_dict']
+                    mess, __ = recv_data(rec,zmq.DONTWAIT,False)
+
+                    res_dict = mess['obj_res_dict']
+                    img_res = mess['img_res']
+                    if img_res:
+                        subs_image_attributes['image_attributes'][name] = img_res
 
                     for pid, res in res_dict.items():
 
@@ -117,29 +123,32 @@ class Collector(Process):
 
                     # res_alg ={'ueu8300029ks993': ['angry',...'], 'hdfhsdfk883u': ['sad',...'] }
 
-            for person in fp_people:
+            for obj in fp_objects:
 
                 
 
-                temp_person_dict = person
+                temp_obj_dict = obj
 
-                res_algs = subs_output[person['pid']]
+                res_algs = subs_output[obj['pid']]
 
                 if len( res_algs.keys() ) > 0:
 
                     for alg_name, classification in res_algs.items():
 
-                        temp_person_dict[alg_name] = classification
+                        temp_obj_dict[alg_name] = classification
                        
 
-                people_res.append(temp_person_dict)
+                objects_res.append(temp_obj_dict)
 
-
+            
+           
 
             r = dict()
             r['collector_time'] = time.time()
-            r['data'] = people_res
+            r['objects'] = objects_res
+            r['frame_attributes'] = subs_image_attributes['image_attributes']
             r['vc_time'] = vc_time
+            print(objects_res)
             
             send_data(sender,None,0,False,**r)
             send_data(server_sender,None,0,False,**r)
@@ -149,7 +158,7 @@ class Collector(Process):
 
 
 
-            #clearing people not more in scene
+            #clearing objects not more in scene
             pids_departed = set(subs_output.keys()).difference(set(pids_fp))
             if len(pids_departed) > 0:
                 
@@ -167,24 +176,25 @@ class Collector(Process):
     def __send_stats(self):
         
         stats = self.stats_maker.create_stats()
-        stats_dict={STAT+self.__class__.__name__:stats}
+        stats_dict={COMPONENT_NAME:stats}
         send_data(self.monitor_sender,None,0,False,**stats_dict)
 
 
 
 if __name__ == '__main__':
     
-    
+    subs = []
     alg_list=ALGS.split(',')
 
-    subs = []
-    for i, alg in enumerate(alg_list):
-        alg_name, broker_port, sub_col_port, col_port = alg.split(':')
-        subs.append({'send_port':col_port,'alg':alg_name})
+    if len(alg_list) > 0 and alg_list[0] != '':
+
+        for i, alg in enumerate(alg_list):
+            alg_name, col_port = alg.split(':')
+            subs.append({'send_port':col_port,'alg':alg_name})
 
 
+    print(subs)
     collector = Collector(subs, {'fp_in': PROV_OUT_TO_COL,'out_stream_port':OUT_STREAM_PORT,'out_server_port':OUT_SERVER_PORT} )
     collector.start()
-
 
 

@@ -1,0 +1,40 @@
+detector:
+    short_name: tiny_YOLOv4
+    type: "One Stage Detector"
+    source_code_repo: https://github.com/AlexeyAB/darknet
+    training_dataset: "Visdrone2019-DET-train"
+    trainnig_description: "Using orignal Visdrone dataset without modifications"
+tracker:
+    short_name: Deep_Sort
+    type: "Tracking-by-detection MOT"
+    long_name: market1501
+    description_url: "https://arxiv.org/abs/1703.07402"
+    source_code_repo: https://github.com/nwojke/deep_sort
+    training_dataset: "Market1501 and MARS datasets"
+    training_description: "Using orignal RE-ID model weigths trained on Market1501 and MARS re-identification datasets"
+experiment:
+    video: "visdrone_crossroad1_static"
+    machine: "ROG Strix GL504W with 1x GPU NVIDIA GeForce 2070 CUDA 10.1"
+    detection_params:
+        confidence_threshold: 0.25
+    tracking_description: "Implemented lapsolver to associate detections and tracks in a frame. Increased by 0.2 the confidence score of all objects with score below 0.8."
+    tracking_params:
+        max_iou_distance: 0.7
+        max_age: 30
+        n_init: 3
+    detection_fps:
+        mean: 0.27312584531765266
+        max: 0.3317223485163684
+        min: 0.21127191215880115
+        std: 3.2786845821320476
+    tracking_fps:
+        mean: 2.16164985837139321
+        max: 380.0258417573268
+        min: 0.8238755041264418
+        std: 3.3610119355267205
+    total_fps:
+        mean: 0.2424874061105192
+        max: 0.29951349337385397
+        min: 0.18456675997432412
+        std: 2.9393894376953296
+

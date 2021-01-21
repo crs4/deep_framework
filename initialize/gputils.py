@@ -5,6 +5,8 @@ import getpass
 from ast import literal_eval
 import re
 import math
+import collections
+
 from initialize.nodes_utils import SSHConnector,Machine
 
 
@@ -13,12 +15,36 @@ class GPUallocator(Machine):
 
 
 
-	def __init__(self,nodes,algorithms):
+	def __init__(self,nodes,algorithms,detector):
 		Machine.__init__(self)
 		self.nodes = nodes
-		self.algs = algorithms
+		self.algs = collections.OrderedDict()
 		self.memory_thr = 2000
 		self.driver_version_thr = 384.0
+		self.__set_algs(detector,algorithms)
+		self.num_detector = len(detector)
+
+	def __set_algs(self,detectors,algorithms):
+		"""
+		This method creates an ordered dict with detector on the top.
+		In this way, detector has higher priority in GPU allocation.
+		"""
+		self.detector_framework = []
+		for det in detectors:
+			framework = det['framework']
+			det_name = det['name']
+			mode = det['mode']
+			if framework != 'None':
+				self.detector_framework.append(framework)
+
+			self.algs[det_name] = det
+
+		for alg in algorithms:
+			alg_dict = dict()
+			alg_name = alg['name']
+			alg_dict[alg_name] = alg
+
+			self.algs.update(alg_dict)
 
 
 	def __check_gpu_exists_and_suitable(self,node_name):
@@ -30,7 +56,9 @@ class GPUallocator(Machine):
 		index = data.find('Driver Version')
 		non_decimal = re.compile(r'[^\d.]+')
 		temp_version = data[index+16:index+30]
-		driver_version = float(non_decimal.sub('', temp_version))
+		str_driver_version = non_decimal.sub('', temp_version)
+		splt = str_driver_version.split('.')
+		driver_version = float(splt[0]+'.'+splt[1])
 		if driver_version < self.driver_version_thr:
 			print('Node %s: NVIDIA DRIVER version %s is too old. This node will be used in CPU mode.' % (node_name,driver_version))
 			return False
@@ -122,23 +150,30 @@ class GPUallocator(Machine):
 		if len(cpu_elegibles) == 0:
 			cpu_elegibles = list(nodes_gpu.keys())
 
+		num_detector_frameworks = len(self.detector_framework)
+		if num_detector_frameworks > 0:
+			temp_gpu_frameworks = list(set([ v_alg['framework'] for v_alg in self.algs.values() if v_alg['mode'] == 'gpu' and v_alg['framework'] not in self.detector_framework ]))
+		else:
+			temp_gpu_frameworks = list(set([ v_alg['framework'] for v_alg in self.algs.values() if v_alg['mode'] == 'gpu']))
 
-		gpu_frameworks = list(set([ v_alg['framework'] for v_alg in self.algs.values() if v_alg['alg_mode'] == 'GPU']))
 		
-
+		gpu_frameworks = self.detector_framework + temp_gpu_frameworks
+		
+		
 		if len(gpu_frameworks) > 0:
 			gpu_order = self.__create_gpu_order(gpu_elegibles,gpu_frameworks)
-		
-		
-		matches = dict()
-		cpu_node_index = 0
-		for k_alg, v_alg in self.algs.items():
 
-			alg_mode = v_alg['alg_mode']
+		matches = collections.OrderedDict()
+		matches['detectors'] = []
+		matches['descriptors'] = []
+		cpu_node_index = 0
+		for i,(k_alg, v_alg) in enumerate(self.algs.items()):
+
+			alg_mode = v_alg['mode']
 			alg_framework = v_alg['framework']
 			alg_index = [gpu_order.index(el) for el in gpu_order if el[2] == alg_framework]
 
-			if alg_mode == 'GPU' and len(gpu_order) > 0 and len(alg_index) > 0:
+			if alg_mode == 'gpu' and len(gpu_order) > 0 and len(alg_index) > 0:
 				node_name, gpu_id, gp_framework= gpu_order.pop(alg_index[0])
 			else:
 				if not cpu_node_index < len(cpu_elegibles):
@@ -149,7 +184,13 @@ class GPUallocator(Machine):
 				cpu_node_index+=1
 				gpu_id = None
 
-			matches[k_alg] = {'node_name': node_name, 'gpu_id': gpu_id}
+			v_alg['deploy'] = {'node_name': node_name, 'gpu_id': gpu_id}
+			if i < self.num_detector:
+				matches['detectors'].append(v_alg)
+			else:
+				matches['descriptors'].append(v_alg)
+
+
 
 		return matches
 		

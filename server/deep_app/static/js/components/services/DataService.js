@@ -161,10 +161,14 @@ function dataService($window) {
             }
             hp.send(acknowledge)
           } else if (data.type == 'error') {
-            alert('Deep message' + JSON.stringify(data))
+            this.stop()
+            alert('Deep error' + JSON.stringify(data))
+          } else if (data.type == 'source-disconnected') {
+            deepVideoSource = 'none'
+            alert('Video source disconnected. Reason: ' + data.reason)
           }
           else {
-            console.error('Deep message' + JSON.stringify(data))
+            console.warn('Deep message' + JSON.stringify(data))
           }
         })
 
@@ -199,7 +203,8 @@ function dataService($window) {
     setDeepVideoSource: function(sourcePeerId) {
       if (!hp || sourcePeerId === 'none' || deepSourcePeerId == sourcePeerId) return
       deepVideoSource = sourcePeerId
-      hp.send({ type: 'source', peerId: sourcePeerId})
+      hp.send({ type: 'source', peerId: sourcePeerId })
+      hp.send({ type: 'metadata', metadata: { type: 'browser_video'} })
     },
     setRemotePeerType: (peerType) => remotePeerType = peerType,
     setRemotePeer: (peer) => remotePeer = peer

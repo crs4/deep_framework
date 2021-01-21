@@ -24,12 +24,11 @@ Every class must have:
 
 class YawNet(AbstractDescriptor):
 
-    
+    win_size = YAW_WIN_SIZE
     def __init__(self):
       """
       Load pose model.
       """
-      self.win_size = YAW_WIN_SIZE
       
       self.__setup_net()
 
@@ -50,7 +49,7 @@ class YawNet(AbstractDescriptor):
 
 
 
-    def detect_batch(self,images):
+    def detect_batch(self,detector_results,images):
       """
       Evaluates pose (yaw) for each person detected in images
 

@@ -34,7 +34,7 @@ class ClothingDescriptor:
 		# Load the trained convolutional neural network and the label binarizers
 		self.models = load_models()
 
-	def detect_batch(self,images):
+	def detect_batch(self,detector_results,images):
 		"""
 		Assign a class to each object detected in images
 

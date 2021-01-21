@@ -1,0 +1,23 @@
+
+FROM ufoym/deepo:cpu
+
+
+
+RUN pip3 install \
+    imutils==0.5.2 \
+    pyzmq==18.0.1
+
+COPY . /home/deepframework/descriptor/emotion_detection
+COPY --from=utils:deep_setup /home/deepframework/utils/. /home/deepframework/descriptor/utils
+COPY --from=agent:deep_setup /home/deepframework/agent/. /home/deepframework/descriptor
+COPY --from=descriptor_tests:deep_setup /home/deepframework/descriptor_tests/execute_test.py /home/deepframework/descriptor
+
+
+
+
+WORKDIR /home/deepframework/descriptor
+
+CMD python sub_agent.py
+
+
+

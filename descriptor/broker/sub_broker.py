@@ -26,7 +26,7 @@ class SubBroker(Process):
         
         self.rec_det_port = configuration['in']
         self.send_port = configuration['out']
-        self.alg_name = configuration['alg']
+        self.broker_name = configuration['broker_name']
         Process.__init__(self)
 
     def run(self):
@@ -43,14 +43,14 @@ class SubBroker(Process):
         sub_broker_socket.bind(PROT+'*'+':'+self.send_port)
         sub_broker_data = dict()
 
-        print('START BROKER: ',self.alg_name)
+        print('START BROKER: ',self.broker_name)
 
         while True:
             
             #receive data from frame provider. Data type: {'frame_idx': 123, 'data': [(p1,crop1),....,(pn,cropn)]}
             rec_dict,imgs =recv_data(fp_socket,0,False)
             vc_frame_idx = rec_dict['frame_idx']
-            people_data = rec_dict['data'] 
+            people_data = rec_dict['objects'] 
             fp_time = rec_dict['fp_time']
             vc_time = rec_dict['vc_time']
             
@@ -59,10 +59,11 @@ class SubBroker(Process):
                 continue
             
             # creation of message for descriptors
-            sub_broker_data['data'] = people_data
+            sub_broker_data['objects'] = people_data
             sub_broker_data['frame_idx'] = vc_frame_idx
             sub_broker_data['vc_time'] = vc_time
             sub_broker_data['fp_time'] = fp_time
+            sub_broker_data['frame_shape'] = rec_dict['frame_shape']
             
             
             send_data(sub_broker_socket,imgs,0,False,**sub_broker_data)
@@ -84,22 +85,14 @@ if __name__ == '__main__':
     """
     Load configuration of descriptors installed
     """
-    subs = []
     
-    ALGS=os.environ['ALGS']
-    alg_list=ALGS.split(',')
     
 
-    for alg in alg_list:
-        alg_name, broker_port, sub_col_port, col_port = alg.split(':')
-        sub = SubBroker({'in':FP_OUT,'out':broker_port,'alg':alg_name})
-        subs.append(sub)
+    sub = SubBroker({'in':FP_OUT,'out':BROKER_PORT,'broker_name':BROKER_NAME})
+    sub.start()
 
 
-    # start worker 
-    for s in subs:
-        s.start()
-   
+    
 
 
 
