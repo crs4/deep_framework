@@ -59,6 +59,8 @@ class YoloDetector:
 
         #image = darknet.draw_boxes(detections, image_resized, self.class_colors)
         #return cv2.cvtColor(image, cv2.COLOR_BGR2RGB), scaled_detections
+        darknet.free_image(darknet_image)
+        
         return classes, scores, scaled_boxes
 
 if __name__ == "__main__":
