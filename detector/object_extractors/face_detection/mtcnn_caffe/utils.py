@@ -22,6 +22,10 @@ def format_bbox(rects):
     formatted = []
     
     for rect in rects:
+        if rect[0] < 0:
+            rect[0] = 0
+        if rect[1] < 0:
+            rect[1] = 0
         rectd = {'x_topleft':rect[0],'y_topleft':rect[1], 'x_bottomright':rect[2], 'y_bottomright':rect[3],'accuracy':rect[4]}
         
         formatted.append(rectd)
