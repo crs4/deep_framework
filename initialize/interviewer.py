@@ -415,7 +415,7 @@ class DescriptorProvider(Interviewer):
 						alg_mode = modes_availables[0]
 
 					alg_build = self.get_acceptable_answer('Do you want to build relative docker image? (y/n): \n',['y','n']).lower()
-					num_worker = self.get_number('How many worker do you want to create for this descriptor? (y/n): (default: 1): \n','int',1)
+					num_worker = self.get_number('How many worker do you want to create for this descriptor? (default: 1): \n','int',1)
 					
 					descriptor_wished_params = dict()
 					descriptor_wished_params['name'] = alg_name
