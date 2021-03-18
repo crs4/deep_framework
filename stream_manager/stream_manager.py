@@ -9,6 +9,7 @@ import numpy
 import os
 import zmq
 import time
+import numpy as np
 from stream_manager_constants import *
 from video_sources import VideoCapture, StreamCapture
 
@@ -94,6 +95,10 @@ class StreamManager:
         self.deep_delay = 0
         self.round_trip = 0
         self.processing_period = 0
+        self.deep_stat_time = 0
+        self.deep_delay_buffer = np.array([])
+        self.deep_delay_avg = 0
+        self.deep_delay_std = 0
         
 
     def __socket_setup(self):
@@ -134,7 +139,13 @@ class StreamManager:
         logging.info(f'[{self.id}]: Receiver started')
         self.processed_frames = 0
         last_receive_time = time.time()
+        
+
         no_data_time = 0
+        self.deep_delay_buffer = np.array([])
+        self.deep_delay_avg = 0
+        self.deep_delay_std = 0
+        self.deep_stat_time = time.time()
         try:
             while True:
                 await self.source_ready.wait()
@@ -149,6 +160,15 @@ class StreamManager:
                     self.processed_frames += 1
                     last_receive_time = received_data["rec_time"]
                     self.messages_sent += 1
+                    if last_receive_time - self.deep_stat_time < 10:
+                        self.deep_delay_buffer = np.append(self.deep_delay_buffer,self.deep_delay)
+                    else:
+                        if len(self.deep_delay_buffer) != 0:
+                            self.deep_delay_avg = self.deep_delay_buffer.mean()
+                            self.deep_delay_std = np.std(self.deep_delay_buffer)
+                            self.deep_delay_buffer = np.array([])
+                        self.deep_stat_time = last_receive_time
+
                     data_to_send = {
                         'type': 'data',
                         'received_frames': self.received_frames,
@@ -158,8 +178,11 @@ class StreamManager:
                         'last_frame_shape': self.received_frame.shape,
                         'round_trip': self.round_trip,
                         'deep_delay': self.deep_delay,
+                        'deep_delay_avg': self.deep_delay_avg,
+                        'deep_delay_std': self.deep_delay_std,
                         'processing_period': self.processing_period
                     }
+
                     data_merged = {**data_to_send,**received_data}
                     if self.peer.readyState == PeerState.CONNECTED:
                         # logging.info(f'[{self.id}]: Sending data: {str(data_merged)}')

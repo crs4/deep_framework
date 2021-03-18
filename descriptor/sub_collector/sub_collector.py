@@ -42,12 +42,13 @@ class SubCollector(Process):
         ordered_buffer = []
         sub_buffer = []
         sub_max_size = int(WORKER)
+        last_vc_time = 0
         while True:
             
 
 
             #get message from sub collector
-            
+            """
             rec_dict, __ = recv_data(sub_col_socket,0,False)
             if len(sub_buffer) < sub_max_size:
                 sub_buffer.append(rec_dict)
@@ -66,6 +67,14 @@ class SubCollector(Process):
                 send_data(col_socket,None,0,False,**msg_dict)
 
             ordered_buffer = []
+            """
+            rec_dict, __ = recv_data(sub_col_socket,0,False)
+
+            vc_time = rec_dict['vc_time']
+            if vc_time > last_vc_time:
+                send_data(col_socket,None,0,False,**rec_dict)
+                last_vc_time = vc_time
+
 
 
         print("subs collector: interrupt received, stopping")
