@@ -167,6 +167,8 @@ class StreamManager:
                             self.deep_delay_avg = self.deep_delay_buffer.mean()
                             self.deep_delay_std = np.std(self.deep_delay_buffer)
                             self.deep_delay_buffer = np.array([])
+                            with open('/mnt/remote_media/avg_std.txt', 'a') as writer:
+                                writer.write(str(self.deep_delay_avg)+ ' ' +str(self.deep_delay_std)+'\n' )
                         self.deep_stat_time = last_receive_time
 
                     data_to_send = {
