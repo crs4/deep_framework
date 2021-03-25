@@ -137,7 +137,8 @@ class ObjectProvider(Process):
                 if skipping:
                     # save the read frame
                     last_rec_dict, last_imgs = new_rec_dict, new_imgs 
-                    skip_counter += 1 
+                    skip_counter += 1
+                    self.stats_maker.skipped_frames += 1
                     # and try to read a new one  
                     continue 
                 else: # if the max skip time was reached
