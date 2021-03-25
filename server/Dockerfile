@@ -13,7 +13,6 @@ RUN yarn run build
 
 WORKDIR /server
 RUN npm install
-
  
 CMD ["node", "server.js"]
 

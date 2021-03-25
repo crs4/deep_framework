@@ -43,7 +43,6 @@ if __name__ == "__main__":
 	sp = SourceProvider()
 	sources = sp.get_sources(use_last_settings=args.run)
 	
-	
 	det_prov = DetectorProvider(det_revealed,sources)
 	dets = det_prov.get_detectors(use_last_settings=args.run)
 

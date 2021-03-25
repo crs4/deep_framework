@@ -125,13 +125,13 @@ class StreamManager:
         self.received_frame = frame
         self.received_frames += 1
         capture_time = time.time()
-
-        res = {'frame_idx': self.received_frames , 'vc_time': capture_time, 'frame_shape': frame.shape}
-        if self.deep_delay < float(MAX_ALLOWED_DELAY) and self.processing_period < float(MAX_ALLOWED_DELAY):  
-            send_data(self.sender_socket,[frame],0,False,**res)
-        else:
-            logging.info(f'[{self.id}]: Skipping frame: {str(self.received_frames)}, deep delay: {str(self.deep_delay)}, processing period: {str(self.processing_period)}')
         
+        res = {'frame_idx': self.received_frames , 'vc_time': capture_time, 'frame_shape': frame.shape}
+        #if self.deep_delay < float(MAX_ALLOWED_DELAY) and self.processing_period < float(MAX_ALLOWED_DELAY):  
+        #    send_data(self.sender_socket,[frame],0,False,**res)
+        #else:
+        #    logging.info(f'[{self.id}]: Skipping frame: {str(self.received_frames)}, deep delay: {str(self.deep_delay)}, processing period: {str(self.processing_period)}')
+        send_data(self.sender_socket,[frame],0,False,**res)
         self.core_watchdog.set()
 
 
@@ -146,6 +146,7 @@ class StreamManager:
         self.deep_delay_avg = 0
         self.deep_delay_std = 0
         self.deep_stat_time = time.time()
+        count = 0
         try:
             while True:
                 await self.source_ready.wait()
@@ -160,8 +161,10 @@ class StreamManager:
                     self.processed_frames += 1
                     last_receive_time = received_data["rec_time"]
                     self.messages_sent += 1
-                    if last_receive_time - self.deep_stat_time < 10:
+                    if count < 1000 and self.deep_delay !=0:
+                        print(self.deep_delay)
                         self.deep_delay_buffer = np.append(self.deep_delay_buffer,self.deep_delay)
+                        count+=1
                     else:
                         if len(self.deep_delay_buffer) != 0:
                             self.deep_delay_avg = self.deep_delay_buffer.mean()
@@ -169,7 +172,6 @@ class StreamManager:
                             self.deep_delay_buffer = np.array([])
                             with open('/mnt/remote_media/avg_std.txt', 'a') as writer:
                                 writer.write(str(self.deep_delay_avg)+ ' ' +str(self.deep_delay_std)+'\n' )
-                        self.deep_stat_time = last_receive_time
 
                     data_to_send = {
                         'type': 'data',
@@ -195,6 +197,7 @@ class StreamManager:
                 except Exception as e:
                     self.processing_period = time.time() - last_receive_time
                     no_data_time += self.processing_period
+                    """
                     if no_data_time > float(MAX_ALLOWED_DELAY) * 1.2:
                         # if no_data_time > 10 * float(MAX_ALLOWED_DELAY):
                         #     msg = f'No data from DEEP since  {str(no_data_time)} seconds. Reason: {str(e)}'
@@ -214,8 +217,8 @@ class StreamManager:
                         self.deep_delay = -1
                         self.processing_period = -1
                         last_receive_time = time.time()
-
-                await asyncio.sleep(0.05)
+                    """
+                await asyncio.sleep(0.001)
 
         except asyncio.CancelledError as c:
             await asyncio.sleep(float(MAX_ALLOWED_DELAY))

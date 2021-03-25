@@ -118,7 +118,7 @@ class ObjectProvider(Process):
                 else:
                     # use last read frame 
                     new_rec_dict, new_imgs = last_rec_dict, last_imgs 
-                    skipping = True
+                    skipping = False
 
                 new_vc_time = new_rec_dict['vc_time']
                 skip_time = new_vc_time - last_vc_time
@@ -161,6 +161,7 @@ class ObjectProvider(Process):
             
             print(f'Frames skipped: {skip_counter}')
             skip_counter = 0
+            skipping = False
 
             # core watch dog
             #
@@ -172,10 +173,6 @@ class ObjectProvider(Process):
             vc_frame_idx = rec_dict['frame_idx']
             vc_time = rec_dict['vc_time']  
             frame_shape = rec_dict['frame_shape']  
-
-
-
-
 
 
             #algorithm start
