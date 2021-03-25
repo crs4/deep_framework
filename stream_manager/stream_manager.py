@@ -142,10 +142,12 @@ class StreamManager:
         
 
         no_data_time = 0
-        self.deep_delay_buffer = np.array([])
+        self.deep_delay_buffer = []
         self.deep_delay_avg = 0
         self.deep_delay_std = 0
-        self.deep_stat_time = time.time()
+        self.processing_period_buffer = []
+        self.processing_period_avg = 0
+        self.processing_period_std = 0
         count = 0
         try:
             while True:
@@ -161,17 +163,27 @@ class StreamManager:
                     self.processed_frames += 1
                     last_receive_time = received_data["rec_time"]
                     self.messages_sent += 1
-                    if count < 1000 and self.deep_delay !=0:
-                        print(self.deep_delay)
-                        self.deep_delay_buffer = np.append(self.deep_delay_buffer,self.deep_delay)
+                    if count < 1000:
+                        self.deep_delay_buffer.append(self.deep_delay)
+                        self.processing_period_buffer.append(self.processing_period)
                         count+=1
                     else:
-                        if len(self.deep_delay_buffer) != 0:
-                            self.deep_delay_avg = self.deep_delay_buffer.mean()
-                            self.deep_delay_std = np.std(self.deep_delay_buffer)
-                            self.deep_delay_buffer = np.array([])
-                            with open('/mnt/remote_media/avg_std.txt', 'a') as writer:
-                                writer.write(str(self.deep_delay_avg)+ ' ' +str(self.deep_delay_std)+'\n' )
+                        
+                        with open('/mnt/remote_media/avg_std.txt', 'a') as writer:
+                            delay_np  = np.array(self.deep_delay_buffer)
+                            proc_np  = np.array(self.processing_period_buffer)
+                            self.deep_delay_avg = delay_np.mean()
+                            self.deep_delay_std = np.std(delay_np)
+                            delay_str = 'deep delay: '+'(avg: '+str(self.deep_delay_avg)+ ', std: ' +str(self.deep_delay_std)+')'
+                            self.processing_period_avg = proc_np.mean()
+                            self.processing_period_std = np.std(proc_np)
+                            processing_str = 'processing period: '+'(avg: '+str(self.processing_period_avg)+ ', std: ' +str(self.processing_period_std)+')'
+                            writer.write(delay_str+'\n')
+                            writer.write(processing_str+'\n')
+                            self.processing_period_buffer = []
+                            self.deep_delay_buffer = []
+                            count = 0
+                        writer.close()
 
                     data_to_send = {
                         'type': 'data',
@@ -184,7 +196,9 @@ class StreamManager:
                         'deep_delay': self.deep_delay,
                         'deep_delay_avg': self.deep_delay_avg,
                         'deep_delay_std': self.deep_delay_std,
-                        'processing_period': self.processing_period
+                        'processing_period': self.processing_period,
+                        'processing_period_avg': self.processing_period_avg,
+                        'processing_period_std': self.processing_period_std
                     }
 
                     data_merged = {**data_to_send,**received_data}
@@ -195,6 +209,7 @@ class StreamManager:
                         if self.capture_peer.readyState == PeerState.CONNECTED:
                             await self.capture_peer.send(data_merged)
                 except Exception as e:
+                    print(e)
                     self.processing_period = time.time() - last_receive_time
                     no_data_time += self.processing_period
                     """
