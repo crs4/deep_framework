@@ -82,15 +82,8 @@ class ObjectProvider(Process):
 
 
         
-
-        MAX_SKIP_TIME = 0.3
-        buffer_was_empty = True
-        skip_counter = 0
-        # read the first frame waiting indefinetely
-        last_rec_dict, last_imgs = recv_data(vc_socket,0,False)
-        last_vc_time = last_rec_dict['vc_time']
+        #__, __ = recv_data(vc_socket,0,False)
         last_alg_time = 0
-        skipping = True
 
         while True:
             
@@ -108,6 +101,55 @@ class ObjectProvider(Process):
                 self.stats_maker.skipped_frames += 1
                 print('skipping')
                 continue
+
+            """
+
+            """
+
+            rec_dict,imgs = recv_data(vc_socket,0,False)
+
+            self.stats_maker.received_frames += 1
+            current_frame = imgs[0]
+            vc_frame_idx = rec_dict['frame_idx']
+            vc_time = rec_dict['vc_time']
+            frame_shape = rec_dict['frame_shape']
+
+            current_delay = time.time() - vc_time
+            forecast_delay = current_delay + last_alg_time
+
+            if forecast_delay > MAX_ALLOWED_DELAY:
+                self.stats_maker.skipped_frames += 1
+                print('skipping')
+                try:
+                    __ , __= recv_data(vc_socket,1,False)
+                except zmq.ZMQError:
+                    print('Buffer empty') 
+                continue
+            
+            """
+            try:
+
+                rec_dict,imgs = recv_data(vc_socket,1,False)
+                self.stats_maker.received_frames += 1
+                current_frame = imgs[0]
+                vc_frame_idx = rec_dict['frame_idx']
+                vc_time = rec_dict['vc_time']
+                frame_shape = rec_dict['frame_shape']
+
+                current_delay = time.time() - vc_time
+                forecast_delay = current_delay + last_alg_time
+
+                if forecast_delay > MAX_ALLOWED_DELAY:
+                    self.stats_maker.skipped_frames += 1
+                    print('skipping. ','cur: ',current_delay,' - last_alg_time: ',last_alg_time)
+                    continue
+
+
+            except zmq.ZMQError:
+                print('Buffer empty') 
+                continue
+            
+            start_alg_time = time.time()
 
             """
             try:
@@ -174,7 +216,7 @@ class ObjectProvider(Process):
             vc_frame_idx = rec_dict['frame_idx']
             vc_time = rec_dict['vc_time']  
             frame_shape = rec_dict['frame_shape']  
-
+            """
 
             #algorithm start
             try:
@@ -209,7 +251,7 @@ class ObjectProvider(Process):
                 crops.append(np.ascontiguousarray(crop, dtype=np.uint8))
 
                 
-            
+
             res['frame_idx'] = vc_frame_idx
             res['objects'] = obj_list_serialized
             res['fp_time'] = time.time()
@@ -232,6 +274,8 @@ class ObjectProvider(Process):
             self.stats_maker.elaborated_frames += 1
             self.stats_maker.object_counter = len(object_list)
             
+            end_alg_time = time.time()
+            last_alg_time = end_alg_time - start_alg_time
             
 
         print("fp: interrupt received, stopping")

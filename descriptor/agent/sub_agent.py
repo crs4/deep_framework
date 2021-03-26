@@ -80,6 +80,7 @@ class Sub(Process):
         img_windows = dict()
         img_windows[self.alg_name] = SlidingWindow(size=WIN_SIZE)
 
+        last_alg_time = 0
 
         print('END INIT ' + self.alg_name)
         # run timer in order to compute stats
@@ -94,6 +95,38 @@ class Sub(Process):
             img_res = None
             pids_old = []
 
+
+
+
+
+
+            """
+            try:
+
+                rec_dict,crops = recv_data(sub_broker_socket,1,False)
+                self.stats_maker.received_frames += 1
+                vc_frame_idx = rec_dict['frame_idx']
+                vc_time = rec_dict['vc_time']
+                objects = rec_dict['objects']
+                current_delay = time.time() - vc_time
+                forecast_delay = current_delay + last_alg_time
+                print('forecast: ',forecast_delay)
+
+                if forecast_delay > MAX_ALLOWED_DELAY:
+                    self.stats_maker.skipped_frames += 1
+                    print('skipping. ','cur: ',current_delay,' - last_alg_time: ',last_alg_time)
+                    continue
+
+
+            except zmq.ZMQError as e:
+                print(e) 
+                continue
+            """
+
+            start_alg_time = time.time()
+
+
+            
             #get message from publisher
             rec_dict,crops =recv_data(sub_broker_socket,0,False)
             self.stats_maker.received_frames +=1
@@ -108,6 +141,7 @@ class Sub(Process):
             if (time.time() - fp_time) > MAX_ALLOWED_DELAY or (time.time() - vc_time) > MAX_ALLOWED_DELAY:
                 self.stats_maker.skipped_frames+=1
                 continue
+            
 
             
             # tracks objects present in previous frames
@@ -165,6 +199,8 @@ class Sub(Process):
 
             #clearing memory
             crops = None
+            end_alg_time = time.time()
+            last_alg_time = end_alg_time - start_alg_time
             
 
         print("subs: interrupt received, stopping")
