@@ -81,7 +81,7 @@ class ObjectProvider(Process):
         frame_counter = 0
 
 
-        
+        self.stats_maker.start_time = time.time()
         #__, __ = recv_data(vc_socket,0,False)
         last_alg_time = 0
 
