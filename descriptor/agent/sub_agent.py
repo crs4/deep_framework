@@ -100,7 +100,7 @@ class Sub(Process):
 
 
 
-            """
+
             try:
 
                 rec_dict,crops = recv_data(sub_broker_socket,1,False)
@@ -112,7 +112,7 @@ class Sub(Process):
                 forecast_delay = current_delay + last_alg_time
                 print('forecast: ',forecast_delay)
 
-                if forecast_delay > MAX_ALLOWED_DELAY:
+                if current_delay > MAX_ALLOWED_DELAY:
                     self.stats_maker.skipped_frames += 1
                     print('skipping. ','cur: ',current_delay,' - last_alg_time: ',last_alg_time)
                     continue
@@ -121,12 +121,12 @@ class Sub(Process):
             except zmq.ZMQError as e:
                 print(e) 
                 continue
-            """
+            
 
             start_alg_time = time.time()
 
 
-            
+            """
             #get message from publisher
             rec_dict,crops =recv_data(sub_broker_socket,0,False)
             self.stats_maker.received_frames +=1
@@ -141,6 +141,7 @@ class Sub(Process):
             if (time.time() - fp_time) > MAX_ALLOWED_DELAY or (time.time() - vc_time) > MAX_ALLOWED_DELAY:
                 self.stats_maker.skipped_frames+=1
                 continue
+            """
             
 
             
