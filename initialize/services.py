@@ -372,7 +372,7 @@ class DescriptorService(DeepService):
 	def __set_environments(self,descriptor_component):
 		environments = []
 
-		mode = 'MODE='+descriptor_component.params['mode']
+		mode = 'MODE='+descriptor_component.params['mode'].upper()
 		framework = 'FRAMEWORK='+descriptor_component.params['framework']
 		broker_address = 'BROKER_ADDRESS='+descriptor_component.connected_to['broker']
 		sub_collector_address = 'SUB_COLLECTOR_ADDRESS='+descriptor_component.connected_to['subcollector']
