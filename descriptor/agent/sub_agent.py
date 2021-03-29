@@ -103,6 +103,7 @@ class Sub(Process):
             rec_dict,crops = recv_data(sub_broker_socket,0,False)
             self.stats_maker.received_frames += 1
             #clearing buffer
+            temp_time = time.time()
             while True:
                 try:
 
@@ -115,6 +116,8 @@ class Sub(Process):
                 except zmq.ZMQError as e:
                     print(e) 
                     break
+            empty_time = time.time() - temp_time
+            print(empty_time)
             
             vc_frame_idx = rec_dict['frame_idx']
             vc_time = rec_dict['vc_time']
@@ -196,7 +199,7 @@ class Sub(Process):
             sub_res['img_res'] = img_res
             sub_res['frame_idx'] = vc_frame_idx
             sub_res['vc_time'] = vc_time
-            print(sub_res)
+            #print(sub_res)
 
             
             #sends results to collector
