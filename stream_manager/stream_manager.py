@@ -184,13 +184,14 @@ class StreamManager:
 
                             self.alg_period_avg = alg_time_np.mean()
                             self.alg_period_std = np.std(alg_time_np)
-
-                            delay_str = 'deep delay: '+'(avg: '+str(self.deep_delay_avg)+ ', std: ' +str(self.deep_delay_std)+')'
+                            head_str = 'deep delay,processing period,alg interval'
+                            delay_str = '('+str(self.deep_delay_avg)+ ','+ str(self.deep_delay_std)+'),'
                             self.processing_period_avg = proc_np.mean()
                             self.processing_period_std = np.std(proc_np)
-                            processing_str = 'processing period: '+'(avg: '+str(self.processing_period_avg)+ ', std: ' +str(self.processing_period_std)+')'
-                            writer.write(delay_str+'\n')
-                            writer.write(processing_str+'\n')
+                            processing_str = '('+str(self.processing_period_avg)+ ','+str(self.processing_period_std)+'),'
+                            alg_interval_str = '('+str(self.alg_period_avg)+ ','+str(self.alg_period_std)+')'
+                            writer.write(head_str+'\n')
+                            writer.write(delay_str+processing_str+alg_interval_str+'\n')
                             self.processing_period_buffer = []
                             self.deep_delay_buffer = []
                             self.alg_time_buffer = []
