@@ -83,7 +83,7 @@ class ObjectProvider(Process):
 
         self.stats_maker.start_time = time.time()
         #__, __ = recv_data(vc_socket,0,False)
-        last_alg_time = 0
+        last_alg_time = time.time()
 
         while True:
             

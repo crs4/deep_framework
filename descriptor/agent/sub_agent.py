@@ -80,7 +80,7 @@ class Sub(Process):
         img_windows = dict()
         img_windows[self.alg_name] = SlidingWindow(size=WIN_SIZE)
 
-        last_alg_time = 0
+        last_alg_time = time.time()
 
         print('END INIT ' + self.alg_name)
         # run timer in order to compute stats
