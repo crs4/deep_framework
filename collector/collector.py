@@ -79,6 +79,7 @@ class Collector(Process):
         self.stats_maker.run_fps_timer()
         self.stats_maker.run_stats_timer(INTERVAL_STATS,self.__send_stats)
         last_rec_time = time.time()
+        alg_time_interval = 0
         while True:
             try:
                 result = dict()
@@ -89,7 +90,6 @@ class Collector(Process):
                 frame_id = fp_dict['frame_idx']
                 fp_objects = fp_dict['objects']
                 vc_time = fp_dict['vc_time']
-                print(fp_dict)
 
                 pids_fp = list(map(lambda x: x['pid'], fp_objects)) # id of new objects in the scene
                 for p in pids_fp:
@@ -150,7 +150,7 @@ class Collector(Process):
                 r['frame_attributes'] = subs_image_attributes['image_attributes']
                 r['vc_time'] = vc_time
                 r['alg_time_interval'] = alg_time_interval
-                print(r)
+                print(alg_time_interval)
                 
                 send_data(sender,None,0,False,**r)
                 send_data(server_sender,None,0,False,**r)

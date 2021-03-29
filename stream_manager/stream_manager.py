@@ -168,7 +168,7 @@ class StreamManager:
                     last_receive_time = received_data["rec_time"]
                     alg_time_interval = received_data['alg_time_interval']
                     self.messages_sent += 1
-                    if count < 100:
+                    if count < 500:
                         self.alg_time_buffer.append(alg_time_interval)
                         self.deep_delay_buffer.append(self.deep_delay)
                         self.processing_period_buffer.append(self.processing_period)
