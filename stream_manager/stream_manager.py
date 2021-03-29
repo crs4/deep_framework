@@ -148,6 +148,10 @@ class StreamManager:
         self.processing_period_buffer = []
         self.processing_period_avg = 0
         self.processing_period_std = 0
+
+        self.alg_period_avg = 0
+        self.alg_period_std = 0
+        self.alg_time_buffer = []
         count = 0
         try:
             while True:
@@ -162,18 +166,25 @@ class StreamManager:
                     no_data_time = 0
                     self.processed_frames += 1
                     last_receive_time = received_data["rec_time"]
+                    alg_time_interval = received_data['alg_time_interval']
                     self.messages_sent += 1
-                    if count < 1000:
+                    if count < 100:
+                        self.alg_time_buffer.append(alg_time_interval)
                         self.deep_delay_buffer.append(self.deep_delay)
                         self.processing_period_buffer.append(self.processing_period)
                         count+=1
                     else:
                         
                         with open('/mnt/remote_media/avg_std.txt', 'a') as writer:
+                            alg_time_np = np.array(self.alg_time_buffer)
                             delay_np  = np.array(self.deep_delay_buffer)
                             proc_np  = np.array(self.processing_period_buffer)
                             self.deep_delay_avg = delay_np.mean()
                             self.deep_delay_std = np.std(delay_np)
+
+                            self.alg_period_avg = alg_time_np.mean()
+                            self.alg_period_std = np.std(alg_time_np)
+
                             delay_str = 'deep delay: '+'(avg: '+str(self.deep_delay_avg)+ ', std: ' +str(self.deep_delay_std)+')'
                             self.processing_period_avg = proc_np.mean()
                             self.processing_period_std = np.std(proc_np)
@@ -182,6 +193,7 @@ class StreamManager:
                             writer.write(processing_str+'\n')
                             self.processing_period_buffer = []
                             self.deep_delay_buffer = []
+                            self.alg_time_buffer = []
                             count = 0
                         writer.close()
 
@@ -198,7 +210,9 @@ class StreamManager:
                         'deep_delay_std': self.deep_delay_std,
                         'processing_period': self.processing_period,
                         'processing_period_avg': self.processing_period_avg,
-                        'processing_period_std': self.processing_period_std
+                        'processing_period_std': self.processing_period_std,
+                        'alg_period_avg': self.alg_period_avg,
+                        'alg_period_std': self.alg_period_std
                     }
 
                     data_merged = {**data_to_send,**received_data}

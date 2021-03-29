@@ -100,29 +100,31 @@ class Sub(Process):
 
 
 
+            rec_dict,crops = recv_data(sub_broker_socket,0,False)
+            self.stats_maker.received_frames += 1
+            #clearing buffer
+            while True:
+                try:
 
-            try:
-
-                rec_dict,crops = recv_data(sub_broker_socket,1,False)
-                self.stats_maker.received_frames += 1
-                vc_frame_idx = rec_dict['frame_idx']
-                vc_time = rec_dict['vc_time']
-                objects = rec_dict['objects']
-                current_delay = time.time() - vc_time
-                forecast_delay = current_delay + last_alg_time
-                print('forecast: ',forecast_delay)
-
-                if current_delay > MAX_ALLOWED_DELAY:
+                    rec_dict,crops = recv_data(sub_broker_socket,1,False)
+                    self.stats_maker.received_frames += 1
                     self.stats_maker.skipped_frames += 1
-                    print('skipping. ','cur: ',current_delay,' - last_alg_time: ',last_alg_time)
                     continue
 
 
-            except zmq.ZMQError as e:
-                print(e) 
-                continue
+                except zmq.ZMQError as e:
+                    print(e) 
+                    break
             
+            vc_frame_idx = rec_dict['frame_idx']
+            vc_time = rec_dict['vc_time']
+            objects = rec_dict['objects']
+            current_delay = time.time() - vc_time
+            forecast_delay = current_delay + last_alg_time
+            print('forecast: ',forecast_delay)
 
+                
+            print('skipping. ','cur: ',current_delay,' - last_alg_time: ',last_alg_time)
             start_alg_time = time.time()
 
 
@@ -189,11 +191,13 @@ class Sub(Process):
            
             
             self.stats_maker.elaborated_frames+=1
-          
+
             sub_res['obj_res_dict'] = obj_res_dict
             sub_res['img_res'] = img_res
             sub_res['frame_idx'] = vc_frame_idx
             sub_res['vc_time'] = vc_time
+            print(sub_res)
+
             
             #sends results to collector
             send_data(sub_col_socket,None,0,False,**sub_res)
