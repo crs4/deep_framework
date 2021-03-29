@@ -78,7 +78,7 @@ class Collector(Process):
         # run timer for stats computation
         self.stats_maker.run_fps_timer()
         self.stats_maker.run_stats_timer(INTERVAL_STATS,self.__send_stats)
-        last_rec_time = time.time()
+        last_rec_time = 0
         alg_time_interval = 0
         while True:
             try:
@@ -149,8 +149,11 @@ class Collector(Process):
                 r['objects'] = objects_res
                 r['frame_attributes'] = subs_image_attributes['image_attributes']
                 r['vc_time'] = vc_time
-                r['alg_time_interval'] = alg_time_interval
-                print(alg_time_interval)
+                if self.stats_maker.elaborated_frames == 0 or alg_time_interval > 100:
+                    r['alg_time_interval'] = 0
+                else:
+                    r['alg_time_interval'] = alg_time_interval
+                    print(alg_time_interval)
                 
                 send_data(sender,None,0,False,**r)
                 send_data(server_sender,None,0,False,**r)

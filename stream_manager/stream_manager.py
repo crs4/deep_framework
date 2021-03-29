@@ -169,10 +169,15 @@ class StreamManager:
                     alg_time_interval = received_data['alg_time_interval']
                     self.messages_sent += 1
                     if count < 500:
-                        self.alg_time_buffer.append(alg_time_interval)
-                        self.deep_delay_buffer.append(self.deep_delay)
-                        self.processing_period_buffer.append(self.processing_period)
-                        count+=1
+                        if alg_time_interval > 0:
+                            print('alg_int ',alg_time_interval)
+                            self.alg_time_buffer.append(alg_time_interval)
+                            count+=1
+                        if self.deep_delay > 0:
+                            self.deep_delay_buffer.append(self.deep_delay)
+                        if self.processing_period > 0:
+                            self.processing_period_buffer.append(self.processing_period)
+                        
                     else:
                         
                         with open('/mnt/remote_media/avg_std.txt', 'a') as writer:
