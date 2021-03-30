@@ -285,11 +285,12 @@ class BrokerService(DeepService):
 		super().__init__()
 		self.service_name = broker_component.component_name
 		self.image_tag = self.set_component_tag()
-		 
+		self.params = broker_component.params
 		self.env_file = [ENV_PARAMS]
 		self.net = NETWORK
 		self.environments = self.__set_environments(broker_component)
 		self.image_name = self.set_image_name(registry_address,broker_component.component_type,self.image_tag)
+		self.node = self.params['deploy']['node_name']
 
 	def __set_environments(self,broker_component):
 		environments = []
@@ -307,7 +308,9 @@ class BrokerService(DeepService):
 		broker['environment'] = self.environments
 		broker['env_file'] = self.env_file
 		broker['image'] = self.image_name
+		broker['deploy']= {'placement':{'constraints': ['node.hostname=='+self.node ]}}
 		broker['networks'] = [self.net]
+
 		return broker
 
 
@@ -324,6 +327,7 @@ class SubCollectorService(DeepService):
 		self.net = NETWORK
 		self.environments = self.__set_environments(sub_collector_component)
 		self.image_name = self.set_image_name(registry_address,sub_collector_component.component_type,self.image_tag)
+		self.node = self.params['deploy']['node_name']
 
 	def __set_environments(self,sub_collector_component):
 		environments = []
@@ -341,6 +345,8 @@ class SubCollectorService(DeepService):
 		sub_col_dict['env_file'] = self.env_file
 		sub_col_dict['image'] = self.image_name
 		sub_col_dict['networks'] = [self.net]
+		sub_col_dict['deploy']= {'placement':{'constraints': ['node.hostname=='+self.node ]}}
+
 		return sub_col_dict
 
 
