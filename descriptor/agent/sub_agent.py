@@ -34,8 +34,10 @@ class Sub(Process):
 
     def run(self):
 
-        if MODE == 'GPU':
-            gpu_id=int(os.environ['GPU_ID'])
+        gpu_id = os.environ['GPU_ID']
+        if MODE == 'GPU' and gpu_id != 'None':
+            
+            gpu_id=int(gpu_id)
             framework=os.environ['FRAMEWORK']
             if framework == 'caffe':
                 import caffe
