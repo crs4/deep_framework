@@ -397,9 +397,7 @@ class DescriptorService(DeepService):
 		desc_dict['env_file'] = self.env_file
 		desc_dict['image'] = self.image_name
 		desc_dict['networks'] = [self.net]
-		desc_dict['deploy']= {'placement':{'constraints': ['node.hostname=='+self.node ]}}
-		desc_dict['deploy']= {'replicas': int(self.params['worker'])}
-
+		desc_dict['deploy']= {'placement':{'constraints': ['node.hostname=='+self.node ]},'replicas': int(self.params['worker'])}
 		return desc_dict
 
 
