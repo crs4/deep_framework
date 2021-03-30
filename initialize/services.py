@@ -433,6 +433,7 @@ class StreamManagerService(DeepService):
 		stream_man_dict['env_file'] = self.env_file
 		stream_man_dict['image'] = self.image_name
 		stream_man_dict['networks'] = [self.net]
+		stream_man_dict['deploy']= {'placement':{'constraints': ['node.hostname=='+self.source_params['source_node'] ]}}
 		stream_man_dict['depends_on'] = ['server']
 		if self.volume:
 			stream_man_dict['volumes'] = ['deep_media_volume:/mnt/remote_media']

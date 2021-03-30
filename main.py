@@ -40,7 +40,7 @@ if __name__ == "__main__":
 	par = ParamsProvider()
 	par.set_stream_params(use_last_settings=args.run)
 	
-	sp = SourceProvider()
+	sp = SourceProvider(nodes_data)
 	sources = sp.get_sources(use_last_settings=args.run)
 	
 	det_prov = DetectorProvider(det_revealed,sources)
