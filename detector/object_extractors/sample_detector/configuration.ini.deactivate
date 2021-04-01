@@ -2,7 +2,7 @@
 
 
 
-NAME = sample
+CATEGORY = sample
 PATH = sample_detector.sample_executor
 CLASS = SampleExecutor
 FRAMEWORK = None

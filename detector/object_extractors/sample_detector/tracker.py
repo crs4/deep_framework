@@ -3,7 +3,7 @@
 import numpy as np
 import cv2
 
-class Tracker:
+class SampleTracker:
 
     def __init__(self, **params):
         self.params = params
