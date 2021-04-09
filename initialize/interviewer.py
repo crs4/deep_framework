@@ -134,9 +134,19 @@ class ParamsProvider(Interviewer):
 
 class SourceProvider(Interviewer):
 
-	def __init__(self):
+	def __init__(self,nodes_data):
 		super().__init__()
 		self.remote_source_path = '/mnt/remote_media/'
+		self.source_node = self.__get_source_node(nodes_data) 
+
+	def __get_source_node(self,nodes_data):
+		source_node = None
+		for node_name, node_values in nodes_data.items():
+			if node_values['role'] == 'manager':
+				source_node = node_name
+				break
+		return source_node
+
 
 
 	def __rm_config(self):
@@ -186,7 +196,7 @@ class SourceProvider(Interviewer):
 				source_type = 'webrtc_stream'
 
 			source_id = self.get_answer('Give a unique name/ID to this video source: \n')
-			source_dict = {'source_id': source_id, 'source_path':source_path, 'source_folder': source_folder if source_path is not None else 'None', 'source_url': source_url, 'source_type':source_type }
+			source_dict = {'source_id': source_id, 'source_path':source_path, 'source_folder': source_folder if source_path is not None else 'None', 'source_url': source_url, 'source_type':source_type,'source_node':self.source_node }
 			sources.append(source_dict)
 			cycle_counter+=1
 
@@ -205,6 +215,7 @@ class SourceProvider(Interviewer):
 			sources_config[section_name]['source_url'] = str(source_conf['source_url'])
 			sources_config[section_name]['source_type'] = str(source_conf['source_type'])
 			sources_config[section_name]['source_folder'] = str(source_conf['source_folder'])
+			sources_config[section_name]['source_node'] = str(source_conf['source_node'])
 
 			
 			with open(os.path.join(MAIN_DIR, SOURCES_CONFIG_FILE), 'w') as defaultconfigfile:

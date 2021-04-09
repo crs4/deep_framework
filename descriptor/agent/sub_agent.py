@@ -34,8 +34,10 @@ class Sub(Process):
 
     def run(self):
 
-        if MODE == 'GPU':
-            gpu_id=int(os.environ['GPU_ID'])
+        gpu_id = os.environ['GPU_ID']
+        if MODE == 'GPU' and gpu_id != 'None':
+            
+            gpu_id=int(gpu_id)
             framework=os.environ['FRAMEWORK']
             if framework == 'caffe':
                 import caffe
@@ -80,6 +82,7 @@ class Sub(Process):
         img_windows = dict()
         img_windows[self.alg_name] = SlidingWindow(size=WIN_SIZE)
 
+        last_alg_time = time.time()
 
         print('END INIT ' + self.alg_name)
         # run timer in order to compute stats
@@ -94,6 +97,43 @@ class Sub(Process):
             img_res = None
             pids_old = []
 
+
+
+
+
+
+            rec_dict,crops = recv_data(sub_broker_socket,0,False)
+            self.stats_maker.received_frames += 1
+            #clearing buffer
+            temp_time = time.time()
+            while True:
+                try:
+
+                    rec_dict,crops = recv_data(sub_broker_socket,1,False)
+                    self.stats_maker.received_frames += 1
+                    self.stats_maker.skipped_frames += 1
+                    continue
+
+
+                except zmq.ZMQError as e:
+                    print(e) 
+                    break
+            empty_time = time.time() - temp_time
+            print(empty_time)
+            
+            vc_frame_idx = rec_dict['frame_idx']
+            vc_time = rec_dict['vc_time']
+            objects = rec_dict['objects']
+            current_delay = time.time() - vc_time
+            forecast_delay = current_delay + last_alg_time
+            print('forecast: ',forecast_delay)
+
+                
+            print('skipping. ','cur: ',current_delay,' - last_alg_time: ',last_alg_time)
+            start_alg_time = time.time()
+
+
+            """
             #get message from publisher
             rec_dict,crops =recv_data(sub_broker_socket,0,False)
             self.stats_maker.received_frames +=1
@@ -108,6 +148,8 @@ class Sub(Process):
             if (time.time() - fp_time) > MAX_ALLOWED_DELAY or (time.time() - vc_time) > MAX_ALLOWED_DELAY:
                 self.stats_maker.skipped_frames+=1
                 continue
+            """
+            
 
             
             # tracks objects present in previous frames
@@ -154,17 +196,21 @@ class Sub(Process):
            
             
             self.stats_maker.elaborated_frames+=1
-          
+
             sub_res['obj_res_dict'] = obj_res_dict
             sub_res['img_res'] = img_res
             sub_res['frame_idx'] = vc_frame_idx
             sub_res['vc_time'] = vc_time
+            #print(sub_res)
+
             
             #sends results to collector
             send_data(sub_col_socket,None,0,False,**sub_res)
 
             #clearing memory
             crops = None
+            end_alg_time = time.time()
+            last_alg_time = end_alg_time - start_alg_time
             
 
         print("subs: interrupt received, stopping")

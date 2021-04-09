@@ -1,19 +1,20 @@
 
-
+from .generic_network import GenericNet
 
 from utils.abstract_descriptor import AbstractDescriptor
 
 
 class GenericDescriptor(AbstractDescriptor):
 
-      
-    win_size = 10
+	def __init__(self):
+		self.net = GenericNet()
 
-    def detect_batch(self,detector_results,images):
-      pass
-      
+	win_size = 10
 
-    def refine_classification(self,class_results):
-      pass
-      
-   
+	def detect_batch(self,detector_results,images):
+		inference_results = self.net.classify(images)
+		return inference_results
+
+
+	def refine_classification(self,class_results):
+		return class_results.mean()

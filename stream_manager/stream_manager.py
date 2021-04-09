@@ -9,6 +9,7 @@ import numpy
 import os
 import zmq
 import time
+import numpy as np
 from stream_manager_constants import *
 from video_sources import VideoCapture, StreamCapture
 
@@ -120,13 +121,13 @@ class StreamManager:
         self.received_frame = frame
         self.received_frames += 1
         capture_time = time.time()
-
-        res = {'frame_idx': self.received_frames , 'vc_time': capture_time, 'frame_shape': frame.shape}
-        if self.deep_delay < float(MAX_ALLOWED_DELAY) and self.processing_period < float(MAX_ALLOWED_DELAY):  
-            send_data(self.sender_socket,[frame],0,False,**res)
-        else:
-            logging.info(f'[{self.id}]: Skipping frame: {str(self.received_frames)}, deep delay: {str(self.deep_delay)}, processing period: {str(self.processing_period)}')
         
+        res = {'frame_idx': self.received_frames , 'vc_time': capture_time, 'frame_shape': frame.shape}
+        #if self.deep_delay < float(MAX_ALLOWED_DELAY) and self.processing_period < float(MAX_ALLOWED_DELAY):  
+        #    send_data(self.sender_socket,[frame],0,False,**res)
+        #else:
+        #    logging.info(f'[{self.id}]: Skipping frame: {str(self.received_frames)}, deep delay: {str(self.deep_delay)}, processing period: {str(self.processing_period)}')
+        send_data(self.sender_socket,[frame],0,False,**res)
         self.core_watchdog.set()
 
 
@@ -160,6 +161,7 @@ class StreamManager:
                         'deep_delay': self.deep_delay,
                         'processing_period': self.processing_period
                     }
+
                     data_merged = {**data_to_send,**received_data}
                     if self.peer.readyState == PeerState.CONNECTED:
                         # logging.info(f'[{self.id}]: Sending data: {str(data_merged)}')
@@ -168,8 +170,10 @@ class StreamManager:
                         if self.capture_peer.readyState == PeerState.CONNECTED:
                             await self.capture_peer.send(data_merged)
                 except Exception as e:
+                    print(e)
                     self.processing_period = time.time() - last_receive_time
                     no_data_time += self.processing_period
+                    """
                     if no_data_time > float(MAX_ALLOWED_DELAY) * 1.2:
                         # if no_data_time > 10 * float(MAX_ALLOWED_DELAY):
                         #     msg = f'No data from DEEP since  {str(no_data_time)} seconds. Reason: {str(e)}'
@@ -189,8 +193,8 @@ class StreamManager:
                         self.deep_delay = -1
                         self.processing_period = -1
                         last_receive_time = time.time()
-
-                await asyncio.sleep(0.05)
+                    """
+                await asyncio.sleep(0.001)
 
         except asyncio.CancelledError as c:
             await asyncio.sleep(float(MAX_ALLOWED_DELAY))

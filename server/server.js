@@ -2,10 +2,13 @@
 const monitor_address = process.env.MONITOR_ADDRESS || '0.0.0.0'
 const monitor_port = process.env.MONITOR_STATS_OUT || '3000'
 const algs = process.env.ALGS
-
+var algs_arr = algs.split(",");
+console.log(algs_arr);
 const dets = process.env.DETS
 
 const sources = process.env.SOURCES
+var sources_arr = sources.split(",");
+console.log(sources_arr);
 
 const collector_ports = process.env.COLLECTOR_PORTS
 const collector_port_arr = collector_ports.split(",");
@@ -32,7 +35,7 @@ const server = https.createServer({
 }, app);
 
 const apis_list = [];
-const algs_source_map = create_algs_sources_map(algs,sources)
+const algs_source_map = create_algs_sources_map();
 /**
  * Hyperpeer server
  */
@@ -125,7 +128,7 @@ app.post('/api/stop', function(request, response){
 
 
 app.get('/api/algs', function(request, response){
-	var algs_arr = algs.split(",");
+	//var algs_arr = algs.split(",");
 	var alg_list = [];
 	for (var i = 0; i < algs_arr.length; i++) {
 		var alg = algs_arr[i];
@@ -142,7 +145,7 @@ app.get('/api/algs', function(request, response){
 
 var source_id_list = []
 app.get('/api/sources', function(request, response){
-	const sources_arr = sources.split(",")
+	//const sources_arr = sources.split(",")
 	const dets_arr = dets.split(",")
 	response.json(sources_arr.map((source)=> {
 		let source_split = source.split(":")
@@ -295,16 +298,16 @@ function create_api_map(endpoints_list,source_id_list) {
 
 }
 
-function create_algs_sources_map(algs,sources){
-	var algs_arr = algs.split(",");
+function create_algs_sources_map(){
+	//var algs_arr = algs.split(",");
 
 	var algs_source_map = []
 
-	var sources_arr = sources.split(",");
+	//var sources_arr = sources.split(",");
 	
 
-	for (var i = 0; i < algs_arr.length; i++) {
-		var alg = algs_arr[i];
+	for (var j = 0; j < algs_arr.length; j++) {
+		var alg = algs_arr[j];
 		var alg_split = alg.split(":");
 		var alg_name =alg_split[0];
 		var related_to =alg_split[1];
@@ -327,6 +330,7 @@ function create_algs_sources_map(algs,sources){
 		algs_source_map.push(alg_source_json);
 
 	};
+	console.log(algs_source_map)
 	return algs_source_map
 
 }
