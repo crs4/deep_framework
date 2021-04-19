@@ -1,1 +1,0 @@
-YAW_WIN_SIZE = 5

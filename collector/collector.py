@@ -5,7 +5,7 @@ from utils.stats_maker import StatsMaker
 
 from collector_constants import *
 import time
-
+import numpy as np
 import zmq
 import cv2
 import json
@@ -37,7 +37,7 @@ class Collector(Process):
         
         context = zmq.Context()
         poller = zmq.Poller()
-
+        counter = dict()
         #  registration of algorithms subscribers
         receivers = []
         for s in self.subs:
@@ -45,6 +45,7 @@ class Collector(Process):
             rec.bind(PROT+'*:'+s['send_port'])
             poller.register(rec, zmq.POLLIN)
             receivers.append((s['alg'],rec))
+            counter[s['alg']] = {'buf': [],'mean':0}
 
         
         
@@ -98,14 +99,20 @@ class Collector(Process):
                 
                 # blocks until one or more puller receives a message for a waiting time
                 socks = dict(poller.poll(0)) 
+                sum_alg_interval = 0
+                count_sock = 0
                 for rec_tuple in receivers:
                     name, rec = rec_tuple
                     if rec in socks and socks[rec] == zmq.POLLIN:
                         mess, __ = recv_data(rec,zmq.DONTWAIT,False)
-                        alg_time_interval = time.time() - last_rec_time
-                        last_rec_time = time.time()
-
+                        buf = counter[name]['buf']
+                        if mess['alg_interval'] > 0:
+                            if len(buf) < 10:
+                                buf.append(mess['alg_interval'])
+                            else:
+                                counter[name]['mean'] = np.array(buf).mean()
                         res_dict = mess['obj_res_dict']
+                        #print(name,res_dict,mess['alg_interval'])
                         img_res = mess['img_res']
                         if img_res:
                             subs_image_attributes['image_attributes'][name] = img_res
@@ -124,6 +131,7 @@ class Collector(Process):
 
                         # res_alg ={'ueu8300029ks993': ['angry',...'], 'hdfhsdfk883u': ['sad',...'] }
 
+                
                 for obj in fp_objects:
 
                     
@@ -149,11 +157,28 @@ class Collector(Process):
                 r['objects'] = objects_res
                 r['frame_attributes'] = subs_image_attributes['image_attributes']
                 r['vc_time'] = vc_time
-                if self.stats_maker.elaborated_frames == 0 or alg_time_interval > 100:
-                    r['alg_time_interval'] = 0
+                b = []
+                tot_mean = []
+                for rec, d in counter.items():
+                    print(rec,len(d['buf']))
+                    if d['mean'] > 0:
+                        b.append(True)
+                        tot_mean.append(d['mean'])
+                    else:
+                        b.append(False)
+                print(b)
+                if all(b):
+                    for rec, d in counter.items():
+                        d['buf'] = []
+                        d['mean']=0
+                    r['alg_time_interval'] = np.array(tot_mean).mean()
+                    print('mean',r['alg_time_interval'])
+                    print('all desc mean',tot_mean)
+                    print('counter',counter)
                 else:
-                    r['alg_time_interval'] = alg_time_interval
-                    print(alg_time_interval)
+                    #r['alg_time_interval'] = 0
+                    r['alg_time_interval'] = 0
+                    #print(alg_time_interval)
                 
                 send_data(sender,None,0,False,**r)
                 send_data(server_sender,None,0,False,**r)

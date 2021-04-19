@@ -152,7 +152,8 @@ class StreamManager:
         self.alg_period_avg = 0
         self.alg_period_std = 0
         self.alg_time_buffer = []
-        count = 0
+        count_alg = 0
+        count_proc = 0
         try:
             while True:
                 await self.source_ready.wait()
@@ -168,40 +169,30 @@ class StreamManager:
                     last_receive_time = received_data["rec_time"]
                     alg_time_interval = received_data['alg_time_interval']
                     self.messages_sent += 1
-                    if count < 500:
-                        if alg_time_interval > 0:
-                            print('alg_int ',alg_time_interval)
-                            self.alg_time_buffer.append(alg_time_interval)
-                            count+=1
-                        if self.deep_delay > 0:
-                            self.deep_delay_buffer.append(self.deep_delay)
+                    if count_proc < 30:
                         if self.processing_period > 0:
                             self.processing_period_buffer.append(self.processing_period)
+                            count_proc+=1
                         
-                    else:
+                    if count_proc == 30:
                         
-                        with open('/mnt/remote_media/avg_std.txt', 'a') as writer:
-                            alg_time_np = np.array(self.alg_time_buffer)
-                            delay_np  = np.array(self.deep_delay_buffer)
+                        with open('/mnt/remote_media/proc.txt', 'a') as writer:
                             proc_np  = np.array(self.processing_period_buffer)
-                            self.deep_delay_avg = delay_np.mean()
-                            self.deep_delay_std = np.std(delay_np)
 
-                            self.alg_period_avg = alg_time_np.mean()
-                            self.alg_period_std = np.std(alg_time_np)
-                            head_str = 'deep delay,processing period,alg interval'
-                            delay_str = '('+str(self.deep_delay_avg)+ ','+ str(self.deep_delay_std)+'),'
-                            self.processing_period_avg = proc_np.mean()
-                            self.processing_period_std = np.std(proc_np)
-                            processing_str = '('+str(self.processing_period_avg)+ ','+str(self.processing_period_std)+'),'
-                            alg_interval_str = '('+str(self.alg_period_avg)+ ','+str(self.alg_period_std)+')'
-                            writer.write(head_str+'\n')
-                            writer.write(delay_str+processing_str+alg_interval_str+'\n')
+
+                            
+                            self.processing_freq_avg = 1/float(proc_np.mean())
+                            self.processing_freq_std = np.std(proc_np)
+
+                            writer.write(str(self.processing_freq_avg)+','+str(self.processing_freq_std)+'\n')
                             self.processing_period_buffer = []
-                            self.deep_delay_buffer = []
-                            self.alg_time_buffer = []
-                            count = 0
+                            count_proc = 0
                         writer.close()
+                    if alg_time_interval > 0:
+                        with open('/mnt/remote_media/alg.txt', 'a') as writer_alg:
+                            self.alg_freq_avg = 1/float(alg_time_interval)
+                            writer_alg.write(str(self.alg_freq_avg)+'\n')
+                        writer_alg.close()
 
                     data_to_send = {
                         'type': 'data',

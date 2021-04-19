@@ -308,6 +308,10 @@ class BrokerService(DeepService):
 		broker['environment'] = self.environments
 		broker['env_file'] = self.env_file
 		broker['image'] = self.image_name
+		if 'gender3' in self.image_name or 'gender2' in self.image_name or 'gender6' in self.image_name:
+			self.node = 'cadmio'
+		else:
+			self.node = 'mendelevio'
 		broker['deploy']= {'placement':{'constraints': ['node.hostname=='+self.node ]}}
 		broker['networks'] = [self.net]
 		return broker
@@ -344,6 +348,10 @@ class SubCollectorService(DeepService):
 		sub_col_dict['env_file'] = self.env_file
 		sub_col_dict['image'] = self.image_name
 		sub_col_dict['networks'] = [self.net]
+		if 'gender3' in self.image_name or 'gender2' in self.image_name or 'gender6' in self.image_name:
+			self.node = 'cadmio'
+		else:
+			self.node = 'mendelevio'
 		sub_col_dict['deploy']= {'placement':{'constraints': ['node.hostname=='+self.node ]}}
 
 		return sub_col_dict
@@ -376,6 +384,7 @@ class DescriptorService(DeepService):
 
 	def __set_environments(self,descriptor_component):
 		environments = []
+
 		mode = 'MODE='+descriptor_component.params['mode'].upper()
 		framework = 'FRAMEWORK='+descriptor_component.params['framework']
 		broker_address = 'BROKER_ADDRESS='+descriptor_component.connected_to['broker']
@@ -397,6 +406,12 @@ class DescriptorService(DeepService):
 		desc_dict['env_file'] = self.env_file
 		desc_dict['image'] = self.image_name
 		desc_dict['networks'] = [self.net]
+		if 'gender3' in self.image_name or 'gender2' in self.image_name or 'gender6' in self.image_name:
+			print(self.image_name,'on cad')
+			self.node = 'cadmio'
+		else:
+			print(self.image_name,'on mend')
+			self.node = 'mendelevio'
 		desc_dict['deploy']= {'placement':{'constraints': ['node.hostname=='+self.node ]},'replicas': int(self.params['worker'])}
 		return desc_dict
 

@@ -8,7 +8,7 @@ import time
 import zmq
 import sys
 import os
-
+import numpy as np
 from utils.socket_commons import send_data, recv_data
 
 
@@ -41,6 +41,9 @@ class SubCollector(Process):
 
         sub_max_size = int(WORKER)
         last_vc_time = 0
+        alg_interval = 0
+        last_send_time = 0
+        count = 0
         while True:
             
 
@@ -48,10 +51,17 @@ class SubCollector(Process):
 
             vc_time = rec_dict['vc_time']
             if vc_time > last_vc_time:
-                print(rec_dict)
+                count+=1
+                alg_interval = time.time() - last_send_time
+                if last_send_time == 0:
+                    rec_dict['alg_interval'] = 0
+                else:
+                    rec_dict['alg_interval'] = alg_interval
+                print(alg_interval)
                 send_data(col_socket,None,0,False,**rec_dict)
+                last_send_time = time.time()
                 last_vc_time = vc_time
-
+            
 
 
         print("subs collector: interrupt received, stopping")

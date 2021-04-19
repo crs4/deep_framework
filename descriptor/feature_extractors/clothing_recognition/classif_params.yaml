@@ -1,9 +1,0 @@
-batch_size: 32
-image_height: 224
-image_width: 224
-clothing_model: clothing/adam_small_vgg_3_no_augmentation
-whole_body_list: whole_body.txt
-top_list: top.txt
-bottom_list: bottom.txt
-top_pct: 0.6
-bottom_pct: 0.6

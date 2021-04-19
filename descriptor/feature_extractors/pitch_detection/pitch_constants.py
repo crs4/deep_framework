@@ -1,1 +1,0 @@
-PITCH_WIN_SIZE = 5
