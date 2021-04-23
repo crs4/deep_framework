@@ -170,7 +170,7 @@ class StreamManager:
                         if self.capture_peer.readyState == PeerState.CONNECTED:
                             await self.capture_peer.send(data_merged)
                 except Exception as e:
-                    print(e)
+                    #print(e)
                     self.processing_period = time.time() - last_receive_time
                     no_data_time += self.processing_period
                     """

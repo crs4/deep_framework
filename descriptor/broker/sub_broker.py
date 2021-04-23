@@ -54,9 +54,11 @@ class SubBroker(Process):
             fp_time = rec_dict['fp_time']
             vc_time = rec_dict['vc_time']
             
+            """
             # skip old frames
             if (time.time() - vc_time) > MAX_ALLOWED_DELAY:
                 continue
+            """
             
             # creation of message for descriptors
             sub_broker_data['objects'] = people_data

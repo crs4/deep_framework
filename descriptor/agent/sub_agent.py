@@ -105,7 +105,6 @@ class Sub(Process):
             rec_dict,crops = recv_data(sub_broker_socket,0,False)
             self.stats_maker.received_frames += 1
             #clearing buffer
-            temp_time = time.time()
             while True:
                 try:
 
@@ -118,8 +117,7 @@ class Sub(Process):
                 except zmq.ZMQError as e:
                     print(e) 
                     break
-            empty_time = time.time() - temp_time
-            print(empty_time)
+
             
             vc_frame_idx = rec_dict['frame_idx']
             vc_time = rec_dict['vc_time']
@@ -133,23 +131,6 @@ class Sub(Process):
             start_alg_time = time.time()
 
 
-            """
-            #get message from publisher
-            rec_dict,crops =recv_data(sub_broker_socket,0,False)
-            self.stats_maker.received_frames +=1
-
-            vc_frame_idx = rec_dict['frame_idx']
-            objects = rec_dict['objects'] # {'frame_idx': 123, 'data': [(p1,crop1),....,(pn,cropn)]}
-
-            fp_time = rec_dict['fp_time']
-            vc_time = rec_dict['vc_time']
-            
-            #skip old frames
-            if (time.time() - fp_time) > MAX_ALLOWED_DELAY or (time.time() - vc_time) > MAX_ALLOWED_DELAY:
-                self.stats_maker.skipped_frames+=1
-                continue
-            """
-            
 
             
             # tracks objects present in previous frames

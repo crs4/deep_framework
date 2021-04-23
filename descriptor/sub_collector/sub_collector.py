@@ -48,7 +48,6 @@ class SubCollector(Process):
 
             vc_time = rec_dict['vc_time']
             if vc_time > last_vc_time:
-                print(rec_dict)
                 send_data(col_socket,None,0,False,**rec_dict)
                 last_vc_time = vc_time
 

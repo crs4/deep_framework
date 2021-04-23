@@ -78,100 +78,92 @@ class Collector(Process):
         # run timer for stats computation
         self.stats_maker.run_fps_timer()
         self.stats_maker.run_stats_timer(INTERVAL_STATS,self.__send_stats)
-        last_rec_time = 0
-        alg_time_interval = 0
+        
         while True:
-            try:
-                result = dict()
-                objects_res = []
+            result = dict()
+            objects_res = []
 
-                # receive frame and data from frame provider
-                fp_dict,__= recv_data(fp_socket,0,False)
-                frame_id = fp_dict['frame_idx']
-                fp_objects = fp_dict['objects']
-                vc_time = fp_dict['vc_time']
+            # receive frame and data from frame provider
+            fp_dict,__= recv_data(fp_socket,0,False)
+            frame_id = fp_dict['frame_idx']
+            fp_objects = fp_dict['objects']
+            vc_time = fp_dict['vc_time']
 
-                pids_fp = list(map(lambda x: x['pid'], fp_objects)) # id of new objects in the scene
-                for p in pids_fp:
-                    if p not in subs_output.keys():
-                        subs_output[p] = dict()
-                
-                # blocks until one or more puller receives a message for a waiting time
-                socks = dict(poller.poll(0)) 
-                for rec_tuple in receivers:
-                    name, rec = rec_tuple
-                    if rec in socks and socks[rec] == zmq.POLLIN:
-                        mess, __ = recv_data(rec,zmq.DONTWAIT,False)
-                        alg_time_interval = time.time() - last_rec_time
-                        last_rec_time = time.time()
-
-                        res_dict = mess['obj_res_dict']
-                        img_res = mess['img_res']
-                        if img_res:
-                            subs_image_attributes['image_attributes'][name] = img_res
-
-                        for pid, res in res_dict.items():
-
-                            try:
-                                subs_output[pid][name] = res
-                            except Exception as inst:
-                                print(inst, 'ex coll')
-                                continue
-
-                            
-
-                        # mess = {'frame_idx':123,'sub_res_dict': res_alg, 'draw': draw_func}
-
-                        # res_alg ={'ueu8300029ks993': ['angry',...'], 'hdfhsdfk883u': ['sad',...'] }
-
-                for obj in fp_objects:
-
+            pids_fp = list(map(lambda x: x['pid'], fp_objects)) # id of new objects in the scene
+            for p in pids_fp:
+                if p not in subs_output.keys():
+                    subs_output[p] = dict()
+            
+            # blocks until one or more puller receives a message for a waiting time
+            socks = dict(poller.poll(0)) 
+            for rec_tuple in receivers:
+                name, rec = rec_tuple
+                if rec in socks and socks[rec] == zmq.POLLIN:
+                    mess, __ = recv_data(rec,zmq.DONTWAIT,False)
                     
+                    res_dict = mess['obj_res_dict']
+                    img_res = mess['img_res']
+                    vc_alg_time = mess['vc_time']
+                    if img_res:
+                        subs_image_attributes['image_attributes'][name] = {'value':img_res,'vc_time':vc_alg_time}
+                        #subs_image_attributes['image_attributes'][name] = img_res
 
-                    temp_obj_dict = obj
+                    for pid, res in res_dict.items():
 
-                    res_algs = subs_output[obj['pid']]
+                        try:
+                            subs_output[pid][name] = {'value':res,'vc_time':vc_alg_time}
+                        except Exception as inst:
+                            print(inst, 'ex coll')
+                            continue
 
-                    if len( res_algs.keys() ) > 0:
+                        
 
-                        for alg_name, classification in res_algs.items():
+                    # mess = {'frame_idx':123,'sub_res_dict': res_alg, 'draw': draw_func}
 
-                            temp_obj_dict[alg_name] = classification
-                           
+                    # res_alg ={'ueu8300029ks993': ['angry',...'], 'hdfhsdfk883u': ['sad',...'] }
 
-                    objects_res.append(temp_obj_dict)
+            for obj in fp_objects:
 
                 
-               
 
-                r = dict()
-                r['collector_time'] = time.time()
-                r['objects'] = objects_res
-                r['frame_attributes'] = subs_image_attributes['image_attributes']
-                r['vc_time'] = vc_time
-                if self.stats_maker.elaborated_frames == 0 or alg_time_interval > 100:
-                    r['alg_time_interval'] = 0
-                else:
-                    r['alg_time_interval'] = alg_time_interval
-                    print(alg_time_interval)
+                temp_obj_dict = obj
+
+                res_algs = subs_output[obj['pid']]
+
+                if len( res_algs.keys() ) > 0:
+
+                    for alg_name, classification in res_algs.items():
+
+                        temp_obj_dict[alg_name] = classification
+                       
+
+                objects_res.append(temp_obj_dict)
+
+            
+           
+
+            r = dict()
+            r['collector_time'] = time.time()
+            r['objects'] = objects_res
+            r['frame_attributes'] = subs_image_attributes['image_attributes']
+            r['vc_time'] = vc_time
+            
+            
+            send_data(sender,None,0,False,**r)
+            send_data(server_sender,None,0,False,**r)
+
+
+            self.stats_maker.elaborated_frames+=1
+
+
+
+            #clearing objects not more in scene
+            pids_departed = set(subs_output.keys()).difference(set(pids_fp))
+            if len(pids_departed) > 0:
                 
-                send_data(sender,None,0,False,**r)
-                send_data(server_sender,None,0,False,**r)
-
-
-                self.stats_maker.elaborated_frames+=1
-
-
-
-                #clearing objects not more in scene
-                pids_departed = set(subs_output.keys()).difference(set(pids_fp))
-                if len(pids_departed) > 0:
-                    
-                    for p_dep in pids_departed:
-                        del subs_output[p_dep]
-            except Exception as e:
-                print(e)
-
+                for p_dep in pids_departed:
+                    del subs_output[p_dep]
+        
 
             
         print("collector: interrupt received, stopping")
