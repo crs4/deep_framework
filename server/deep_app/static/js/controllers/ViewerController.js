@@ -116,18 +116,18 @@ class EnhancedFacesVideoCanvas extends EnhancedVideoCanvas{
                 bbox: face.rect,
                 name: !face.face_recognition || face.face_recognition == 'Unknown' ?
                     `${face.class} ${face.pid.slice(-4)}` : face.face_recognition,
-                pitch: face.pitch,
-                yaw: face.yaw,
-                gender: face.gender ? face.gender : '-',
-                age: face.age ? face.age.slice(1, 7).replace(',', () => ' -') : '-',
-                emotions: face.emotion ? face.emotion.map(e => {
+                pitch: face.pitch ? face.pitch.value: undefined,
+                yaw: face.yaw ? face.yaw.value: undefined,
+                gender: face.gender ? face.gender.value : '-',
+                age: face.age ? face.age.value.slice(1, 7).replace(',', () => ' -') : '-',
+                emotions: face.emotion ? face.emotion.value.map(e => {
                     return {
                         label: e[0],
                         emoticon: e[0] + '.png',
                         emoticonSize: e[1] < 0.1 ? 0 : e[1] * 32 + 16
                     }
                 }) : [],
-                glasses: face.glasses ? face.glasses.slice(2, -1) : ''
+                glasses: face.glasses ? face.glasses.value.slice(2, -1) : ''
             }
             faceData.color = this.faceColorMap.get(face.class)
             if (!faceData.color) {
