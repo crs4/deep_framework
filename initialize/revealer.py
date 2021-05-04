@@ -90,14 +90,15 @@ class Revealer:
 		standard_components['pipeline'] = dict()
 		standard_components['setup'] = dict()
 		for f in dockerfiles:
-			if DESCRITPTOR_PATH in f or DETECTOR_PATH in f:
-				continue
-
 
 			comp_name = f.split('/')[-2]
-			if 'setup' in f:
+			if 'setup' in f and 'test' not in f:
 				standard_components['setup'][comp_name] = f
 			else:
+
+				if DESCRITPTOR_PATH in f or DETECTOR_PATH in f:
+					continue
+
 				standard_components['pipeline'][comp_name] = f
 
 		return standard_components
