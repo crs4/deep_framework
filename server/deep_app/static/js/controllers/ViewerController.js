@@ -114,8 +114,8 @@ class EnhancedFacesVideoCanvas extends EnhancedVideoCanvas{
             let faceData = {
                 pid: face.pid,
                 bbox: face.rect,
-                name: !face.face_recognition || face.face_recognition == 'Unknown' ?
-                    `${face.class} ${face.pid.slice(-4)}` : face.face_recognition,
+                name: !face.face_recognition || face.face_recognition.value == 'Unknown' ?
+                    `${face.class} ${face.pid.slice(-4)}` : face.face_recognition.value,
                 pitch: face.pitch ? face.pitch.value: undefined,
                 yaw: face.yaw ? face.yaw.value: undefined,
                 gender: face.gender ? face.gender.value : '-',
