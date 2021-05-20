@@ -107,7 +107,7 @@ class Collector(Process):
                         mess, __ = recv_data(rec,zmq.DONTWAIT,False)
                         buf = counter[name]['buf']
                         if mess['alg_interval'] > 0:
-                            if len(buf) < 30:
+                            if len(buf) < 10:
                                 buf.append(mess['alg_interval'])
                             else:
                                 counter[name]['mean'] = np.array(buf).mean()
