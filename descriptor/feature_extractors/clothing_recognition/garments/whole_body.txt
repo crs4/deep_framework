@@ -1,0 +1,8 @@
+suit
+dress
+sweatsuit
+coat
+snowsuit
+fur coat
+raincoat
+swimsuit

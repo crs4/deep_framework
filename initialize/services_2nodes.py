@@ -406,7 +406,7 @@ class DescriptorService(DeepService):
 		desc_dict['env_file'] = self.env_file
 		desc_dict['image'] = self.image_name
 		desc_dict['networks'] = [self.net]
-		if 'gender3' in self.image_name or 'gender2' in self.image_name or 'gender6' in self.image_name:
+		if 'pitch' in self.image_name or 'yaw' in self.image_name or 'face_recogni' in self.image_name or 'glass' in self.image_name:
 			print(self.image_name,'on cad')
 			self.node = 'cadmio'
 		else:
