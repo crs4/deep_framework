@@ -31,7 +31,7 @@ class VideoCapture:
         # self.current_frame = np.random.rand(int(self.width * 9 / 16), self.width, 3)
         # self.current_frame = np.uint8(self.current_frame * 100)
         self.last_frame_time = time.time()
-        # self.frame_period = 1 / self.fps
+        self.frame_period = 1 / self.fps
         if not is_file:
             self.fps = 5
          
@@ -42,8 +42,8 @@ class VideoCapture:
             while True:
                 # if self.is_file:
                 elapsed_frame_time = time.time() - self.last_frame_time
-                if elapsed_frame_time < 1 / self.fps:
-                    wait_time = 1 / self.fps - elapsed_frame_time
+                if elapsed_frame_time < self.frame_period and self.num_frames > 0:
+                    wait_time = self.frame_period - elapsed_frame_time
                     # logging.info('waiting next frame...' + str(wait_time))
                     await asyncio.sleep(wait_time)
 
@@ -56,13 +56,14 @@ class VideoCapture:
                 frame_ok, self.current_frame = self.video.read()
                 if not frame_ok:
                     logging.info('frame not ok')
-                    await asyncio.sleep(0.01)
                 else:
                     self.frame_index += 1
                     # self.timestamp = self.frame_index / self.fps
                     self.last_frame_time = time.time()
                     # logging.info('frame forwarding...')
                     self.frame_consumer(self.current_frame)
+                # sleep for at least half de sampling period for allowing other process to take place
+                await asyncio.sleep(self.frame_period / 2) 
         except asyncio.CancelledError as c:
             self.video.release()
             raise c
