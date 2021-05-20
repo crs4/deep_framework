@@ -168,10 +168,16 @@ class Collector(Process):
                         b.append(False)
                 print(b)
                 if all(b):
+                    list_all = []
                     for rec, d in counter.items():
+                        resd = dict()
+                        resd['name'] = rec
+                        resd['mean'] = d['mean']
+                        list_all.append(resd)
                         d['buf'] = []
-                        d['mean']=0
-                    r['alg_time_interval'] = np.array(tot_mean).mean()
+                        d['mean']= 0
+                    #r['alg_time_interval'] = np.array(tot_mean).mean()
+                    r['alg_time_interval'] = list_all
                     print('mean',r['alg_time_interval'])
                     print('all desc mean',tot_mean)
                     print('counter',counter)

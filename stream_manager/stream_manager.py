@@ -188,11 +188,15 @@ class StreamManager:
                             self.processing_period_buffer = []
                             count_proc = 0
                         writer.close()
-                    if alg_time_interval > 0:
-                        with open('/mnt/remote_media/alg.txt', 'a') as writer_alg:
-                            self.alg_freq_avg = 1/float(alg_time_interval)
-                            writer_alg.write(str(self.alg_freq_avg)+'\n')
-                        writer_alg.close()
+                    if alg_time_interval != 0:
+                        for l in alg_time_interval:
+                            name = l['name']
+                            with open('/mnt/remote_media/'+name+'.txt', 'a') as writer_alg:
+                                #self.alg_freq_avg = 1/float(alg_time_interval)
+                                #writer_alg.write(str(self.alg_freq_avg)+'\n')
+                                self.alg_freq_avg = 1/float(l['mean'])
+                                writer_alg.write(str(self.alg_freq_avg)+'\n')
+                            writer_alg.close()
 
                     data_to_send = {
                         'type': 'data',
