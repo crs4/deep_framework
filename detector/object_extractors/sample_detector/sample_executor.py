@@ -18,5 +18,5 @@ class SampleExecutor(AbstractDetector):
 
     def extract_features(self,current_frame,executor_dict):
     	detected_objects = self.detector.detect(current_frame)
-		tracked_objects = self.tracker.update(detected_objects)
-		return tracked_objects
+	tracked_objects = self.tracker.update(detected_objects)
+	return tracked_objects
