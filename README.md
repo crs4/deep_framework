@@ -15,13 +15,13 @@ The current version includes an implementation of following pipelines:
 
 * A vehicle detector and an algorithm that performs a flux analysis of the scene.
 
-It's possible tu run multiple pipeline at the same time.
+It's possible to run multiple pipeline at the same time.
 
 
 A demo web app is also included.
 
 ## Features
-* Can handle video streams from IP cameras and webcams.
+* Can handle multiple video streams from IP cameras and webcams.
 * Frames are skipped dynamically according to user requirements and workload/network traffic.
 * Algorithms execution can be distributed across multiple nodes in a cluster.
 * Can create multiple worker for every algorithm.
