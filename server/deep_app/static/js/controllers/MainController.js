@@ -91,4 +91,6 @@ function MainController(navService, eventService, dataService, $mdDialog, $mdSid
         .position('bottom right')
     );
   }
+
+  vm.docsUrl = `https://${location.hostname}:8000/api/docs`
 }

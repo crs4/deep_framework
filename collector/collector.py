@@ -80,7 +80,6 @@ class Collector(Process):
         self.stats_maker.run_stats_timer(INTERVAL_STATS,self.__send_stats)
         
         while True:
-
             result = dict()
             objects_res = []
 
@@ -90,7 +89,6 @@ class Collector(Process):
             fp_objects = fp_dict['objects']
             vc_time = fp_dict['vc_time']
 
-
             pids_fp = list(map(lambda x: x['pid'], fp_objects)) # id of new objects in the scene
             for p in pids_fp:
                 if p not in subs_output.keys():
@@ -99,20 +97,21 @@ class Collector(Process):
             # blocks until one or more puller receives a message for a waiting time
             socks = dict(poller.poll(0)) 
             for rec_tuple in receivers:
-               
                 name, rec = rec_tuple
                 if rec in socks and socks[rec] == zmq.POLLIN:
                     mess, __ = recv_data(rec,zmq.DONTWAIT,False)
-
+                    
                     res_dict = mess['obj_res_dict']
                     img_res = mess['img_res']
+                    vc_alg_time = mess['vc_time']
                     if img_res:
-                        subs_image_attributes['image_attributes'][name] = img_res
+                        subs_image_attributes['image_attributes'][name] = {'value':img_res,'vc_time':vc_alg_time}
+                        #subs_image_attributes['image_attributes'][name] = img_res
 
                     for pid, res in res_dict.items():
 
                         try:
-                            subs_output[pid][name] = res
+                            subs_output[pid][name] = {'value':res,'vc_time':vc_alg_time}
                         except Exception as inst:
                             print(inst, 'ex coll')
                             continue
@@ -148,7 +147,7 @@ class Collector(Process):
             r['objects'] = objects_res
             r['frame_attributes'] = subs_image_attributes['image_attributes']
             r['vc_time'] = vc_time
-            print(objects_res)
+            
             
             send_data(sender,None,0,False,**r)
             send_data(server_sender,None,0,False,**r)
@@ -164,7 +163,7 @@ class Collector(Process):
                 
                 for p_dep in pids_departed:
                     del subs_output[p_dep]
-
+        
 
             
         print("collector: interrupt received, stopping")

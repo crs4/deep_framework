@@ -1,10 +1,10 @@
 'use strict';
 var angular = require('../../../node_modules/@bower_components/angular')
 angular.module('app')
-  .service('dataService', ['$window',
+  .service('dataService', ['$window', '$http',
     dataService
   ]);
-console.log('Hyperpeer ...')
+console.log('Data Service')
 const Hyperpeer = require('hyperpeer-js');
 let supports = navigator.mediaDevices.getSupportedConstraints()
 let constraints
@@ -36,31 +36,21 @@ if (!supports["width"] || !supports["height"] || !supports["frameRate"] || !supp
  *
  * @returns
  */
-function dataService($window) {
+function dataService($window, $http) {
   const hostname = location.hostname;
   console.log(hostname)
   const serverAddress = `wss://${hostname}:8000`; //156.148.132.107
   let hp = null;
   const userType = 'web_client'
   const username = 'webClient' + Date.now()
-  let availableServers = []
-  let availableCameras = []
-  let remotePeerType = 'stream_manager'
-  let deepSourcePeerId = 'none'
-  let localStream = null
   let remoteStream = null
-  let deepVideoSource = 'none'
+  let dataStreams = []
   let remotePeer = null
   return {
     getConnection: () => hp,
+    getRemotePeer: () => remotePeer,
     getLocalStream: () => localStream,
     getRemoteStream: () => remoteStream,
-    getRemotePeerType: () => remotePeerType,
-    getDeepVideoSource: () => deepVideoSource,
-    getRemotePeer: () => remotePeer,
-    getMyPeerId: () => username,
-    getServers: () => availableServers,
-    getCameras: () => availableCameras,
     getStatus: () => hp ? hp.readyState : 'offline',
     isOnline: function () {
       if (hp) {
@@ -80,15 +70,13 @@ function dataService($window) {
         callback()
       }
     },
-    connect: function (callback) {
-      $window.navigator.mediaDevices.getUserMedia(constraints)//{ video: { width: 1280, height: 720 }, audio: true })
-      .then((stream) => {
-        localStream = stream
+    connect: function () {
+      return new Promise((resolve, reject) => {
         let connected = false
         hp = new Hyperpeer(serverAddress, {
           id: username,
           type: userType,
-          stream: stream,
+          // stream: stream,
           // videoElement: video,
           datachannelOptions: {
             ordered: false,
@@ -107,35 +95,17 @@ function dataService($window) {
         
         hp.on('error', (error) => {
           if (!connected) {
-            return callback(error)
+            return reject(error)
           }
           alert(JSON.stringify(error))
         })
   
         hp.once('online', () => {
-          availableServers = []
-          availableCameras = []
-          hp.getPeers()
-          .then((peers) => {
-            peers.forEach((peer) => {
-              if (peer.busy) return
-              if (peer.type === 'stream_manager') {
-                availableServers.push(peer)
-              } else if (peer.type === 'stream_capture') {
-                availableCameras.push(peer)
-              } 
-            })
-            callback(null, localStream)
-            connected = true
-          })
-          .catch((error) => {
-            console.error(error)
-            callback(error)
-          });
+          connected = true
+          resolve()
         })
   
         hp.on('close', () => {
-          stream.getTracks().forEach(track => track.stop())
           setTimeout(() => {
             console.log('Connection ends')
             hp.removeAllListeners()
@@ -143,7 +113,8 @@ function dataService($window) {
           }, 0.01)
         })
   
-        hp.on('connection', () => {
+        hp.on('disconnect', () => {
+          remotePeer = null
         })
   
         hp.on('data', (data) => {
@@ -173,42 +144,74 @@ function dataService($window) {
         })
 
       })
-      .catch((error) => {
-        //callback(error)  
-        console.log(error)
-        constraints = { video: { width: 1280, height: 720, frameRate: 10 }, audio: true }   
-        this.connect(callback)   
-      });
     },
-    start: function(callback) {
-      if (!hp || !remotePeer) return;
-      hp.connectTo(remotePeer.id)
-      .then(() => {
-        hp.once('connect', () => {
-          hp.send({ type: 'source', peerId: deepSourcePeerId })
-        })
-      })
-      .catch((error) => callback(error))
-
+    startPeerConnection: function (peer) {
+  
       hp.once('stream', (s) => {
         remoteStream = s
         console.log('remote stream: ' + s.id + '. Active: ' + s.active)
-        callback(null, remoteStream)
+      })
+      return new Promise((resolve, reject) => {
+        if (!hp) return reject()
+        if (peer.type == 'remote_client') {
+          $window.navigator.mediaDevices.getUserMedia(constraints)//{ video: { width: 1280, height: 720, frameRate: 10 }, audio: true })
+          .then((localStream) => {
+            hp.stream = localStream
+            hp.once('disconnect', () => {
+              localStream.getTracks().forEach(track => track.stop())
+            })
+            resolve(hp.connectTo(peer.id))
+          })
+          .catch(reject)
+        } else {
+          resolve(hp.connectTo(peer.id))
+        }
+      })
+      .then(() => {
+        if (peer.type == 'remote_client'){
+          hp.send({ type: 'metadata', metadata: { type: 'browser_video' } })
+        }
+        remotePeer = peer
+        return remoteStream
       })
     },
-    stop: function() {
-      hp.disconnect()
-      deepVideoSource = 'none'
+    stopPeerConnection: function() {
+      return hp.disconnect()
     },
-    setDeepVideoSource: function(sourcePeerId) {
-      if (!hp || sourcePeerId === 'none' || deepSourcePeerId == sourcePeerId) return
-      deepVideoSource = sourcePeerId
-      hp.send({ type: 'source', peerId: sourcePeerId })
-      hp.send({ type: 'metadata', metadata: { type: 'browser_video'} })
+    startStreams: () => {
+      return $http.post("/api/start", null)
     },
-    setRemotePeerType: (peerType) => remotePeerType = peerType,
-    setRemotePeer: (peer) => remotePeer = peer
-  };
+    stopStreams: () => {
+      return $http.post("/api/stop", null)
+    },
+    getStreams: () => {
+      return $http.get("/api/sources").then(function (response) {
+        return response.data
+      })
+    },
+    getActiveStreams: () => {
+      return hp.getPeers()
+    },
+    startStream: (streamId) => {
+      return $http.post("/api/stream_"+streamId+"/start", null)
+    },
+    stopStream: (streamId) => {
+      return $http.post("/api/stream_" + streamId + "/stop", null)
+    },
+    showDataStream: (stream, callback) => {
+      dataStreams.forEach((ds) => ds.close())
+      dataStreams = stream.detector.map((det) => {
+        let dataStream = new EventSource('/api/stream_' + stream.id + '/' + det)
+        dataStream.addEventListener('message', callback.bind(null, det), false)
+        return dataStream
+      })
+      
+    },
+    hideDataStream: () => {
+      dataStreams.forEach((ds) => ds.close())
+      dataStreams = []
+    }
+  }
 
 
 

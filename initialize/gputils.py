@@ -31,18 +31,23 @@ class GPUallocator(Machine):
 		"""
 		self.detector_framework = []
 		for det in detectors:
+			source_id = det['source_id']
 			framework = det['framework']
 			det_name = det['name']
+			det_source = det_name + '_' + source_id
 			mode = det['mode']
 			if framework != 'None':
 				self.detector_framework.append(framework)
 
-			self.algs[det_name] = det
+			self.algs[det_source] = det
 
 		for alg in algorithms:
 			alg_dict = dict()
 			alg_name = alg['name']
-			alg_dict[alg_name] = alg
+			source_id = alg['source_id']
+			desc_source = alg_name + '_' + source_id
+
+			alg_dict[desc_source] = alg
 
 			self.algs.update(alg_dict)
 

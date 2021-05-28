@@ -66,6 +66,7 @@ class ImageManager:
 
 
 		for service in self.services:
+			
 			image_name = service.image_name
 			result = re.search('5000/(.*):deep', image_name)
 			image_base_name = result.group(1)
