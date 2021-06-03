@@ -22,7 +22,7 @@ A demo web app is also included.
 
 ## Features
 * Can handle multiple video streams from IP cameras and webcams.
-* Frames are skipped dynamically according to user requirements and workload/network traffic.
+* A frame-skipping policy which ensures a real-time behavior by always processing the latest available frame
 * Algorithms execution can be distributed across multiple nodes in a cluster.
 * Can create multiple worker for every algorithm.
 * Every algorithm can be executed in CPU and GPU modes.
