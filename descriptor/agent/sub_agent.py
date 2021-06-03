@@ -45,6 +45,9 @@ class Sub(Process):
                 caffe.set_device(gpu_id)
             if framework == 'tensorflow':
                 os.environ['CUDA_VISIBLE_DEVICES'] = os.environ['GPU_ID']
+            if framework == 'pytorch':
+                import torch as th
+                th.cuda.set_device(gpu_id)
 
         try:
             # create instance of specific descriptor
