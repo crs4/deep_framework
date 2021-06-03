@@ -38,7 +38,7 @@ class ObjectProvider(Process):
     def run(self):
         
         gpu_id = os.environ['GPU_ID']
-        if MODE == 'GPU' and gpu_id != 'None':
+        if gpu_id != 'None':
             
             gpu_id=int(gpu_id)
             framework=os.environ['FRAMEWORK']
