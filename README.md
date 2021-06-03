@@ -32,7 +32,7 @@ A demo web app is also included.
 * It's possibile to develop and deploy your own descriptor. [Instructions](docs/develop_a_descriptor/how_to_develop_a_descriptor.md).
 
 ## Architecture
-![alt text](docs/architettura2_0.png)
+![alt text](docs/schemes.png)
 
 The architecture of Deep Framework is composed by the following generic components:
 * **Stream Manager**: establishes the connection with the video source in order to grab the individual frames and send them, together with a timestamp, to the processing components. It also gets the results from the collectors and stream video and data to any WebRTC peer.
