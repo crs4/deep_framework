@@ -20,7 +20,7 @@ from utils.socket_commons import send_data, recv_data
 
 
 
-class Sub(Process):
+class ObjectDescriptor(Process):
     def __init__(self,configuration):
         """
         This class allows to execute a generic descriptor
@@ -233,10 +233,10 @@ if __name__ == '__main__':
     config.read(config_file)
     alg_config = {'path': config.get('CONFIGURATION','PATH'), 'class':config.get('CONFIGURATION','CLASS'),'name':config.get('CONFIGURATION','NAME'),'type':config.get('CONFIGURATION','TYPE')}
     
-    sub = Sub({'in':BROKER_PORT,'out':SUB_COL_PORT,'alg':alg_config})
+    obj_desc = ObjectDescriptor({'in':BROKER_PORT,'out':SUB_COL_PORT,'alg':alg_config})
 
     # start worker 
-    sub.start()
+    obj_desc.start()
     
     
 
