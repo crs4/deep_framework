@@ -189,6 +189,11 @@ class GPUallocator(Machine):
 				cpu_node_index+=1
 				gpu_id = None
 
+			if gpu_id is None:
+				v_alg['mode'] = 'cpu'
+			else:
+				v_alg['mode'] = 'gpu'
+
 			v_alg['deploy'] = {'node_name': node_name, 'gpu_id': gpu_id}
 			if i < self.num_detector:
 				matches['detectors'].append(v_alg)

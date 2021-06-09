@@ -13,11 +13,11 @@ function navService($q){
       icon: 'build',
       sref: '.controls'
     },
-    {
-      name: 'Dashboard',
-      icon: 'dashboard',
-      sref: '.dashboard'
-    },
+    // {
+    //   name: 'Dashboard',
+    //   icon: 'dashboard',
+    //   sref: '.dashboard'
+    // },
     {
       name: 'Viewer',
       icon: 'visibility',

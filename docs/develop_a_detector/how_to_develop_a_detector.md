@@ -55,7 +55,7 @@ Create a configuration file with the '.ini' extension in your detector folder. T
 * **CATEGORY**: indicates the type of object detected by the detector. It also constitutes the name associated with the detector
 * **PATH**: path of the file containing the Executor class, relative to the object_extractors folder
 * **CLASS**: Executor's class name
-* **FRAMEWORK**: the framework used by the detector in case of GPU use (None if no framework is used)
+* **FRAMEWORK**: the framework used by the detector in case of GPU use (None if no framework is used, otherwise you can choose between caffe, tensorflow and pytorch)
 
 Example:
 * **Case 1**: The detector uses a framework but only in CPU mode or does not use any framework.

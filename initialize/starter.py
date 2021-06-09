@@ -203,7 +203,6 @@ class Starter:
 					app_address = 'https://'+server_address+':'+str(APP_PORT)
 					print('### DEEP FRAMEWORK STARTED ###')
 					print('Check your stream at: ', app_address)
-					print('Check available APIs at: ', app_address+'/api/docs')
 				else:
 					print(res_status)
 					command = 'python3 rm_services.py'

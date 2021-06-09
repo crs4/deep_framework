@@ -38,7 +38,7 @@ The configuration file must be of type .ini and must contain the following field
 * **NAME**: name associated with the descriptor
 * **PATH**: path of the file containing the descriptor class, relative to the feature_extractors folder
 * **CLASS**: class name of the descriptor
-* **FRAMEWORK**: framework used by the descriptor (None if no framework is used)
+* **FRAMEWORK**: framework used by the descriptor (None if no framework is used, otherwise you can choose between caffe, tensorflow and pytorch)
 * **RELATED_TO**: indicates which detector the descriptor is associated with. Enter the name of the detector category.
 * **TYPE**: can take two values: 
   * *object_oriented*: the descriptor extracts a property of the object detected by the detector

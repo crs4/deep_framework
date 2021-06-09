@@ -36,8 +36,21 @@ class ObjectProvider(Process):
         self.det_config = configuration['det_config']
 
     def run(self):
-
-
+        
+        gpu_id = os.environ['GPU_ID']
+        if gpu_id != 'None':
+            
+            gpu_id=int(gpu_id)
+            framework=os.environ['FRAMEWORK']
+            if framework == 'caffe':
+                import caffe
+                caffe.set_mode_gpu()
+                caffe.set_device(gpu_id)
+            if framework == 'tensorflow':
+                os.environ['CUDA_VISIBLE_DEVICES'] = os.environ['GPU_ID']
+            if framework == 'pytorch':
+                import torch as th
+                th.cuda.set_device(gpu_id)
         try:
             # create instance of specific descriptor
             self.det_name = self.det_config['category']
