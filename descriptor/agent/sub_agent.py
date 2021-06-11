@@ -55,6 +55,7 @@ class ObjectDescriptor(Process):
             module = importlib.import_module(self.alg['path'])
             alg_instance = getattr(module, self.alg['class'])
             alg_type = self.alg['type']
+            self.alg_detector_category = self.alg['detector_category']
             det = alg_instance()
             print('CREATED ',self.alg_name)
             WIN_SIZE = det.win_size
@@ -73,7 +74,7 @@ class ObjectDescriptor(Process):
         sub_broker_socket = context.socket(zmq.PULL)
         sub_broker_socket.connect(PROT+BROKER_ADDRESS+':'+self.rec_det_port)
 
-       
+        self.source_id = BROKER_ADDRESS.split('_')[-1]
 
         # sends results to sub collector
         sub_col_socket = context.socket(zmq.PUSH)
@@ -206,7 +207,8 @@ class ObjectDescriptor(Process):
     def __send_stats(self):
         
         stats = self.stats_maker.create_stats()
-        stats_dict={self.alg_name:stats}
+        #stats_dict={self.alg_name:stats}
+        stats_dict={'component_name':self.alg_name, 'component_type': 'descriptor', 'source_id':self.source_id, 'detector_category':self.alg_detector_category, 'stats':stats}
         send_data(self.monitor_sender,None,0,False,**stats_dict)
 
 
@@ -231,7 +233,7 @@ if __name__ == '__main__':
     config_file = [os.path.join(dp, f) for dp, dn, filenames in os.walk(cur_dir) for f in filenames if os.path.splitext(f)[1] == '.ini'][0]
     config = ConfigParser()
     config.read(config_file)
-    alg_config = {'path': config.get('CONFIGURATION','PATH'), 'class':config.get('CONFIGURATION','CLASS'),'name':config.get('CONFIGURATION','NAME'),'type':config.get('CONFIGURATION','TYPE')}
+    alg_config = {'detector_category': config.get('CONFIGURATION','RELATED_TO'),'path': config.get('CONFIGURATION','PATH'), 'class':config.get('CONFIGURATION','CLASS'),'name':config.get('CONFIGURATION','NAME'),'type':config.get('CONFIGURATION','TYPE')}
     
     obj_desc = ObjectDescriptor({'in':BROKER_PORT,'out':SUB_COL_PORT,'alg':alg_config})
 

@@ -60,6 +60,7 @@ class Collector(Process):
         self.monitor_sender = context.socket(zmq.PUB)
         self.monitor_sender.connect(PROT+MONITOR_ADDRESS+':'+MONITOR_STATS_IN)
 
+        self.source_id = STREAM_MANAGER_ADDRESS.split('_')[-1]
 
 
 
@@ -175,7 +176,9 @@ class Collector(Process):
     def __send_stats(self):
         
         stats = self.stats_maker.create_stats()
-        stats_dict={COMPONENT_NAME:stats}
+        #stats_dict={COMPONENT_NAME:stats}
+        stats_dict={'component_name':COMPONENT_NAME, 'component_type': 'collector', 'source_id':self.source_id, 'stats':stats}
+
         send_data(self.monitor_sender,None,0,False,**stats_dict)
 
 

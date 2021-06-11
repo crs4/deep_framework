@@ -210,12 +210,13 @@ class StreamManagerComponent:
 	def __init__(self,ports,source_params):
 		self.params = source_params
 		self.detector_port = ports['stream_manager_detector_port']
+		self.monitor_in_port = ports['monitor_in_port']
 		self.collector_ports = []
 		self.server_port = ports['server_port']
 		self.server_pair_port = ports['stream_manager_server_port']
 		self.component_type = 'stream_manager'
 		self.component_name = self.component_type + '_' + source_params['source_id']
-		self.connected_to = {'server':'server'}
+		self.connected_to = {'server':'server','monitor':'monitor'}
 
 
 

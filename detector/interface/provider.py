@@ -70,6 +70,7 @@ class ObjectProvider(Process):
         vc_socket.setsockopt_string(zmq.SUBSCRIBE, "",encoding='ascii')
         vc_socket.connect(PROT+VIDEOSRC_ADDRESS+':'+self.rec_port)
         
+        self.source_id = VIDEOSRC_ADDRESS.split('_')[-1]
         # configure output
         publisher = context.socket(zmq.PUB)
         
@@ -225,7 +226,8 @@ class ObjectProvider(Process):
     def __send_stats(self):
         
         stats = self.stats_maker.create_stats()
-        stats_dict = {self.det_name.lower()+'_detector':stats}
+        #stats_dict = {self.det_name.lower()+'_detector':stats}
+        stats_dict = {'component_name':self.det_name.lower(),'component_type':'detector','source_id':self.source_id, 'stats':stats}
         send_data(self.monitor_stats_sender,None,0,False,**stats_dict)
 
     def __rescale_object(self,obj):

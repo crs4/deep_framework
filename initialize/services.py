@@ -417,6 +417,9 @@ class StreamManagerService(DeepService):
 	def __set_environments(self,stream_manager_component,source):
 		environments = []
 
+
+		monitor_address = 'MONITOR_ADDRESS='+stream_manager_component.connected_to['monitor']
+		monitor_stats_in = 'MONITOR_STATS_IN='+str(stream_manager_component.monitor_in_port)
 		hp_server = 'HP_SERVER='+stream_manager_component.connected_to['server']
 		collector_in_ports = 'COLLECTOR_PORTS='+','.join([str(col_port) for col_port in stream_manager_component.collector_ports])
 		server_port = 'SERVER_PORT='+str(stream_manager_component.server_port)
@@ -426,7 +429,7 @@ class StreamManagerService(DeepService):
 		source_url = 'SOURCE_URL='+str(source['source_url'])
 		source_path = 'SOURCE_PATH='+str(source['source_path'])
 		source_id = 'SOURCE_ID='+str(source['source_id'])
-		environments = [hp_server,collector_in_ports,server_port,vc_out,source_type,source_url,source_path,source_id,server_pair_port]
+		environments = [monitor_address,monitor_stats_in,hp_server,collector_in_ports,server_port,vc_out,source_type,source_url,source_path,source_id,server_pair_port]
 		
 		return environments
 

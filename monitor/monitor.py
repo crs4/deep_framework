@@ -45,6 +45,45 @@ class Monitor(Process):
             #get message
             rec_dict, __ = recv_data(self.rec_stats,0,False)
 
+            source_id = rec_dict['source_id']
+            source_id = 'source_'+source_id
+            component_type = rec_dict['component_type']
+            stats = rec_dict['stats']
+            if source_id not in self.stats.keys():
+                self.stats[source_id] = {'stream_manager': dict(),'pipelines': dict()}
+
+            if component_type == 'stream_manager':
+                print(stats)
+                self.stats[source_id]['stream_manager'] = stats
+
+            elif component_type == 'detector':
+                print('det')
+                category = rec_dict['component_name']
+                if category in self.stats[source_id]['pipelines'].keys():
+                    self.stats[source_id]['pipelines'][category]['detector'] = stats
+                else:
+                    self.stats[source_id]['pipelines'][category] = {'detector':stats}
+
+
+            elif component_type == 'descriptor':
+                component_name = rec_dict['component_name']
+                category = rec_dict['detector_category']
+                if category in self.stats[source_id]['pipelines'].keys():
+                    if 'descriptors' in self.stats[source_id]['pipelines'][category].keys():
+                        self.stats[source_id]['pipelines'][category]['descriptors'][component_name] = stats
+                    else:
+                        self.stats[source_id]['pipelines'][category]['descriptors'] = {component_name:stats}
+
+
+            elif component_type == 'collector':
+                category = rec_dict['component_name'].split('_')[0]
+                if category in self.stats[source_id]['pipelines'].keys():
+                    self.stats[source_id]['pipelines'][category]['collector'] = stats
+
+
+
+
+            """
             for k,v in rec_dict.items():
 
                 if k in self.algs:
@@ -54,6 +93,7 @@ class Monitor(Process):
                 self.stats[k] = v
 
             self.stats['algorithms'] = algs_stats
+            """
             #sends results
             send_data(self.stats_send,None,0,False,**self.stats)
 
