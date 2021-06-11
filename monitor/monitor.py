@@ -68,11 +68,17 @@ class Monitor(Process):
             elif component_type == 'descriptor':
                 component_name = rec_dict['component_name']
                 category = rec_dict['detector_category']
+                worker_id = rec_dict['worker_id']
+                worker_id = 'worker_' + worker_id
                 if category in self.stats[source_id]['pipelines'].keys():
                     if 'descriptors' in self.stats[source_id]['pipelines'][category].keys():
-                        self.stats[source_id]['pipelines'][category]['descriptors'][component_name] = stats
+                        if component_name in self.stats[source_id]['pipelines'][category]['descriptors'].keys():
+                            self.stats[source_id]['pipelines'][category]['descriptors'][component_name][worker_id] = stats
+                        else:
+                            self.stats[source_id]['pipelines'][category]['descriptors'][component_name] = {worker_id:stats}
+
                     else:
-                        self.stats[source_id]['pipelines'][category]['descriptors'] = {component_name:stats}
+                        self.stats[source_id]['pipelines'][category]['descriptors'] = {component_name:{worker_id:stats}}
 
 
             elif component_type == 'collector':

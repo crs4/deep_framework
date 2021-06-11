@@ -2,7 +2,7 @@
 from multiprocessing import Process
 from utils.window import SlidingWindow
 
-
+from subprocess import Popen, PIPE
 from utils.stats_maker import StatsMaker
 
 from sub_agent_constants import *
@@ -61,6 +61,9 @@ class ObjectDescriptor(Process):
             WIN_SIZE = det.win_size
         except Exception as e:
                 print(e,'setup')
+
+        self.worker_id = self.__get_container_id()
+
 
         context = zmq.Context()
 
@@ -205,11 +208,17 @@ class ObjectDescriptor(Process):
         context.term()
 
     def __send_stats(self):
-        
         stats = self.stats_maker.create_stats()
         #stats_dict={self.alg_name:stats}
-        stats_dict={'component_name':self.alg_name, 'component_type': 'descriptor', 'source_id':self.source_id, 'detector_category':self.alg_detector_category, 'stats':stats}
+        stats_dict={'component_name':self.alg_name, 'worker_id':self.worker_id, 'component_type': 'descriptor', 'source_id':self.source_id, 'detector_category':self.alg_detector_category, 'stats':stats}
         send_data(self.monitor_sender,None,0,False,**stats_dict)
+
+    def __get_container_id(self):
+        command = 'cat /proc/1/cpuset'
+        result = Popen([command], stdout=PIPE, stderr=PIPE,shell=True)
+        out = result.communicate()[0].decode("utf-8")
+        container_id = out.split('/')[-1].strip('\n')
+        return container_id
 
 
 if __name__ == '__main__':
