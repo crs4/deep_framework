@@ -60,7 +60,7 @@ class Collector(Process):
         self.monitor_sender = context.socket(zmq.PUB)
         self.monitor_sender.connect(PROT+MONITOR_ADDRESS+':'+MONITOR_STATS_IN)
 
-        self.source_id = STREAM_MANAGER_ADDRESS.split('_')[-1]
+        self.source_id = STREAM_MANAGER_ADDRESS.split('stream_manager_')[-1]
 
 
 

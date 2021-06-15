@@ -77,7 +77,7 @@ class ObjectDescriptor(Process):
         sub_broker_socket = context.socket(zmq.PULL)
         sub_broker_socket.connect(PROT+BROKER_ADDRESS+':'+self.rec_det_port)
 
-        self.source_id = BROKER_ADDRESS.split('broker_')[1]
+        self.source_id = BROKER_ADDRESS.split('broker_')[-1]
 
         # sends results to sub collector
         sub_col_socket = context.socket(zmq.PUSH)

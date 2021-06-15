@@ -45,7 +45,7 @@ class SubCollector(Process):
         self.monitor_sender = context.socket(zmq.PUB)
         self.monitor_sender.connect(PROT+MONITOR_ADDRESS+':'+MONITOR_STATS_IN)
         
-        self.source_id = COLLECTOR_ADDRESS.split('_')[-1]
+        self.source_id = COLLECTOR_ADDRESS.split('collector_')[-1]
         self.alg_detector_category = COLLECTOR_ADDRESS.split('_')[0]
 
 
