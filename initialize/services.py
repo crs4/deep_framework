@@ -331,11 +331,14 @@ class SubCollectorService(DeepService):
 
 	def __set_environments(self,sub_collector_component):
 		environments = []
+		sub_col_name = 'DESC_NAME='+sub_collector_component.component_name.split('_')[0]
+		monitor_address = 'MONITOR_ADDRESS='+sub_collector_component.connected_to['monitor']
+		monitor_stats_in = 'MONITOR_STATS_IN='+str(sub_collector_component.monitor_in_port)
 		collector_address = 'COLLECTOR_ADDRESS='+sub_collector_component.connected_to['collector']
 		sub_col_in_port = 'SUB_COL_PORT='+str(sub_collector_component.descriptor_port)
 		sub_col_out_port = 'COL_PORT='+str(sub_collector_component.collector_port)
 		sub_col_worker = 'WORKER='+str(self.params['worker'])
-		environments = [collector_address,sub_col_in_port,sub_col_out_port,sub_col_worker]
+		environments = [sub_col_name,monitor_address,monitor_stats_in,collector_address,sub_col_in_port,sub_col_out_port,sub_col_worker]
 		return environments
 
 

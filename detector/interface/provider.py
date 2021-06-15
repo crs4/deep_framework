@@ -70,7 +70,7 @@ class ObjectProvider(Process):
         vc_socket.setsockopt_string(zmq.SUBSCRIBE, "",encoding='ascii')
         vc_socket.connect(PROT+VIDEOSRC_ADDRESS+':'+self.rec_port)
         
-        self.source_id = VIDEOSRC_ADDRESS.split('_')[-1]
+        self.source_id = VIDEOSRC_ADDRESS.split('stream_manager_')[1]
         # configure output
         publisher = context.socket(zmq.PUB)
         

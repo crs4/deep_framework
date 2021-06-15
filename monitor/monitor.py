@@ -41,6 +41,7 @@ class Monitor(Process):
         self.stats_send.bind(PROT+'*:'+self.send_stats_port)
 
         algs_stats = dict()
+        last_worker_id = None
         while True:
             #get message
             rec_dict, __ = recv_data(self.rec_stats,0,False)
@@ -65,20 +66,38 @@ class Monitor(Process):
                     self.stats[source_id]['pipelines'][category] = {'detector':stats}
 
 
-            elif component_type == 'descriptor':
+            elif component_type == 'descriptor' or component_type == 'sub_collector':
                 component_name = rec_dict['component_name']
                 category = rec_dict['detector_category']
-                worker_id = rec_dict['worker_id']
-                worker_id = 'worker_' + worker_id
                 if category in self.stats[source_id]['pipelines'].keys():
                     if 'descriptors' in self.stats[source_id]['pipelines'][category].keys():
                         if component_name in self.stats[source_id]['pipelines'][category]['descriptors'].keys():
-                            self.stats[source_id]['pipelines'][category]['descriptors'][component_name][worker_id] = stats
+                            if component_type == 'sub_collector':
+                                self.stats[source_id]['pipelines'][category]['descriptors'][component_name]['fps'] = stats['fps']
+                            else:
+                                worker_id = rec_dict['worker_id']
+                                if last_worker_id == worker_id:
+                                    self.stats[source_id]['pipelines'][category]['descriptors'][component_name]['elaborated_frames'] = stats['elaborated_frames']
+                                    self.stats[source_id]['pipelines'][category]['descriptors'][component_name]['skipped_frames'] = stats['skipped_frames']
+                                    self.stats[source_id]['pipelines'][category]['descriptors'][component_name]['received_frames'] = stats['received_frames']
+
+                                else:
+                                    self.stats[source_id]['pipelines'][category]['descriptors'][component_name]['elaborated_frames'] = self.stats[source_id]['pipelines'][category]['descriptors'][component_name]['elaborated_frames'] + stats['elaborated_frames']
+                                    self.stats[source_id]['pipelines'][category]['descriptors'][component_name]['skipped_frames'] = self.stats[source_id]['pipelines'][category]['descriptors'][component_name]['skipped_frames'] + stats['skipped_frames']
+                                    self.stats[source_id]['pipelines'][category]['descriptors'][component_name]['received_frames'] = self.stats[source_id]['pipelines'][category]['descriptors'][component_name]['received_frames'] + stats['received_frames']
+
+                                last_worker_id = worker_id
+
+
                         else:
-                            self.stats[source_id]['pipelines'][category]['descriptors'][component_name] = {worker_id:stats}
+                            self.stats[source_id]['pipelines'][category]['descriptors'] = {component_name:stats}
 
                     else:
-                        self.stats[source_id]['pipelines'][category]['descriptors'] = {component_name:{worker_id:stats}}
+                        self.stats[source_id]['pipelines'][category]['descriptors'] = {component_name:stats}
+
+
+
+
 
 
             elif component_type == 'collector':

@@ -186,11 +186,12 @@ class SubCollectorComponent:
 
 	def __init__(self,ports,desc_params,source_id):
 		self.params = desc_params
+		self.monitor_in_port = ports['monitor_in_port']
 		self.descriptor_port = ports['descriptor_subcollector_port']
 		self.collector_port = ports['subcollector_collector_port']
 		self.component_type = 'sub_collector'
 		self.component_name = desc_params['name'] +'_'+ self.component_type + '_' + source_id
-		self.connected_to = {}
+		self.connected_to = {'monitor':'monitor'}
 
 class CollectorComponent:
 
