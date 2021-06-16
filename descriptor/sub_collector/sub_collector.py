@@ -48,7 +48,6 @@ class SubCollector(Process):
         self.alg_detector_category = COLLECTOR_ADDRESS.split('_')[0]
 
 
-        sub_max_size = int(WORKER)
         last_vc_time = 0
 
         self.stats_maker.run_fps_timer()
@@ -79,7 +78,7 @@ class SubCollector(Process):
     def __send_stats(self):
         stats = self.stats_maker.create_stats()
         #stats_dict={self.alg_name:stats}
-        stats_dict={'component_name':DESC_NAME,'component_type': 'sub_collector', 'source_id':self.source_id, 'detector_category':self.alg_detector_category, 'stats':stats}
+        stats_dict={'worker':WORKER, 'component_name':DESC_NAME,'component_type': 'sub_collector', 'source_id':self.source_id, 'detector_category':self.alg_detector_category, 'stats':stats}
         send_data(self.monitor_sender,None,0,False,**stats_dict)
   
 if __name__ == '__main__':

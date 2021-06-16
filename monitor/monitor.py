@@ -72,7 +72,9 @@ class Monitor(Process):
                     if 'descriptors' in self.stats[source_id]['pipelines'][category].keys():
                         if component_name in self.stats[source_id]['pipelines'][category]['descriptors'].keys():
                             if component_type == 'sub_collector':
+                                print(stats)
                                 self.stats[source_id]['pipelines'][category]['descriptors'][component_name]['fps'] = stats['fps']
+                                self.stats[source_id]['pipelines'][category]['descriptors'][component_name]['worker'] = rec_dict['worker']
                             else:
                                 worker_id = rec_dict['worker_id']
                                 #print(worker_id, stats)

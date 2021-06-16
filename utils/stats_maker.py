@@ -12,6 +12,8 @@ class StatsMaker:
 		self.received_frames = None
 		self.start_time = None
 		self.object_counter = None
+		self.__timer_interval = 10
+
 
 	def create_stats(self):
 		stats = dict()
@@ -26,13 +28,13 @@ class StatsMaker:
 
 	
 	def run_fps_timer(self):
-		timer = RepeatedTimer(1,self.__get_fps)
+		timer = RepeatedTimer(self.__timer_interval,self.__get_fps)
 		timer.start()
 
 
 
 
 	def __get_fps(self):
-		self.fps = self.elaborated_frames - self.__fps_acc
+		self.fps = (self.elaborated_frames - self.__fps_acc)/float(self.__timer_interval)
 		self.__fps_acc = self.elaborated_frames
 
