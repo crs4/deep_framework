@@ -25,7 +25,7 @@ class Collector(Process):
         self.out_stream_port = configuration['out_stream_port']
         self.out_server_port = configuration['out_server_port']
         self.fp_port =configuration['fp_in']
-        self.stats_maker = StatsMaker()
+        self.__init_stats()
         Process.__init__(self)
 
         
@@ -86,6 +86,8 @@ class Collector(Process):
 
             # receive frame and data from frame provider
             fp_dict,__= recv_data(fp_socket,0,False)
+            self.stats_maker.received_frames += 1
+
             frame_id = fp_dict['frame_idx']
             fp_objects = fp_dict['objects']
             vc_time = fp_dict['vc_time']
@@ -172,6 +174,12 @@ class Collector(Process):
         fp_socket.close()
         sender.close()
         context.term()
+
+    def __init_stats(self):
+        self.stats_maker = StatsMaker()
+        self.stats_maker.start_time = time.time()
+        self.stats_maker.elaborated_frames = 0
+        self.stats_maker.received_frames = 0
 
     def __send_stats(self):
         

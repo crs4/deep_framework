@@ -22,10 +22,9 @@ class SubCollector(Process):
         """
         This class allows to aggregate message senf from descriptors
         """
-        
+        self.__init_stats()
         self.rec_det_port = configuration['in']
         self.send_port = configuration['out']
-        self.stats_maker = StatsMaker()
         Process.__init__(self)
 
     def run(self):
@@ -73,6 +72,9 @@ class SubCollector(Process):
         col_socket.close()
         context.term()
 
+    def __init_stats(self):
+        self.stats_maker = StatsMaker()
+        self.stats_maker.elaborated_frames = 0
 
     def __send_stats(self):
         stats = self.stats_maker.create_stats()

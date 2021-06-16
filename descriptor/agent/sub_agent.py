@@ -25,11 +25,10 @@ class ObjectDescriptor(Process):
         """
         This class allows to execute a generic descriptor
         """
-        
+        self.__init_stats()
         self.rec_det_port = configuration['in']
         self.send_port = configuration['out']
         self.alg = configuration['alg']
-        self.stats_maker = StatsMaker()
         Process.__init__(self)
 
     def run(self):
@@ -206,6 +205,13 @@ class ObjectDescriptor(Process):
         sub_col_socket.close()
         sub_broker_socket.close()
         context.term()
+
+    def __init_stats(self):
+        self.stats_maker = StatsMaker()
+        self.stats_maker.start_time = time.time()
+        self.stats_maker.elaborated_frames = 0
+        self.stats_maker.skipped_frames = 0
+        self.stats_maker.received_frames = 0
 
     def __send_stats(self):
         stats = self.stats_maker.create_stats()

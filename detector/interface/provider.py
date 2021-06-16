@@ -29,7 +29,7 @@ class ObjectProvider(Process):
     def __init__(self, configuration):
 
         Process.__init__(self)
-        self.stats_maker = StatsMaker()
+        self.__init_stats()
         self.pub_port = configuration['out']
         self.col_port = configuration['out_col']
         self.rec_port = configuration['in']
@@ -95,7 +95,7 @@ class ObjectProvider(Process):
         frame_counter = 0
 
 
-        self.stats_maker.start_time = time.time()
+        
         #__, __ = recv_data(vc_socket,0,False)
         last_alg_time = time.time()
 
@@ -159,7 +159,7 @@ class ObjectProvider(Process):
             frame_shape = rec_dict['frame_shape']
             current_delay = time.time() - vc_time
             forecast_delay = current_delay + last_alg_time
-            print('cur: ',current_delay,' - last_alg_time: ',last_alg_time)
+            #print('cur: ',current_delay,' - last_alg_time: ',last_alg_time)
             start_alg_time = time.time()
 
           
@@ -193,7 +193,6 @@ class ObjectProvider(Process):
             res['fp_time'] = time.time()
             res['vc_time'] = vc_time
             res['frame_shape'] = frame_shape
-            print(res)
 
             
           
@@ -223,9 +222,19 @@ class ObjectProvider(Process):
         context.term()
 
 
+    def __init_stats(self):
+        self.stats_maker = StatsMaker()
+        self.stats_maker.start_time = time.time()
+        self.stats_maker.elaborated_frames = 0
+        self.stats_maker.object_counter = 0
+        self.stats_maker.skipped_frames = 0
+        self.stats_maker.received_frames = 0
+
+
     def __send_stats(self):
         
         stats = self.stats_maker.create_stats()
+        print(stats)
         #stats_dict = {self.det_name.lower()+'_detector':stats}
         stats_dict = {'component_name':self.det_name.lower(),'component_type':'detector','source_id':self.source_id, 'stats':stats}
         send_data(self.monitor_stats_sender,None,0,False,**stats_dict)

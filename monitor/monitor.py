@@ -54,11 +54,10 @@ class Monitor(Process):
                 self.stats[source_id] = {'stream_manager': dict(),'pipelines': dict()}
 
             if component_type == 'stream_manager':
-                print(stats)
+                #print('stream_MAN',stats)
                 self.stats[source_id]['stream_manager'] = stats
 
             elif component_type == 'detector':
-                print('det')
                 category = rec_dict['component_name']
                 if category in self.stats[source_id]['pipelines'].keys():
                     self.stats[source_id]['pipelines'][category]['detector'] = stats
@@ -76,12 +75,16 @@ class Monitor(Process):
                                 self.stats[source_id]['pipelines'][category]['descriptors'][component_name]['fps'] = stats['fps']
                             else:
                                 worker_id = rec_dict['worker_id']
+                                #print(worker_id, stats)
                                 if last_worker_id == worker_id:
+                                    #print('same')
                                     self.stats[source_id]['pipelines'][category]['descriptors'][component_name]['elaborated_frames'] = stats['elaborated_frames']
                                     self.stats[source_id]['pipelines'][category]['descriptors'][component_name]['skipped_frames'] = stats['skipped_frames']
                                     self.stats[source_id]['pipelines'][category]['descriptors'][component_name]['received_frames'] = stats['received_frames']
 
                                 else:
+                                    #print('diff','--------',self.stats[source_id]['pipelines'][category]['descriptors'][component_name])
+
                                     self.stats[source_id]['pipelines'][category]['descriptors'][component_name]['elaborated_frames'] = self.stats[source_id]['pipelines'][category]['descriptors'][component_name]['elaborated_frames'] + stats['elaborated_frames']
                                     self.stats[source_id]['pipelines'][category]['descriptors'][component_name]['skipped_frames'] = self.stats[source_id]['pipelines'][category]['descriptors'][component_name]['skipped_frames'] + stats['skipped_frames']
                                     self.stats[source_id]['pipelines'][category]['descriptors'][component_name]['received_frames'] = self.stats[source_id]['pipelines'][category]['descriptors'][component_name]['received_frames'] + stats['received_frames']
@@ -93,7 +96,8 @@ class Monitor(Process):
                             self.stats[source_id]['pipelines'][category]['descriptors'] = {component_name:stats}
 
                     else:
-                        self.stats[source_id]['pipelines'][category]['descriptors'] = {component_name:stats}
+                        #self.stats[source_id]['pipelines'][category]['descriptors'] = {component_name:{'elaborated_frames':stats['elaborated_frames'],'skipped_frames': stats['skipped_frames'],'received_frames':stats['received_frames'] }}
+                        self.stats[source_id]['pipelines'][category] = {'descriptors':{component_name:stats}}
 
 
 
@@ -106,19 +110,6 @@ class Monitor(Process):
                     self.stats[source_id]['pipelines'][category]['collector'] = stats
 
 
-
-
-            """
-            for k,v in rec_dict.items():
-
-                if k in self.algs:
-                    algs_stats[k] = v
-                    continue
-                
-                self.stats[k] = v
-
-            self.stats['algorithms'] = algs_stats
-            """
             #sends results
             send_data(self.stats_send,None,0,False,**self.stats)
 
