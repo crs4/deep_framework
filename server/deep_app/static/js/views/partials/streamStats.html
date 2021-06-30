@@ -1,30 +1,26 @@
 
-<div  ng-controller="StreamStatsController as vm">
-
-	<md-content class="md-padding" layout-align="center center">
+<div  >
+	<md-content class="md-padding" layout-align="center center" ng-controller="StreamStatsController">
 		<p>Frame resolution:
-			<b>{{resolution}}</b>
+			<b>??</b>
 		</p>
 		<p>Frames received:
-	      <b>{{received_frames}}</b>
+	      <b>{{stream_data.received_frames}}</b>
 	    </p>
 	    <p>Frames sent:
-	      <b>{{generated_frames}}</b>
+	      <b>{{stream_data.generated_frames}}</b>
 	    </p>
 	    <p>Frames analyzed:
-	      <b>{{processed_frames}}</b>
+	      <b>{{stream_data.elaborated_frames}}</b>
 		</p>
 		<p>DEEP delay:
-			<b>{{deep_delay}}</b>
+			<b>{{stream_data.deep_delay.toFixed(4)}}</b>
 		</p>
 		<p>DEEP processing period:
-			<b>{{processing_period}}</b>
+			<b>{{stream_data.processing_period.toFixed(4)}}</b>
 		</p>
 		<p>FPS:
-			<b>{{fps}}</b>
-		</p>
-		<p>Network delay:
-			<b>{{net_delay}}</b>
+			<b>{{fps.toFixed(2)}}</b>
 		</p>
 	</md-content>
 </div>

@@ -18,12 +18,17 @@ function CollectorController($scope,statsService) {
         var temp_j = (response.data).replace(/'/g, '"');
         $scope.stats_data = JSON.parse(temp_j);
         //console.log($scope.stats_data,'out');
-        
-        var collector_data = $scope.stats_data.FaceCollector;
-        if (collector_data) {
-            $scope.collector_fps = collector_data['fps'];
+        $scope.selected_source = statsService.get_selected_source()
+        $scope.selected_pipeline = statsService.get_selected_pipeline()
+        if ($scope.selected_source && $scope.selected_pipeline) {
+            var collector_data = $scope.stats_data[$scope.selected_source].pipelines[$scope.selected_pipeline].collector
+            if (collector_data) {
+                $scope.collector_fps = collector_data['fps'];
+            }
+            $scope.$apply();
+
         }
-        $scope.$apply();
+        
     });
 
 }
