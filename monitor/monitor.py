@@ -110,7 +110,7 @@ class Monitor(Process):
 
 
                         else:
-                            self.stats[source_id]['pipelines'][category]['descriptors'] = {component_name:stats}
+                            self.stats[source_id]['pipelines'][category]['descriptors'][component_name] = stats
 
                     else:
                         #self.stats[source_id]['pipelines'][category]['descriptors'] = {component_name:{'elaborated_frames':stats['elaborated_frames'],'skipped_frames': stats['skipped_frames'],'received_frames':stats['received_frames'] }}
