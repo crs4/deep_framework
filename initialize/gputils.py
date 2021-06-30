@@ -23,6 +23,8 @@ class GPUallocator(Machine):
 		self.driver_version_thr = 384.0
 		self.__set_algs(detector,algorithms)
 		self.num_detector = len(detector)
+		self.cuda_map = {'7.0':'346.46','7.5':'352.31','8.0':'375.26','9.0':'384.81','9.1':'390.46','9.2':'396.26','10.0':'410.48','10.1':'418.39','10.2':'440.33','11.0':'450.36.06','11.1':'450.80.02'}
+
 
 	def __set_algs(self,detectors,algorithms):
 		"""
@@ -52,36 +54,23 @@ class GPUallocator(Machine):
 			self.algs.update(alg_dict)
 
 
-	def __check_gpu_exists_and_suitable(self,node_name):
-		data = self.connection.send_remote_command('nvidia-smi', ignore_err = True)
-		if data == '':
-			print('Node %s: no GPU detected on this node.' % (node_name))
-			return False
-
-		index = data.find('Driver Version')
-		non_decimal = re.compile(r'[^\d.]+')
-		temp_version = data[index+16:index+30]
-		str_driver_version = non_decimal.sub('', temp_version)
-		splt = str_driver_version.split('.')
-		driver_version = float(splt[0]+'.'+splt[1])
-		if driver_version < self.driver_version_thr:
-			print('Node %s: NVIDIA DRIVER version %s is too old. This node will be used in CPU mode.' % (node_name,driver_version))
-			return False
-
-		try:
-			mb = re.search('MB / (.*)MB', data)
-			mb = mb.group(1)
-		except:
-			mb = re.search('MiB / (.*)MiB', data)
-			mb = mb.group(1)
+	def __check_gpu_exists_and_suitable(self,node_name,node):
 		
-		total_memory = int(mb)
+		if node['gpu_driver_version'] == 'None':
+			print('Node %s: GPU not detected in this node.' % (node_name))
+			return False
+
+
+		if float(node['gpu_driver_version']) < self.driver_version_thr:
+			print('Node %s: NVIDIA DRIVER version %s is too old. This node will be used in CPU mode.' % (node_name,node.gpu_driver_version))
+			return False
 
 			
-
-		if total_memory < self.memory_thr:
+		"""
+		if node.gpu_info['total_memory'] < self.memory_thr:
 			print('Node %s: detected GPU with no sufficient memory. Required %s at least. This node will be used in CPU mode.' % (node_name,str(self.memory_thr)))
 			return False
+		"""
 
 		return True
 
@@ -96,7 +85,7 @@ class GPUallocator(Machine):
 			nodes_gpu_info[node_name] = node
 			node_gpus = []
 			self.connection = SSHConnector(node['ip'], node['user'], self.SSH_KEY)
-			suitable = self.__check_gpu_exists_and_suitable(node_name)
+			suitable = self.__check_gpu_exists_and_suitable(node_name,node)
 			if suitable:
 				command = 'echo -e "import GPUtil\nGPUs = GPUtil.getGPUs()\nfor gpu in GPUs: print(gpu.__dict__)" | python3'
 				data = self.connection.send_remote_command(command, ignore_err = True)
@@ -113,6 +102,7 @@ class GPUallocator(Machine):
 			
 
 			nodes_gpu_info[node_name]['gpus'] = node_gpus
+
 
 		return nodes_gpu_info
 
