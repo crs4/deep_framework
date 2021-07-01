@@ -23,7 +23,6 @@ class GPUallocator(Machine):
 		self.driver_version_thr = 384.0
 		self.__set_algs(detector,algorithms)
 		self.num_detector = len(detector)
-		self.cuda_map = {'7.0':'346.46','7.5':'352.31','8.0':'375.26','9.0':'384.81','9.1':'390.46','9.2':'396.26','10.0':'410.48','10.1':'418.39','10.2':'440.33','11.0':'450.36.06','11.1':'450.80.02'}
 
 
 	def __set_algs(self,detectors,algorithms):
@@ -34,6 +33,7 @@ class GPUallocator(Machine):
 		self.detector_framework = []
 		for det in detectors:
 			source_id = det['source_id']
+			det['type'] = 'detector'
 			framework = det['framework']
 			det_name = det['name']
 			det_source = det_name + '_' + source_id
@@ -45,6 +45,7 @@ class GPUallocator(Machine):
 
 		for alg in algorithms:
 			alg_dict = dict()
+			alg['type'] = 'descriptor'
 			alg_name = alg['name']
 			source_id = alg['source_id']
 			desc_source = alg_name + '_' + source_id
@@ -54,29 +55,30 @@ class GPUallocator(Machine):
 			self.algs.update(alg_dict)
 
 
+
 	def __check_gpu_exists_and_suitable(self,node_name,node):
 		
-		if node['gpu_driver_version'] == 'None':
-			print('Node %s: GPU not detected in this node.' % (node_name))
+		if node['cuda_version'] == 'None':
+			#print('Node %s: GPU not detected in this node.' % (node_name))
 			return False
-
-
-		if float(node['gpu_driver_version']) < self.driver_version_thr:
-			print('Node %s: NVIDIA DRIVER version %s is too old. This node will be used in CPU mode.' % (node_name,node.gpu_driver_version))
-			return False
-
-			
-		"""
-		if node.gpu_info['total_memory'] < self.memory_thr:
-			print('Node %s: detected GPU with no sufficient memory. Required %s at least. This node will be used in CPU mode.' % (node_name,str(self.memory_thr)))
-			return False
-		"""
 
 		return True
 
+	def __format_cuda_version(self, cuda_version):
+		cuda_acc = 0
+		cuda_num = 0
+		cuda_split = cuda_version.split('.')
+		if cuda_version == 'None':
+			return -1
+		if len(cuda_split) == 3:
+			cuda_acc = cuda_split[1] + '.' + cuda_split[2]
+			cuda_num = float(cuda_split[0]) + float(cuda_acc)
+			return cuda_num
 
+		else:
+			return float(cuda_version)
 
-
+		
 
 	def __get_gpus(self):
 
@@ -102,6 +104,7 @@ class GPUallocator(Machine):
 			
 
 			nodes_gpu_info[node_name]['gpus'] = node_gpus
+			nodes_gpu_info[node_name]['cuda_version'] =   self.__format_cuda_version(node['cuda_version'])
 
 
 		return nodes_gpu_info
@@ -121,7 +124,7 @@ class GPUallocator(Machine):
 					if gpu['net_capacity'] > 0:
 						if not fr_index < len(frameworks):
 							fr_index = 0
-						gpu_order.append((node_name,gpu['gpu_id'],frameworks[fr_index]))
+						gpu_order.append((node_name,gpu['gpu_id'],frameworks[fr_index],gpu['cuda_version']))
 						gpu['net_capacity'] -= 1
 						fr_index+=1
 
@@ -137,7 +140,7 @@ class GPUallocator(Machine):
 		for knode,vnode in nodes_gpu.items():
 
 			if vnode['gpus'] is not None:
-				gpu_elegibles[knode] = [ {'gpu_id':gpu['id'], 'net_capacity':math.floor(gpu['memoryFree']/self.memory_thr)} for gpu in vnode['gpus'] if gpu['memoryFree'] > self.memory_thr]
+				gpu_elegibles[knode] = [ {'gpu_id':gpu['id'],'cuda_version':vnode['cuda_version'] ,'net_capacity':math.floor(gpu['memoryFree']/self.memory_thr)} for gpu in vnode['gpus'] if gpu['memoryFree'] > self.memory_thr]
 				#{'strix': [{'gpu_id': 0, 'net_capacity': 3},{'gpu_id': 1, 'net_capacity': 3}]}
 			else:
 				cpu_elegibles.append(knode)
@@ -163,13 +166,15 @@ class GPUallocator(Machine):
 		matches['descriptors'] = []
 		cpu_node_index = 0
 		for i,(k_alg, v_alg) in enumerate(self.algs.items()):
+			
 
 			alg_mode = v_alg['mode']
 			alg_framework = v_alg['framework']
-			alg_index = [gpu_order.index(el) for el in gpu_order if el[2] == alg_framework]
+			alg_cuda = self.__format_cuda_version(v_alg['cuda_version'])
+			alg_index = [gpu_order.index(el) for el in gpu_order if el[2] == alg_framework and alg_cuda <= el[3]]
 
 			if alg_mode == 'gpu' and len(gpu_order) > 0 and len(alg_index) > 0:
-				node_name, gpu_id, gp_framework= gpu_order.pop(alg_index[0])
+				node_name, gpu_id, gp_framework, cuda= gpu_order.pop(alg_index[0])
 			else:
 				if not cpu_node_index < len(cpu_elegibles):
 					cpu_node_index = 0
@@ -183,6 +188,13 @@ class GPUallocator(Machine):
 				v_alg['mode'] = 'cpu'
 			else:
 				v_alg['mode'] = 'gpu'
+
+			if v_alg['mode'] not in v_alg['dockerfiles']:
+				print("The algorithm "+ v_alg['name'] + "can't be executed due to the lack of the necessary dockerfile or of a node with the correct version of the cuda driver.")
+				if v_alg['type'] == 'descriptor':
+					break
+				else:
+					sys.exit(0)
 
 			v_alg['deploy'] = {'node_name': node_name, 'gpu_id': gpu_id}
 			if i < self.num_detector:

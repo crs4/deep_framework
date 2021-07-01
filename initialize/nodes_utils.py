@@ -1,6 +1,6 @@
 from pathlib import Path
 
-#from config import *
+from config import *
 
 
 import subprocess
@@ -232,7 +232,7 @@ class Node(Machine):
 			#print('Node %s: no GPU detected on this node.' % (node_name))
 			return None
 		elif cuda_data == '':
-			print('Please, check that the package nvidia-cuda-tools is properly installed. The node on addres '+self.ip+' will be used in CPU mode.')
+			print('Please, check that the package nvidia-cuda-tools is properly installed. The node on address '+self.ip+' will be used in CPU mode.')
 			return None
 
 		cuda_version = cuda_data.split(',')[-1].strip(' ').strip('V')
