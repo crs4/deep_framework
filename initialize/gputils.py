@@ -188,9 +188,10 @@ class GPUallocator(Machine):
 				v_alg['mode'] = 'cpu'
 			else:
 				v_alg['mode'] = 'gpu'
+			print(v_alg)
 
-			if v_alg['mode'] not in v_alg['dockerfiles']:
-				print("The algorithm "+ v_alg['name'] + "can't be executed due to the lack of the necessary dockerfile or of a node with the correct version of the cuda driver.")
+			if 'dockerfiles' in v_alg.keys() and all(v_alg['mode'] not in dock for dock in v_alg['dockerfiles']):
+				print("The algorithm "+ v_alg['name'] + " can't be executed due to the lack of the necessary dockerfile (Dockerfile."+v_alg['mode']+") or of a node with the correct version of the cuda driver.")
 				if v_alg['type'] == 'descriptor':
 					break
 				else:

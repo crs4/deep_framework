@@ -101,7 +101,6 @@ class ImageManager:
 
 	def build_images(self):
 		for i,build in enumerate(self.build_commands):
-			print(build)
 			if 'cpu' in build:
 				mode = 'cpu'
 			elif 'gpu' in build:
