@@ -175,6 +175,7 @@ class GPUallocator(Machine):
 
 			if alg_mode == 'gpu' and len(gpu_order) > 0 and len(alg_index) > 0:
 				node_name, gpu_id, gp_framework, cuda= gpu_order.pop(alg_index[0])
+				v_alg['mode'] = 'gpu'
 			else:
 				if not cpu_node_index < len(cpu_elegibles):
 					cpu_node_index = 0
@@ -183,13 +184,10 @@ class GPUallocator(Machine):
 
 				cpu_node_index+=1
 				gpu_id = None
-
-			if gpu_id is None:
 				v_alg['mode'] = 'cpu'
-			else:
-				v_alg['mode'] = 'gpu'
-			print(v_alg)
 
+			print(v_alg)
+			a = input('sfd')
 			if 'dockerfiles' in v_alg.keys() and all(v_alg['mode'] not in dock for dock in v_alg['dockerfiles']):
 				print("The algorithm "+ v_alg['name'] + " can't be executed due to the lack of the necessary dockerfile (Dockerfile."+v_alg['mode']+") or of a node with the correct version of the cuda driver.")
 				if v_alg['type'] == 'descriptor':
