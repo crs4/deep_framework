@@ -105,8 +105,8 @@ class Monitor(Process):
                                 
                                 last_worker_id = worker_id
                                 last_descriptor_elaborated = stats['elaborated_frames']
-                                last_descriptor_skipped = stats['received_frames']
-                                last_descriptor_received = stats['skipped_frames']
+                                last_descriptor_skipped = stats['skipped_frames']
+                                last_descriptor_received =  stats['received_frames']
 
 
                         else:
