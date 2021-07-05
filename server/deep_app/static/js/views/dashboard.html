@@ -8,19 +8,15 @@
           <md-radio-button class="md-accent" ng-value="source" ng-repeat="source in sources">{{source}}</md-radio-button>
       </md-radio-group>
       
-    </md-content>
-
-  </md-toolbar> 
-  <md-toolbar ng-if="selected_source && pipelines.length" layout="row" layout-align="center center" style='height: 6%;background-color: rgba(255,255,255,1);'>
-    <md-content class="md-padding">
-      <md-radio-group layout="row" ng-model="selected_pipeline">
+      <md-radio-group layout="row" ng-model="selected_pipeline" >
         <b>Pipelines:&nbsp;&nbsp;</b>
         <md-radio-button class="md-accent" ng-value="pipeline" ng-repeat="pipeline in pipelines">{{pipeline}}
         </md-radio-button>
       </md-radio-group>
-    
     </md-content>
-  </md-toolbar>
+
+  </md-toolbar> 
+
   
   <div layout-gt-md="row" ng-if="selected_source && selected_pipeline">
     <panel-widget flex title="Stream server" template="static/js/views/partials/streamStats.html"

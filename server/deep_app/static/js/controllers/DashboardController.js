@@ -14,6 +14,7 @@ function DashboardController($scope,statsService) {
     $scope.pipelines = statsService.get_pipelines()
     $scope.selected_source = statsService.get_selected_source()
     $scope.selected_pipeline = statsService.get_selected_pipeline()
+    // $scope.selected_pipeline2 = 'face'
     setTimeout(() =>  {
         $scope.sources = statsService.get_sources()
         $scope.pipelines = statsService.get_pipelines()
@@ -30,6 +31,7 @@ function DashboardController($scope,statsService) {
         // $scope.$apply()
     })
     $scope.$watch('selected_pipeline', function (newValue, oldValue) {
+        console.log(newValue)
         statsService.set_selected_pipeline(newValue)
         // $scope.$apply()
     })
