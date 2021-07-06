@@ -71,30 +71,57 @@ function AlgorithmController($scope,$compile,$mdDialog,algService,statsService) 
     };
 
     
-    var custom_scopes = {};
-    
-    var performance_dicts = {};
-    algService.get_algs().then(function(data){
-        for (var i = 0; i < data.algs_list.length; i++) {
-            if (colors.length != data.algs_list.length){
-                colors.push(random_rgb());
+    var custom_scopes = {}
+    var descriptors = new Set();
+    var performance_dicts = {}
+    function set_algs(algs_data) {
+        Object.keys(algs_data).forEach((alg_name) => {
+            if (!descriptors.has(alg_name)) {
+                descriptors.add(alg_name)
+                if (colors.length != descriptors.size) {
+                    colors.push(random_rgb());
+                }
+                var performaces = {};
+                var new_scope = $scope.$new(true);
+                custom_scopes[alg_name] = new_scope;
+                $('#alg_div').append($compile("<panel-widget flex title=" + alg_name + " template='static/js/views/partials/algorithm.html' class='fixed-height-widget'></panel-widget>")(new_scope));
+                performance = { "key": alg_name, "values": [] };
+                performance_dicts[alg_name] = performance
             }
-            var performaces = {};
-            var new_scope = $scope.$new(true);
-            custom_scopes[data.algs_list[i]] = new_scope;
-            $('#alg_div').append($compile("<panel-widget flex title="+data.algs_list[i]+" template='static/js/views/partials/algorithm.html' class='fixed-height-widget'></panel-widget>")(new_scope));
-            performance =  {"key":data.algs_list[i],"values":[]};
-            performance_dicts[data.algs_list[i]] = performance;
-        };
-    });
+
+        })
+    }
     
+    let selected_source = undefined
+    let selected_pipeline = undefined
+    $scope.performance_list = [];
     statsService.get_data(function(response) {
 
         var temp_j = (response.data).replace(/'/g, '"');
         var stats_data = JSON.parse(temp_j);
-        var algs_data = stats_data.algorithms;
-
-        $scope.performance_list = [];
+        let update_algs = false
+        if (statsService.get_selected_source() != selected_source) {
+            update_algs = true
+            selected_source = statsService.get_selected_source()
+        }
+        if (selected_source == undefined) return
+        if (statsService.get_selected_pipeline() != selected_pipeline) {
+            update_algs = true
+            selected_pipeline = statsService.get_selected_pipeline()
+        }
+        if (selected_pipeline == undefined) return
+        var algs_data = stats_data[selected_source].pipelines[selected_pipeline].descriptors
+        if (update_algs) {
+            for (let sc in custom_scopes) {
+                custom_scopes[sc].$destroy()
+            }
+            custom_scopes = {}
+            performance_dicts = {}
+            $('#alg_div').empty()
+            descriptors.clear()
+            $scope.performance_list = [];
+        }
+        set_algs(algs_data)
         var i = 0;
         angular.forEach(algs_data, function(value, key) {
             var alg_scope = custom_scopes[key];
@@ -115,7 +142,7 @@ function AlgorithmController($scope,$compile,$mdDialog,algService,statsService) 
             }
             performance_dicts[key]["values"].push([n,alg_scope.fps]);
             performance_dicts[key]["color"] = colors[i];
-            $scope.performance_list.push(performance_dicts[key]);
+            $scope.performance_list = Object.values(performance_dicts);
             i++;
         });
         $scope.$apply();

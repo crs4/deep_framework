@@ -12,7 +12,6 @@ import time
 import numpy as np
 from stream_manager_constants import *
 from video_sources import VideoCapture, StreamCapture
-
 from utils.socket_commons import send_data, recv_data
 
 ROOT = os.path.dirname(__file__)
@@ -113,6 +112,10 @@ class StreamManager:
 
         self.server_pair_socket = self.context.socket(zmq.PAIR)
         self.server_pair_socket.connect(PROT + HP_SERVER + ':' +SERVER_PAIR_PORT)
+
+        # sends stats to monitor
+        self.monitor_sender = self.context.socket(zmq.PUB)
+        self.monitor_sender.connect(PROT+MONITOR_ADDRESS+':'+MONITOR_STATS_IN)
 
 
     def create_deep_message(self, frame):
@@ -227,6 +230,17 @@ class StreamManager:
         if self.peer.readyState == PeerState.CONNECTED:
             await self.peer.send(data)
 
+
+    async def stats_sender(self):
+        try:
+            while True:
+                stats = {'received_frames':self.received_frames,'elaborated_frames':self.processed_frames,'generated_frames':self.generated_frames,'deep_delay':self.deep_delay,'processing_period':self.processing_period}
+                stats_dict={'component_type': 'stream_manager', 'source_id': self.id, 'stats':stats}
+                send_data(self.monitor_sender,None,0,False,**stats_dict)
+                await asyncio.sleep(INTERVAL_STATS)
+        except Exception as e:
+            print(e)
+
     async def task_monitor(self, tasks):
         while True:
             for task in tasks:
@@ -308,6 +322,7 @@ class StreamManager:
 
     async def stop(self):
         self.sender_socket.close()
+        self.monitor_sender.close()
         for collector in self.collectors:
             collector['socket'].close()
         # if self.capture_peer:
@@ -326,8 +341,10 @@ class StreamManager:
 
 
         tasks.append(asyncio.create_task(self.receive_server_signaling(self.server_pair_socket)))
+        tasks.append(asyncio.create_task(self.stats_sender()))
 
         tasks.append(asyncio.create_task(self.task_monitor(tasks)))
+        
 
         self.peer.add_data_handler(self.on_remote_data)
         try:

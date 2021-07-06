@@ -186,11 +186,12 @@ class SubCollectorComponent:
 
 	def __init__(self,ports,desc_params,source_id):
 		self.params = desc_params
+		self.monitor_in_port = ports['monitor_in_port']
 		self.descriptor_port = ports['descriptor_subcollector_port']
 		self.collector_port = ports['subcollector_collector_port']
 		self.component_type = 'sub_collector'
 		self.component_name = desc_params['name'] +'_'+ self.component_type + '_' + source_id
-		self.connected_to = {}
+		self.connected_to = {'monitor':'monitor'}
 
 class CollectorComponent:
 
@@ -210,12 +211,13 @@ class StreamManagerComponent:
 	def __init__(self,ports,source_params):
 		self.params = source_params
 		self.detector_port = ports['stream_manager_detector_port']
+		self.monitor_in_port = ports['monitor_in_port']
 		self.collector_ports = []
 		self.server_port = ports['server_port']
 		self.server_pair_port = ports['stream_manager_server_port']
 		self.component_type = 'stream_manager'
 		self.component_name = self.component_type + '_' + source_params['source_id']
-		self.connected_to = {'server':'server'}
+		self.connected_to = {'server':'server','monitor':'monitor'}
 
 
 

@@ -10,3 +10,4 @@ require('./StatsController');
 require('./ViewerController');
 require('./ControlsController');
 require('./StreamStatsController');
+require('./DashboardController');
