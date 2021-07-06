@@ -43,6 +43,9 @@ The configuration file must be of type .ini and must contain the following field
 * **TYPE**: can take two values: 
   * *object_oriented*: the descriptor extracts a property of the object detected by the detector
   * *image_oriented*. the descriptor extracts an image property.
+* **CUDA_VERSION**: the version of cuda used in order to train the model
+
+
 Example:
 generic_configuration.ini
 
