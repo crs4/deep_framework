@@ -1,0 +1,131 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Usage &#8212; Deep-Framework  documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/classic.css" />
+    
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Running" href="run.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="run.html" title="Running"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Deep-Framework  documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Usage</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="usage">
+<h1>Usage<a class="headerlink" href="#usage" title="Permalink to this headline">¶</a></h1>
+<section id="using-the-deep-framework-demo-web-application">
+<h2>Using the Deep-Framework Demo Web Application<a class="headerlink" href="#using-the-deep-framework-demo-web-application" title="Permalink to this headline">¶</a></h2>
+<p>One of the services that are included in the Deep-Framework once it’s up and running is a demo application that allows to visualize and manage the video stream, the resulting data stream, and the performance of the Deep-Framework services and algorithms from any web browser. This web app can be accessed at <cite>https://&lt;IP_ADDRESS_OF_THE_MAIN_NODE&gt;:8000</cite> and provides three main views:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><strong>CONTROLS</strong>: Here are the controls for establishing the WebRTC peer connection with the Server, selecting the Stream Manager to peer with, and selecting and starting the video stream. The source of the video stream can be either a IP camera (the camera URL has to be previously defined during the guided CLI starting procedure) or the webcam of the client device.</p></li>
+<li><p><strong>DASHBOARD</strong>: This is the panel for monitoring the state and performance of the Deep-Framework services and algorithms.</p></li>
+<li><p><strong>VIEWER</strong>: Provides the a user friendly interface for visualizing the video stream and the resulting data. Some results like the face detection boxes, and the yaw and pitch angles are graphically represented as an overlay of the video stream.</p></li>
+<li><p><strong>API DOCS</strong>: Provides the API documentation for the specific configuration set by the user.</p></li>
+</ul>
+</div></blockquote>
+</section>
+<section id="using-a-custom-web-application">
+<h2>Using a custom web application<a class="headerlink" href="#using-a-custom-web-application" title="Permalink to this headline">¶</a></h2>
+<p>You can interact directly with the Server and the Stream Manager from your browser-based application by using the <a class="reference external" href="https://github.com/crs4/hyperpeer-js">hyperpeer-js module</a> (Deep-Framework video streaming is based on <a class="reference external" href="http://www.crs4.it/results/technology-catalogue/hyperpeer/">Hyperpeer</a> which in turn is based on <a class="reference external" href="https://en.wikipedia.org/wiki/WebRTC">WebRTC</a>). You can install this javascript library (currently available only through its GitHub repo) and using it in your code using browserify or any other frontend package manager. In <a class="reference internal" href="custom_app_example.html#custom-web-app-label"><span class="std std-ref">Custom web app example</span></a>, you can find a simplified example that illustrates how to use <a class="reference external" href="https://github.com/crs4/hyperpeer-js">hyperpeer-js</a> for sending the local webcam video stream and get the results as <code class="docutils literal notranslate"><span class="pre">data</span></code> events. See <a class="reference external" href="https://github.com/crs4/hyperpeer-js">hyperpeer-js</a> documentation for more details.</p>
+</section>
+<section id="using-the-sse-api">
+<h2>Using the SSE API<a class="headerlink" href="#using-the-sse-api" title="Permalink to this headline">¶</a></h2>
+<p>The web app (either the demo or a custom one) is the main interface for controlling and monitoring the analysis of a video stream with the Deep-Framework. However, it connects to the Stream Manager with a peer-to-peer connection so only one client application can be used at a time. If you need to send the video analysis results to another or many other applications you can use the SSE API which provides multiple endpoints (consider that analysis has been started through the web app first in order to receive any data):</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">/api/stream_&lt;DETECTOR_CATEGORY&gt;</span></code>: there is an endpoint for every detector chosen.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">/api/stats</span></code>: it shows functioning statistics about the components running in the pipelines.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">/api/algs</span></code>: it shows running alghorithms.</p></li>
+</ul>
+</div></blockquote>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Usage</a><ul>
+<li><a class="reference internal" href="#using-the-deep-framework-demo-web-application">Using the Deep-Framework Demo Web Application</a></li>
+<li><a class="reference internal" href="#using-a-custom-web-application">Using a custom web application</a></li>
+<li><a class="reference internal" href="#using-the-sse-api">Using the SSE API</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="run.html"
+                        title="previous chapter">Running</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/usage.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="run.html" title="Running"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Deep-Framework  documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Usage</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2021, Alessandro Sassu, Jose Francisco Saenz-Cogollo.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.0.3.
+    </div>
+  </body>
+</html>

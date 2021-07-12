@@ -1,0 +1,193 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Custom web app example &#8212; Deep-Framework  documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/classic.css" />
+    
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="nav-item nav-item-0"><a href="index.html">Deep-Framework  documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Custom web app example</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="custom-web-app-example">
+<span id="custom-web-app-label"></span><h1>Custom web app example<a class="headerlink" href="#custom-web-app-example" title="Permalink to this headline">¶</a></h1>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>const Hyperpeer = require(&#39;hyperpeer&#39;)
+const hostname = location.hostname
+const serverAddress = `wss://${hostname}:8000`
+
+// The &lt;video&gt; element to use for showing remote video, for this example the remote video is just mirroring the local video stream
+const video = document.getElementById(&#39;video&#39;)
+
+// Get local media video
+navigator.mediaDevices.getUserMedia({ video: true })
+    .then((stream) =&gt; {
+        // Instantiate Hyperpeer with an id, a type, the input media stream and the output &lt;video&gt; element
+        const myPeerId = &#39;web_client&#39; + Date.now()
+        const deepPeer = new Hyperpeer(serverAddress, {
+            id: myPeerId,
+            type: &#39;web_client&#39;,
+            stream: stream,
+            videoElement: video
+        })
+
+        // Once get the &#39;online&#39; event get the available peers
+        deepPeer.on(&#39;online&#39;, () =&gt; {
+            deepPeer.getPeers()
+                .then((peers) =&gt; {
+                    // Check which peers are Stream Managers and which are Stream Capture (in this version there is only one Stream Manager and at most one Stream Capture)
+                    peers.forEach((peer) =&gt; {
+                        if (peer.busy) return
+                        if (peer.type === &#39;stream_manager&#39;) {
+                            availableServers.push(peer)
+                        } else if (peer.type === &#39;stream_capture&#39;) {
+                            availableCameras.push(peer)
+                        }
+                    })
+                    // let&#39;s assume you want to inmediately connect to the first Stream Manager available
+                    if (availableServers.length &gt;= 1) {
+                        return deepPeer.connectTo(availableServers[0])
+                    }
+                })
+                .catch((error) =&gt; { alert(error) })
+        })
+
+        // Once connected indicate to Stream Manager the video stream to process, in this case it&#39;s set to &#39;myPeerId&#39; on order to indicate the local webcam but you can give the id of one of the Stream Capture peers
+        deepPeer.on(&#39;connect&#39;, () =&gt; {
+            console.log(&#39;Peer-to-peer connection established!&#39;)
+            deepVideoSource = sourcePeerId
+            deepPeer.send({ type: &#39;source&#39;, peerId: myPeerId })
+        })
+
+        // On data handle the Stream Manager message
+        deepPeer.on(&#39;data&#39;, (data) =&gt; {
+            // All message are converted to javascript objects and have a &#39;type&#39; property. Results have type &#39;data&#39;
+            if (data.type == &#39;data&#39;) {
+                // The information regading each detected face is contained inside an array also called data. Let&#39;s create a dictionary where the face id is the key and the value are its attributes
+                let faces = {}
+                data.data.forEach((face) =&gt; {
+                    faces[face.id] = {
+                        // The face bounding box is in the &#39;rect&#39; attribute
+                        boundingBox: {
+                            x_topleft: face.rect.x_topleft,
+                            y_topleft: face.rect.y_topleft,
+                            x_bottomright: face.rect.x_bottomright,
+                            y_bottomright: face.rect.y_bottomright
+                        },
+                        // If the face recognition algorithm is running the &#39;face_recognition&#39; attribute contains either the name of the person or the string &#39;Unknown&#39;
+                        name: face.face_recognition,
+                        // If the gender algorithm is running the &#39;gender&#39; attribute is either &#39;Male&#39; or &#39;Female&#39;
+                        gender: face.gender,
+                        // If the pitch algorithm is running the &#39;pitch&#39; attribute is a number representing the horizontal orientation of the face
+                        pitch: face.pitch,
+                        // If the yaw algorithm is running the &#39;yaw&#39; attribute is a number representing the vertical orientation of the face
+                        yaw: face.yaw,
+                        // If the age algorithm is running the &#39;age&#39; attribute is a string representing the apparent age of the face
+                        ageRange: face.age,
+                        // If the emotion algorithm is running the &#39;emotion&#39; attribute is an array of the possible emotions with its probabilities
+                        emotions: face.emotion ? face.emotion.map(e =&gt; {
+                            return {
+                                label: e[0],
+                                probability: e[1]
+                            }
+                        }) : [],
+                        // If the glasses algorithm is running the &#39;glasses&#39; attribute is &#39;glasses&#39;, &#39;sunglasses&#39; or &#39;no glasses&#39;
+                        glasses: face.glasses
+                    }
+                })
+                // In the current verion Stream Manager expects a message of type &#39;acknowledge&#39; for each data message sent so it can calculate some stats
+                let acknowledge = {
+                    type: &#39;acknowledge&#39;,
+                    // It only needs the receive back the &#39;rec_time&#39; attribute
+                    rec_time: data.rec_time
+                }
+                deepPeer.send(acknowledge)
+            } else if (data.type == &#39;warning&#39;) {
+                console.error(&#39;Deep warning&#39; + JSON.stringify(data))
+            } else if (data.type == &#39;error&#39;) {
+                alert(&#39;Deep error&#39; + JSON.stringify(data))
+            }
+            else {
+                console.log(&#39;Deep message&#39; + JSON.stringify(data))
+            }
+        })
+
+        deepPeer.on(&#39;error&#39;, (error) =&gt; {
+            alert(&#39;Hyperpeer Error: &#39; + error)
+        })
+    })
+    .catch((error) =&gt; {
+        alert(&#39;mediaDevices error: &#39; + error)
+    })
+</pre></div>
+</div>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/custom_app_example.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="nav-item nav-item-0"><a href="index.html">Deep-Framework  documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Custom web app example</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2021, Alessandro Sassu, Jose Francisco Saenz-Cogollo.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.0.3.
+    </div>
+  </body>
+</html>
