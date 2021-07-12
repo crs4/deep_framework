@@ -1,5 +1,4 @@
-:ref:`deep_framework_label`
-===========================
+:orphan:
 
 .. _detector_devel_label:
 

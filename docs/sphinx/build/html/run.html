@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>Face Recognition Setup &#8212; Deep-Framework  documentation</title>
+    <title>Running &#8212; Deep-Framework  documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/classic.css" />
     
@@ -16,7 +16,9 @@
     <script src="_static/doctools.js"></script>
     
     <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="search.html" /> 
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Usage" href="usage.html" />
+    <link rel="prev" title="Getting Started" href="start.html" /> 
   </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
@@ -24,8 +26,14 @@
         <li class="right" style="margin-right: 10px">
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="usage.html" title="Usage"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="start.html" title="Getting Started"
+             accesskey="P">previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="index.html">Deep-Framework  documentation</a> &#187;</li>
-        <li class="nav-item nav-item-this"><a href="">Face Recognition Setup</a></li> 
+        <li class="nav-item nav-item-this"><a href="">Running</a></li> 
       </ul>
     </div>  
 
@@ -34,26 +42,29 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <section id="face-recognition-setup">
-<span id="face-recog-label"></span><h1>Face Recognition Setup<a class="headerlink" href="#face-recognition-setup" title="Permalink to this headline">¶</a></h1>
-<ol class="arabic simple">
-<li><p>Navigate to the following <a class="reference external" href="https://github.com/crs4/deep_framework/tree/master/descriptor/feature_extractors/face_recognition">path</a>.</p></li>
-<li><p>Create the path: <cite>template_models/images/</cite></p></li>
-<li><p>In folder <cite>images</cite>, create subfolders named as people you want to recognize.</p></li>
-<li><p>In each subfolder, you have to save images of the relative person (at least 5 good quality images in different poses).</p></li>
-</ol>
-<section id="working-tree">
-<h2>Working tree<a class="headerlink" href="#working-tree" title="Permalink to this headline">¶</a></h2>
-<figure class="align-default">
-<img alt="architecture scheme" src="_images/tree.jpg" />
-</figure>
-</section>
-<section id="sample-images">
-<h2>Sample images<a class="headerlink" href="#sample-images" title="Permalink to this headline">¶</a></h2>
-<figure class="align-default">
-<img alt="architecture scheme" src="_images/as_sample.jpg" />
-</figure>
-</section>
+  <section id="running">
+<h1>Running<a class="headerlink" href="#running" title="Permalink to this headline">¶</a></h1>
+<p>Deep-Framework starting is guided by a CLI procedure. You’ll be prompted
+to input some information about Deep Framework infrastructure settings
+and video analyzing parameters. Deep Framework settings are related to
+the cluster configuration (ip address, user, etc. of each of node in the
+cluster). Video analyzing parameters are related to video source, max
+delay you’ll accept to get your results, stats interval generation and
+the algorithms you’ll want to execute with relative execution mode
+(cpu/gpu). You can start this procedure with the following command:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ python3 main.py
+</pre></div>
+</div>
+<p>If you want to run Deep-Framework with the last configuration used, type the following:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ python3 main.py -r
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>Stopping Deep-Framework:</p></li>
+</ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ python3 rm_services.py
+</pre></div>
+</div>
 </section>
 
 
@@ -63,19 +74,16 @@
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
-  <h3><a href="index.html">Table of Contents</a></h3>
-  <ul>
-<li><a class="reference internal" href="#">Face Recognition Setup</a><ul>
-<li><a class="reference internal" href="#working-tree">Working tree</a></li>
-<li><a class="reference internal" href="#sample-images">Sample images</a></li>
-</ul>
-</li>
-</ul>
-
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="start.html"
+                        title="previous chapter">Getting Started</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="usage.html"
+                        title="next chapter">Usage</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
-      <li><a href="_sources/face_recognition.rst.txt"
+      <li><a href="_sources/run.rst.txt"
             rel="nofollow">Show Source</a></li>
     </ul>
    </div>
@@ -99,8 +107,14 @@
         <li class="right" style="margin-right: 10px">
           <a href="genindex.html" title="General Index"
              >index</a></li>
+        <li class="right" >
+          <a href="usage.html" title="Usage"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="start.html" title="Getting Started"
+             >previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="index.html">Deep-Framework  documentation</a> &#187;</li>
-        <li class="nav-item nav-item-this"><a href="">Face Recognition Setup</a></li> 
+        <li class="nav-item nav-item-this"><a href="">Running</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">

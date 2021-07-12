@@ -1,5 +1,35 @@
 
 
+Deep-Framework Documentation
+============================
+
+Introduction
+------------
+
+
+The DEEP-Framework is a Python-based distributed and scalable framework
+for analyzing a real-time video stream. At its core, the framework
+provides a modular Docker-based pipeline that allows to distribute and
+parallelize all tasks from video capturing, to object detection, to
+information extraction, to results collection, to output streaming.
+The current version includes an implementation of following pipelines:
+
+* A face detector and various algorithms that extract information from faces like:  
+
+  - Age estimation
+  - Gender estimation
+  - Face recognition
+  - Glasses detection
+  - Yaw estimation
+  - Pitch estimation
+
+* A person detector and an algorithm that extract information about clothing.
+* A vehicle detector and an algorithm that performs a flux analysis of the scene.
+
+It's possible to run multiple pipeline at the same time.
+
+A demo web app is also included.
+
 Features
 --------
 
@@ -140,6 +170,7 @@ Using a custom web application
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 You can interact directly with the Server and the Stream Manager from your browser-based application by using the `hyperpeer-js module <https://github.com/crs4/hyperpeer-js>`__ (Deep-Framework video streaming is based on `Hyperpeer <http://www.crs4.it/results/technology-catalogue/hyperpeer/>`__ which in turn is based on `WebRTC <https://en.wikipedia.org/wiki/WebRTC>`__). You can install this javascript library (currently available only through its GitHub repo) and using it in your code using browserify or any other frontend package manager. Here :ref:`custom_web_app` you can find a simplified example that illustrates how to use `hyperpeer-js <https://github.com/crs4/hyperpeer-js>`__ for sending the local webcam video stream and get the results as ``data`` events. See `hyperpeer-js <https://github.com/crs4/hyperpeer-js>`__ documentation for more details.
+
 
 Using the SSE API
 ~~~~~~~~~~~~~~~~~

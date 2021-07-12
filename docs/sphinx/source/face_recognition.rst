@@ -1,6 +1,4 @@
-:ref:`deep_framework_label`
-===========================
-
+:orphan:
 
 .. _face_recog_label:
 
