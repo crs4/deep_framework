@@ -17,8 +17,7 @@ import json
 import time
 import shlex
 from configparser import ConfigParser
-
-
+import re
 
 
 from paramiko import client
@@ -210,6 +209,8 @@ class Node(Machine):
 			self.token = self.cluster.get_token(self.role)
 			self.join_command = "docker swarm join --token %s %s:2377" % (self.token, self.cluster.main_cluster_manager_node.ip)
 		self.leave_command = "docker swarm leave --force"
+		self.cuda_command = 'nvcc --version'
+		self.nvidia_command = 'nvidia-smi'
 		
 
 
@@ -224,6 +225,20 @@ class Node(Machine):
 			self.machine.exec_shell_command(self.leave_command)
 		except Exception as e:
 			print(e)
+
+	def get_cuda_version(self,nvidia_data, cuda_data):
+
+		if nvidia_data == '':
+			#print('Node %s: no GPU detected on this node.' % (node_name))
+			return None
+		elif cuda_data == '':
+			print('Please, check that the package nvidia-cuda-tools is properly installed. The node on address '+self.ip+' will be used in CPU mode.')
+			return None
+
+		cuda_version = cuda_data.split(',')[-1].strip(' ').strip('V')
+
+
+		return  cuda_version
 
 
 
@@ -245,6 +260,9 @@ class LocalNode(Node):
 		Machine.push_key(self,'22',self.user,self.ip)
 		self.working_path = MAIN_DIR
 		self.leave_swarm()
+		nvidia_data = Machine.exec_shell_command(self,self.nvidia_command,ignore_err = True)
+		cuda_data = Machine.exec_shell_command(self,self.cuda_command,ignore_err = True)
+		self.cuda_version = self.get_cuda_version(nvidia_data ,cuda_data)
 
 
 
@@ -279,9 +297,9 @@ class RemoteNode(Node):
 			#self.__pull_images()
 	
 		self.__install_GPUtil()
-
-
-
+		nvidia_data = self.connection.send_remote_command(self.nvidia_command, ignore_err = True)
+		cuda_data = self.connection.send_remote_command(self.cuda_command, ignore_err = True)
+		self.cuda_version = self.get_cuda_version(nvidia_data, cuda_data)
 	
 
 	def __prepare_working_env(self):
@@ -479,6 +497,18 @@ class Cluster:
 			node_dict['role'] = node.role
 			node_dict['type'] = type(node).__name__
 			node_dict['path'] = node.working_path
+			"""
+			if node.gpu_info is None:
+				node_dict['gpu_driver_version'] = str(node.node.gpu_info)
+				node_dict['gpu_total_memory'] = str(node.node.gpu_info)
+			else:
+				node_dict['gpu_driver_version'] = str(node.gpu_info['driver_version'])
+				node_dict['gpu_total_memory'] = str(node.gpu_info['total_memory'])
+			docker_hostname = data[node.ip]
+
+			"""
+			
+			node_dict['cuda_version'] = str(node.cuda_version)
 			docker_hostname = data[node.ip]
 			cluster_config[docker_hostname] = node_dict
 
@@ -588,13 +618,15 @@ class Registry(Machine):
 
 
 if __name__ == "__main__":
-	addr = '192.168.1.40'
+	addr = '192.168.195.224'
 	user = 'alessandro'
 	conn = SSHConnector(addr,user,'/Users/alessandro/.ssh/id_rsa')
-	res = conn.send_remote_command('nvidia-smi',ignore_err = True)
-
+	res = conn.send_remote_command('nvcc --version',ignore_err = True)
+	cuda_version = res.split(',')[-1].strip(' ').strip('V')
+	
+	a = input('s')
 	ind = res.find('Driver Version')
-	inter = res[ind+16:ind+30].strip(' ')
+	inter = res[ind+16:ind+30].strip(' ','V')
 
 	import re
 

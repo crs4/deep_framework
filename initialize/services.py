@@ -209,6 +209,7 @@ class DetectorService(DeepService):
 
 	def __set_environments(self,detector_component):
 		environments = []
+		framework = 'FRAMEWORK='+detector_component.params['framework']
 		coll_env = 'COLLECTOR_ADDRESS='+detector_component.connected_to['collector']
 		stream_man = 'VIDEOSRC_ADDRESS='+detector_component.connected_to['stream_manager']
 		monitor = 'MONITOR_ADDRESS='+detector_component.connected_to['monitor']
@@ -216,7 +217,7 @@ class DetectorService(DeepService):
 		det_out_to_brok = 'FP_OUT='+str(detector_component.broker_port)
 		det_out_to_col	= 'FP_OUT_TO_COL='+str(detector_component.collector_port)
 		monitor_in = 'MONITOR_STATS_IN='+str(detector_component.monitor_in_port)
-		environments = [coll_env,stream_man,monitor,stream_in,det_out_to_brok,det_out_to_col,monitor_in]
+		environments = [framework,coll_env,stream_man,monitor,stream_in,det_out_to_brok,det_out_to_col,monitor_in]
 		gpu_env = self.set_gpu_enviroment(self.gpu_id)
 		environments.append(gpu_env)
 		return environments

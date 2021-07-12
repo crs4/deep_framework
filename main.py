@@ -28,6 +28,8 @@ if __name__ == "__main__":
 	registry = Registry()
 	starter = Starter(machine,registry,cluster_manager,use_last_settings=args.run)
 	nodes_data = starter.get_nodes()
+	#print(nodes_data)
+	
 
 
 		
@@ -45,11 +47,10 @@ if __name__ == "__main__":
 	
 	det_prov = DetectorProvider(det_revealed,sources)
 	dets = det_prov.get_detectors(use_last_settings=args.run)
-
 	
 	desc_prov = DescriptorProvider(desc_revealed,dets)
 	descs = desc_prov.get_descriptors(use_last_settings=args.run)
-
+	
 
 	standard_prov = StandardProvider(standard_revelead)
 	stds = standard_prov.get_standard_components(use_last_settings=args.run)

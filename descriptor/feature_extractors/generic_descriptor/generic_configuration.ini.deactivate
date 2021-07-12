@@ -10,3 +10,4 @@ CLASS = GenericDescriptor
 FRAMEWORK = tensorflow
 TYPE = object_oriented
 RELATED_TO = face
+CUDA_VERSION = None

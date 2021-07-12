@@ -97,6 +97,8 @@ Software dependencies:
 
 DEEP-Framework can be deployed on a single node cluster or in a multi node cluster. Make sure every node is accessible via SSH.
 
+Note that if the cluster consists of several nodes with gpu, it is necessary to run the framework on the node with a more recent version of the CUDA driver in order to correctly build the Docker images
+
 
 ## Running
 

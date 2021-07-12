@@ -10,3 +10,4 @@ CLASS = ImgDescriptor
 FRAMEWORK = None
 TYPE = image_oriented
 RELATED_TO = drone_objects
+CUDA_VERSION = None
