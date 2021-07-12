@@ -14,11 +14,11 @@ Face Recognition Setup
 Working tree
 ~~~~~~~~~~~~
 
-.. figure:: _static/face_recognition_docs/tree.jpg
+.. figure:: face_recognition_docs/tree.jpg
    :alt: architecture scheme
 
 Sample images
 ~~~~~~~~~~~~~
 
-.. figure:: _static/face_recognition_docs/as_sample.jpg
+.. figure:: face_recognition_docs/as_sample.jpg
    :alt: architecture scheme

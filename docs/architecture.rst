@@ -2,7 +2,7 @@
 Architecture
 ------------
 
-.. figure:: _static/schemes.png
+.. figure:: schemes.png
    :alt: architecture scheme
 
 The architecture of Deep Framework is composed by the following generic

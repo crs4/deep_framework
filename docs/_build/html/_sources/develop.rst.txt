@@ -25,7 +25,7 @@ The executor implements the object detection and tracking algorithm on multiple 
 * Define a class that extends the *AbstractDetector* abstract class, defined at this `path <https://github.com/crs4/deep_framework/blob/master/utils/abstract_detector.py>`__.
 * Implement the extract_features method within the class. This method is invoked in the main interface, which manages all the installed detection algorithms, and cyclically receives the frames, which are the input stream to the DeepFramework, and a dictionary (executor_dict) that contains all the information needed to implement your own detection and and tracking algorithm. In short:
 
-.. figure:: _static/develop_a_detector/executor.png
+.. figure:: develop_a_detector/executor.png
    :alt: executor example
 
 The executor_dict dictionary contains the following keys:
@@ -37,7 +37,7 @@ The executor_dict dictionary contains the following keys:
 
 The method must return a list of Object type objects. The Object class is implemented at the following `path <https://github.com/crs4/deep_framework/blob/master/utils/features.py>`__. It presents the following interface:
 
-.. figure:: _static/develop_a_detector/object.png
+.. figure:: develop_a_detector/object.png
    :alt: Obbject class
 
 The input parameters are:
@@ -47,15 +47,15 @@ The input parameters are:
 * **whole_image**: when set to True, indicates that the object is made up of the whole image.
 The coordinates of the bounding boxes and/or keypoints must initialize Rect and Point objects respectively. The classes have the following interfaces.
 
-.. figure:: _static/develop_a_detector/rect.png
+.. figure:: develop_a_detector/rect.png
    :alt: Rect class
 
-.. figure:: _static/develop_a_detector/point.png
+.. figure:: develop_a_detector/point.png
    :alt: Point class
 
 Example of function implementation:
 
-.. figure:: _static/develop_a_detector/extract_features.png
+.. figure:: develop_a_detector/extract_features.png
    :alt: extract_features example
 
 Creation of dockerfiles
@@ -83,17 +83,17 @@ Example:
 
 * **Case 1**: The detector uses a framework but only in CPU mode or does not use any framework.
 
-.. figure:: _static/develop_a_detector/framework_none.png
+.. figure:: develop_a_detector/framework_none.png
    :alt: framework_none example
 
 * **Case 2**: The detector uses a framework (e.g. tensorflow) in GPU mode.
 
-.. figure:: _static/develop_a_detector/framework_not_none.png
+.. figure:: develop_a_detector/framework_not_none.png
    :alt: framework_not_none example
 
 Example of a configuration file:
 
-.. figure:: _static/develop_a_detector/configuration.png
+.. figure:: develop_a_detector/configuration.png
    :alt: framework_not_none example
 
 Creation and execution of tests
@@ -140,7 +140,7 @@ Class definition
 Each descriptor must extend the abstract class AbstractDescriptor, defined at the `path <https://github.com/crs4/deep_framework/blob/master/utils/abstract_descriptor.py>`__.
 
 
-.. figure:: _static/develop_a_descriptor/abstract.png
+.. figure:: develop_a_descriptor/abstract.png
    :alt: abstract descriptor
 
 For this reason the Descriptor class should implement:
@@ -162,7 +162,7 @@ For this reason the Descriptor class should implement:
 
 Example:
 
-.. figure:: _static/develop_a_descriptor/generic_desc.png
+.. figure:: develop_a_descriptor/generic_desc.png
    :alt: generic descriptor
 
 Configuration creation
@@ -186,10 +186,10 @@ Example:
 generic_configuration.ini
 
 
-.. figure:: _static/develop_a_descriptor/configuration.png
+.. figure:: develop_a_descriptor/configuration.png
    :alt: configuration
 
-.. figure:: _static/develop_a_descriptor/struct.png
+.. figure:: develop_a_descriptor/struct.png
    :alt: folder structure
 
 
