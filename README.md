@@ -20,6 +20,9 @@ A demo web app is also included.
 
 This work was published in the journal Sensors in the Special Issue "Applications of Video Processing and Computer Vision Sensors". The article is available in open access at this [link](https://www.mdpi.com/1424-8220/21/12/4045#).
 
+[![Documentation Status](https://readthedocs.org/projects/deep-framework/badge/?version=latest)](https://deep-framework.readthedocs.io/en/latest/?badge=latest)
+
+
 ## Features
 * Can handle multiple video streams from IP cameras and webcams.
 * A frame-skipping policy which ensures a real-time behavior by always processing the latest available frame
