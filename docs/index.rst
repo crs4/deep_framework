@@ -44,6 +44,10 @@ Content Index
    usage
 
 
+References
+----------
+
+This work was published in the journal Sensors in the Special Issue "Applications of Video Processing and Computer Vision Sensors". The article is available in open access at this `link <https://www.mdpi.com/1424-8220/21/12/4045#>`__.
 
 License
 -------
