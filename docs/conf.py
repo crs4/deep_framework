@@ -51,8 +51,13 @@ html_theme = 'classic'
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
 
+html_theme_options = {
+    'globaltoc_maxdepth': 4,
+    'globaltoc_collapse': False
+}
+
 html_sidebars = {
-   '**': ['fulltoc.html', 'sourcelink.html', 'searchbox.html'],
+   '**': ['globaltoc.html', 'sourcelink.html', 'searchbox.html'],
    'using/windows': ['windowssidebar.html', 'searchbox.html'],
 }
 
