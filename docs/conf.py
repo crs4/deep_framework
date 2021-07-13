@@ -52,7 +52,7 @@ html_theme = 'classic'
 html_static_path = ['_static']
 
 html_theme_options = {
-    'globaltoc_maxdepth': 4,
+    'globaltoc_maxdepth': -1,
     'globaltoc_collapse': False
 }
 
