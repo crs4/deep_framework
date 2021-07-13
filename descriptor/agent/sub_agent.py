@@ -2,7 +2,7 @@
 from multiprocessing import Process
 from utils.window import SlidingWindow
 
-
+from subprocess import Popen, PIPE
 from utils.stats_maker import StatsMaker
 
 from sub_agent_constants import *
@@ -25,11 +25,10 @@ class ObjectDescriptor(Process):
         """
         This class allows to execute a generic descriptor
         """
-        
+        self.__init_stats()
         self.rec_det_port = configuration['in']
         self.send_port = configuration['out']
         self.alg = configuration['alg']
-        self.stats_maker = StatsMaker()
         Process.__init__(self)
 
     def run(self):
@@ -55,11 +54,15 @@ class ObjectDescriptor(Process):
             module = importlib.import_module(self.alg['path'])
             alg_instance = getattr(module, self.alg['class'])
             alg_type = self.alg['type']
+            self.alg_detector_category = self.alg['detector_category']
             det = alg_instance()
             print('CREATED ',self.alg_name)
             WIN_SIZE = det.win_size
         except Exception as e:
                 print(e,'setup')
+
+        self.worker_id = self.__get_container_id()
+
 
         context = zmq.Context()
 
@@ -73,7 +76,7 @@ class ObjectDescriptor(Process):
         sub_broker_socket = context.socket(zmq.PULL)
         sub_broker_socket.connect(PROT+BROKER_ADDRESS+':'+self.rec_det_port)
 
-       
+        self.source_id = BROKER_ADDRESS.split('broker_')[-1]
 
         # sends results to sub collector
         sub_col_socket = context.socket(zmq.PUSH)
@@ -203,11 +206,25 @@ class ObjectDescriptor(Process):
         sub_broker_socket.close()
         context.term()
 
+    def __init_stats(self):
+        self.stats_maker = StatsMaker()
+        self.stats_maker.start_time = time.time()
+        self.stats_maker.elaborated_frames = 0
+        self.stats_maker.skipped_frames = 0
+        self.stats_maker.received_frames = 0
+
     def __send_stats(self):
-        
         stats = self.stats_maker.create_stats()
-        stats_dict={self.alg_name:stats}
+        #stats_dict={self.alg_name:stats}
+        stats_dict={'component_name':self.alg_name, 'worker_id':self.worker_id, 'component_type': 'descriptor', 'source_id':self.source_id, 'detector_category':self.alg_detector_category, 'stats':stats}
         send_data(self.monitor_sender,None,0,False,**stats_dict)
+
+    def __get_container_id(self):
+        command = 'cat /proc/1/cpuset'
+        result = Popen([command], stdout=PIPE, stderr=PIPE,shell=True)
+        out = result.communicate()[0].decode("utf-8")
+        container_id = out.split('/')[-1].strip('\n')
+        return container_id
 
 
 if __name__ == '__main__':
@@ -231,7 +248,7 @@ if __name__ == '__main__':
     config_file = [os.path.join(dp, f) for dp, dn, filenames in os.walk(cur_dir) for f in filenames if os.path.splitext(f)[1] == '.ini'][0]
     config = ConfigParser()
     config.read(config_file)
-    alg_config = {'path': config.get('CONFIGURATION','PATH'), 'class':config.get('CONFIGURATION','CLASS'),'name':config.get('CONFIGURATION','NAME'),'type':config.get('CONFIGURATION','TYPE')}
+    alg_config = {'detector_category': config.get('CONFIGURATION','RELATED_TO'),'path': config.get('CONFIGURATION','PATH'), 'class':config.get('CONFIGURATION','CLASS'),'name':config.get('CONFIGURATION','NAME'),'type':config.get('CONFIGURATION','TYPE')}
     
     obj_desc = ObjectDescriptor({'in':BROKER_PORT,'out':SUB_COL_PORT,'alg':alg_config})
 

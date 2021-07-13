@@ -321,6 +321,7 @@ class DetectorProvider(Interviewer):
 						detector_wished_params['dockerfiles'] = det['dockerfiles']
 						detector_wished_params['framework'] = det['framework']
 						detector_wished_params['source_id'] = source['source_id']
+						detector_wished_params['cuda_version'] = det['cuda_version']
 						source_detectors.append(detector_wished_params)
 						detectors_to_execute.append(detector_wished_params)
 
@@ -336,6 +337,7 @@ class DetectorProvider(Interviewer):
 			det_wished_config[section_name]['mode'] = det['mode']
 			det_wished_config[section_name]['framework'] = det['framework']
 			det_wished_config[section_name]['source_id'] = det['source_id']
+			det_wished_config[section_name]['cuda_version'] = det['cuda_version']
 			
 			with open(os.path.join(MAIN_DIR, DETECTOR_CONFIG_FILE), 'w') as defaultconfigfile:
 				det_wished_config.write(defaultconfigfile)
@@ -438,6 +440,8 @@ class DescriptorProvider(Interviewer):
 					descriptor_wished_params['worker'] = num_worker
 					descriptor_wished_params['dockerfiles'] = desc['dockerfiles']
 					descriptor_wished_params['source_id'] = source_id
+					descriptor_wished_params['cuda_version'] = desc['cuda_version']
+
 
 					descriptors_to_execute.append(descriptor_wished_params)
 				
@@ -455,6 +459,7 @@ class DescriptorProvider(Interviewer):
 			desc_wished_config[section_name]['related_to'] = desc['related_to']
 			desc_wished_config[section_name]['worker'] = str(desc['worker'])
 			desc_wished_config[section_name]['source_id'] = desc['source_id']
+			desc_wished_config[section_name]['cuda_version'] = desc['cuda_version']
 			
 			with open(os.path.join(MAIN_DIR, ALGS_CONFIG_FILE), 'w') as defaultconfigfile:
 				desc_wished_config.write(defaultconfigfile)

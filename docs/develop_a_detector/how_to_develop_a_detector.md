@@ -56,6 +56,7 @@ Create a configuration file with the '.ini' extension in your detector folder. T
 * **PATH**: path of the file containing the Executor class, relative to the object_extractors folder
 * **CLASS**: Executor's class name
 * **FRAMEWORK**: the framework used by the detector in case of GPU use (None if no framework is used, otherwise you can choose between caffe, tensorflow and pytorch)
+* **CUDA_VERSION**: the version of cuda used in order to train the model (None if the algorithm can be executed in CPU mode only)
 
 Example:
 * **Case 1**: The detector uses a framework but only in CPU mode or does not use any framework.

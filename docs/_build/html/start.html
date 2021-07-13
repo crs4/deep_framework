@@ -1,0 +1,204 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Getting Started &#8212; Deep-Framework  documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/classic.css" />
+    
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Face Recognition Setup" href="face_recognition.html" />
+    <link rel="prev" title="Architecture" href="architecture.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="face_recognition.html" title="Face Recognition Setup"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="architecture.html" title="Architecture"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Deep-Framework  documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Getting Started</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="getting-started">
+<h1>Getting Started<a class="headerlink" href="#getting-started" title="Permalink to this headline">¶</a></h1>
+<section id="hardware-requirements-for-a-gpu-node">
+<h2>Hardware requirements for a GPU node<a class="headerlink" href="#hardware-requirements-for-a-gpu-node" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><p>CPU Intel® Core™ i7 CPU &#64; 2.7GHz</p></li>
+<li><p>GPU Nvidia with Pascal microarchitecture. Recommended feature: 3584
+CUDA core, 12 GBs GPU GDDR5X e 480 GB/s (examples: TITAN X, GeForce
+GTX 1080 Ti);</p></li>
+<li><p>16 GB RAM;</p></li>
+</ul>
+</section>
+<section id="hardware-requirements-for-a-cpu-node">
+<h2>Hardware requirements for a CPU node<a class="headerlink" href="#hardware-requirements-for-a-cpu-node" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><p>CPU Intel® Core™ i7 CPU &#64; 2.7GHz</p></li>
+<li><p>16 GB RAM;</p></li>
+</ul>
+</section>
+<section id="software-requirements">
+<h2>Software requirements<a class="headerlink" href="#software-requirements" title="Permalink to this headline">¶</a></h2>
+<p>Operating system:</p>
+<ul class="simple">
+<li><p>Ubuntu 16.04 &lt;= version &lt;= 18.04</p></li>
+<li><p>macOS version &gt;= 10.12 Sierra (<strong>ONLY FOR A SINGLE NODE CLUSTER IN CPU MODE</strong>)</p></li>
+</ul>
+<p>Software:</p>
+<ul class="simple">
+<li><p>python 3.7</p></li>
+<li><p>pip 3</p></li>
+<li><p>git LFS</p></li>
+<li><p>nvidia-driver &gt;= 384.130</p></li>
+<li><p>Docker 18.03.1-ce</p></li>
+<li><p>Docker Compose 1.23.1</p></li>
+<li><p>nvidia-docker 2 (2.0.3+docker18.03.1-1)</p></li>
+<li><p>nvidia-container-runtime 2 (2.0.0+docker18.03.1-1)</p></li>
+</ul>
+<p>These softwares must be installed on each node of the cluster.</p>
+</section>
+<section id="installing">
+<h2>Installing<a class="headerlink" href="#installing" title="Permalink to this headline">¶</a></h2>
+<p>Deep-Framework can be deployed on a single node cluster or in a multi
+node cluster. Make sure every node is accessible via SSH. Before
+installation check disk space usage stats of your Docker installation.
+Deep Framework required al least 60 GB of free space on your disk.</p>
+<p>Software dependencies:</p>
+<ol class="arabic simple">
+<li><p>Install python 3 (at least 3.7 version).</p></li>
+<li><p>Install pip3.</p></li>
+<li><p>Install <a class="reference external" href="https://github.com/git-lfs/git-lfs/wiki/Installation">git LFS</a>.</p></li>
+<li><p>Install nvidia-driver (at least 384.130 version).</p></li>
+<li><p>Install <a class="reference external" href="https://docs.docker.com/install/linux/docker-ce/ubuntu/">Docker</a> (at least 18.03.1-ce version but lower than 19 version).</p></li>
+<li><p>Install <a class="reference external" href="https://docs.docker.com/compose/install/">Docker Compose</a> (at least 1.23.1 version).</p></li>
+<li><p>Install <a class="reference external" href="https://github.com/nvidia/nvidia-docker/wiki/Installation-(version-2.0)">nvidia-docker 2 and nvidia-container-runtime2</a> (follow instructions in order to install the proper version according to Docker’s one).</p></li>
+<li><p>Clone the repository.</p></li>
+<li><p>Install software dependencies with the following command: <code class="docutils literal notranslate"><span class="pre">$</span> <span class="pre">pip3</span> <span class="pre">install</span> <span class="pre">-r</span> <span class="pre">requirements.txt</span></code>.</p></li>
+<li><p>In order to setup Face Recognition algorithm, follow these instructions <a class="reference internal" href="face_recognition.html#face-recog-label"><span class="std std-ref">Face Recognition Setup</span></a>.</p></li>
+</ol>
+<div class="toctree-wrapper compound">
+</div>
+<p>Deep-Framework can be deployed on a single node cluster or in a multi node cluster. Make sure every node is accessible via SSH.</p>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h3><a href="index.html">Table of Contents</a></h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="features.html">Features</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="develop.html">How to develop a Detector</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="develop.html#executor-creation">Executor creation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="develop.html#creation-of-dockerfiles">Creation of dockerfiles</a></li>
+<li class="toctree-l3"><a class="reference internal" href="develop.html#creating-configuration-files">Creating configuration files</a></li>
+<li class="toctree-l3"><a class="reference internal" href="develop.html#creation-and-execution-of-tests">Creation and execution of tests</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="develop.html#how-to-develop-a-descriptor">How to develop a Descriptor</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="develop.html#class-definition">Class definition</a></li>
+<li class="toctree-l3"><a class="reference internal" href="develop.html#configuration-creation">Configuration creation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="develop.html#creation-of-the-dockerfiles">Creation of the dockerfiles</a></li>
+<li class="toctree-l3"><a class="reference internal" href="develop.html#creation-and-execution-of-the-tests">Creation and execution of the tests</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="architecture.html">Architecture</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Getting Started</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#hardware-requirements-for-a-gpu-node">Hardware requirements for a GPU node</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#hardware-requirements-for-a-cpu-node">Hardware requirements for a CPU node</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#software-requirements">Software requirements</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#installing">Installing</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="face_recognition.html">Face Recognition Setup</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="face_recognition.html#working-tree">Working tree</a></li>
+<li class="toctree-l4"><a class="reference internal" href="face_recognition.html#sample-images">Sample images</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="run.html">Running</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="usage.html#using-the-deep-framework-demo-web-application">Using the Deep-Framework Demo Web Application</a></li>
+<li class="toctree-l2"><a class="reference internal" href="usage.html#using-a-custom-web-application">Using a custom web application</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="custom_app_example.html">Custom web app example</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="usage.html#using-the-sse-api">Using the SSE API</a></li>
+</ul>
+</li>
+</ul>
+
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/start.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="face_recognition.html" title="Face Recognition Setup"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="architecture.html" title="Architecture"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Deep-Framework  documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Getting Started</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2021, Alessandro Sassu, Jose Francisco Saenz-Cogollo.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.0.3.
+    </div>
+  </body>
+</html>

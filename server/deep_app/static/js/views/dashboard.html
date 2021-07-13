@@ -1,34 +1,45 @@
-<!-- <md-toolbar layout="row" layout-align="center center" style='height: 6%;background-color: rgba(255,255,255,1);'>
-  <md-content  class="md-padding">
-    
+<div ng-controller="DashboardController">
+  
+  <md-toolbar layout="row" layout-align="center center" style='height: 6%;background-color: rgba(255,255,255,1);'>
+    <md-content  class="md-padding">
+      
+      <md-radio-group layout="row" ng-model="selected_source">
+        <b>Streams:&nbsp;&nbsp;</b>
+          <md-radio-button class="md-accent" ng-value="source" ng-repeat="source in sources">{{source}}</md-radio-button>
+      </md-radio-group>
+      
+      <md-radio-group layout="row" ng-model="selected_pipeline" >
+        <b>Pipelines:&nbsp;&nbsp;</b>
+        <md-radio-button class="md-accent" ng-value="pipeline" ng-repeat="pipeline in pipelines">{{pipeline}}
+        </md-radio-button>
+      </md-radio-group>
+    </md-content>
 
-    <md-radio-group layout="row" >
-        <md-radio-button class="md-accent" value="face">Face</md-radio-button>
-        <md-radio-button class="md-accent" value="body">Body</md-radio-button>
-    </md-radio-group>
+  </md-toolbar> 
 
-    
-  </md-content>
-
-</md-toolbar> 
-
- -->
-<div layout-gt-md="row">
-  <panel-widget flex title="Detector" template="static/js/views/partials/detector.html" 
-  class="fixed-height-widget"></panel-widget>
-  <panel-widget flex title="Collector" template="static/js/views/partials/collector.html" 
-  class="fixed-height-widget"></panel-widget>
-  <panel-widget flex title="Stream server" template="static/js/views/partials/streamStats.html" 
-  class="fixed-height-widget"></panel-widget>
+  
+  <div layout-gt-md="row" ng-if="selected_source && selected_pipeline">
+    <panel-widget flex title="Stream server" template="static/js/views/partials/streamStats.html"
+    class="fixed-height-widget"></panel-widget>
+    <panel-widget flex title="Detector" template="static/js/views/partials/detector.html" 
+    class="fixed-height-widget" ng-if="selected_pipeline"></panel-widget>
+    <panel-widget flex title="Collector" template="static/js/views/partials/collector.html" class="fixed-height-widget">
+    </panel-widget>
+  </div>
+  
+  <div ng-controller="AlgorithmController as vm" ng-if="selected_source && selected_pipeline">
+    <div id="alg_div" layout-gt-md="row">
+  
+    </div>
+  
+    <div layout-gt-md="row">
+      <panel-widget flex title="Performance" template="static/js/views/partials/performance.html"></panel-widget>
+    </div>
 </div>
 
+<!-- 
+<panel-widget flex title="Collector" template="static/js/views/partials/collector.html" 
+class="fixed-height-widget"></panel-widget> -->
 
-<div ng-controller="AlgorithmController as vm">
-  <div id="alg_div" layout-gt-md="row">
 
-  </div>
-
-  <div layout-gt-md="row">
-    <panel-widget flex title="Performance" template="static/js/views/partials/performance.html"></panel-widget>
-  </div>
 </div>

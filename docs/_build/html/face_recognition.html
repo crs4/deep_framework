@@ -1,0 +1,164 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Face Recognition Setup &#8212; Deep-Framework  documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/classic.css" />
+    
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Running" href="run.html" />
+    <link rel="prev" title="Getting Started" href="start.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="run.html" title="Running"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="start.html" title="Getting Started"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Deep-Framework  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="start.html" accesskey="U">Getting Started</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Face Recognition Setup</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="face-recognition-setup">
+<span id="face-recog-label"></span><h1>Face Recognition Setup<a class="headerlink" href="#face-recognition-setup" title="Permalink to this headline">¶</a></h1>
+<ol class="arabic simple">
+<li><p>Navigate to the following <a class="reference external" href="https://github.com/crs4/deep_framework/tree/master/descriptor/feature_extractors/face_recognition">path</a>.</p></li>
+<li><p>Create the path: <cite>template_models/images/</cite></p></li>
+<li><p>In folder <cite>images</cite>, create subfolders named as people you want to recognize.</p></li>
+<li><p>In each subfolder, you have to save images of the relative person (at least 5 good quality images in different poses).</p></li>
+</ol>
+<section id="working-tree">
+<h2>Working tree<a class="headerlink" href="#working-tree" title="Permalink to this headline">¶</a></h2>
+<figure class="align-default">
+<img alt="architecture scheme" src="_images/tree.jpg" />
+</figure>
+</section>
+<section id="sample-images">
+<h2>Sample images<a class="headerlink" href="#sample-images" title="Permalink to this headline">¶</a></h2>
+<figure class="align-default">
+<img alt="architecture scheme" src="_images/as_sample.jpg" />
+</figure>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h3><a href="index.html">Table of Contents</a></h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="features.html">Features</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="develop.html">How to develop a Detector</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="develop.html#executor-creation">Executor creation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="develop.html#creation-of-dockerfiles">Creation of dockerfiles</a></li>
+<li class="toctree-l3"><a class="reference internal" href="develop.html#creating-configuration-files">Creating configuration files</a></li>
+<li class="toctree-l3"><a class="reference internal" href="develop.html#creation-and-execution-of-tests">Creation and execution of tests</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="develop.html#how-to-develop-a-descriptor">How to develop a Descriptor</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="develop.html#class-definition">Class definition</a></li>
+<li class="toctree-l3"><a class="reference internal" href="develop.html#configuration-creation">Configuration creation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="develop.html#creation-of-the-dockerfiles">Creation of the dockerfiles</a></li>
+<li class="toctree-l3"><a class="reference internal" href="develop.html#creation-and-execution-of-the-tests">Creation and execution of the tests</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="architecture.html">Architecture</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="start.html">Getting Started</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="start.html#hardware-requirements-for-a-gpu-node">Hardware requirements for a GPU node</a></li>
+<li class="toctree-l2"><a class="reference internal" href="start.html#hardware-requirements-for-a-cpu-node">Hardware requirements for a CPU node</a></li>
+<li class="toctree-l2"><a class="reference internal" href="start.html#software-requirements">Software requirements</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="start.html#installing">Installing</a><ul class="current">
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Face Recognition Setup</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#working-tree">Working tree</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#sample-images">Sample images</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="run.html">Running</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="usage.html#using-the-deep-framework-demo-web-application">Using the Deep-Framework Demo Web Application</a></li>
+<li class="toctree-l2"><a class="reference internal" href="usage.html#using-a-custom-web-application">Using a custom web application</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="custom_app_example.html">Custom web app example</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="usage.html#using-the-sse-api">Using the SSE API</a></li>
+</ul>
+</li>
+</ul>
+
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/face_recognition.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="run.html" title="Running"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="start.html" title="Getting Started"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Deep-Framework  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="start.html" >Getting Started</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Face Recognition Setup</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2021, Alessandro Sassu, Jose Francisco Saenz-Cogollo.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.0.3.
+    </div>
+  </body>
+</html>

@@ -16,9 +16,9 @@ The current version includes an implementation of following pipelines:
 * A vehicle detector and an algorithm that performs a flux analysis of the scene.
 
 It's possible to run multiple pipeline at the same time.
-
-
 A demo web app is also included.
+
+This work was published in the journal Sensors in the Special Issue "Applications of Video Processing and Computer Vision Sensors". The article is available in open access at this [link](https://www.mdpi.com/1424-8220/21/12/4045#).
 
 ## Features
 * Can handle multiple video streams from IP cameras and webcams.
@@ -96,6 +96,8 @@ Software dependencies:
 10.  In order to setup Face Recognition algorithm, follow these [instructions](docs/face_recognition_docs/face_recognition.md).
 
 DEEP-Framework can be deployed on a single node cluster or in a multi node cluster. Make sure every node is accessible via SSH.
+
+Note that if the cluster consists of several nodes with gpu, it is necessary to run the framework on the node with a more recent version of the CUDA driver in order to correctly build the Docker images
 
 
 ## Running

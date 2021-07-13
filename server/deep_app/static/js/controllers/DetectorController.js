@@ -18,16 +18,20 @@ function DetectorController($scope,statsService) {
     statsService.get_data(function(response) {
         var temp_j = (response.data).replace(/'/g, '"');
         $scope.stats_data = JSON.parse(temp_j);
-        //console.log($scope.stats_data,'out');
-        $scope.chart_data = [];
-        var detector_data = $scope.stats_data.FaceProvider;
-        $scope.detector_fps = detector_data['fps'];
-        $scope.detector_total = detector_data['received_frames'];
-        $scope.people = detector_data['stat_people'];
-        
-        $scope.chart_data.push({key: 'elaborated frames', y: detector_data['elaborated_frames']});
-        $scope.chart_data.push({key: 'skipped frames', y: detector_data['skipped_frames']});
-        $scope.$apply();
+        $scope.selected_source = statsService.get_selected_source()
+        $scope.selected_pipeline = statsService.get_selected_pipeline()
+        if ($scope.selected_source && $scope.selected_pipeline) {
+            //console.log($scope.stats_data,'out');
+            $scope.chart_data = [];
+            var detector_data = $scope.stats_data[$scope.selected_source].pipelines[$scope.selected_pipeline].detector
+            $scope.detector_fps = detector_data['fps'];
+            $scope.detector_total = detector_data['received_frames'];
+            $scope.people = detector_data['stat_people'];
+            
+            $scope.chart_data.push({key: 'elaborated frames', y: detector_data['elaborated_frames']});
+            $scope.chart_data.push({key: 'skipped frames', y: detector_data['skipped_frames']});
+            $scope.$apply();
+        }
     });
 
    
