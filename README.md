@@ -18,7 +18,7 @@ The current version includes an implementation of following pipelines:
 It's possible to run multiple pipeline at the same time.
 A demo web app is also included.
 
-This work was published in the journal Sensors in the Special Issue "Applications of Video Processing and Computer Vision Sensors". The article is available in open access at the following link: https://www.mdpi.com/1424-8220/21/12/4045#
+This work was published in the journal Sensors in the Special Issue "Applications of Video Processing and Computer Vision Sensors". The article is available in open access at the following [link](https://www.mdpi.com/1424-8220/21/12/4045#).
 
 Sassu, A.; Saenz-Cogollo, J.F.; Agelli, M. Deep-Framework: A Distributed, Scalable, and Edge-Oriented Framework for Real-Time Analysis of Video Streams. Sensors 2021, 21, 4045. https://doi.org/10.3390/s21124045
 
