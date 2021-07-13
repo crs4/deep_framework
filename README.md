@@ -22,6 +22,7 @@ This work was published in the journal Sensors in the Special Issue "Application
 
 
 Available documentation on readthedocs
+
 [![Documentation Status](https://readthedocs.org/projects/deep-framework/badge/?version=latest)](https://deep-framework.readthedocs.io/en/latest/?badge=latest)
 
 
