@@ -17,7 +17,7 @@
     
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Running" href="run.html" />
+    <link rel="next" title="Face Recognition Setup" href="face_recognition.html" />
     <link rel="prev" title="Architecture" href="architecture.html" /> 
   </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
@@ -27,7 +27,7 @@
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="run.html" title="Running"
+          <a href="face_recognition.html" title="Face Recognition Setup"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="architecture.html" title="Architecture"
@@ -100,6 +100,8 @@ Deep Framework required al least 60 GB of free space on your disk.</p>
 <li><p>Install software dependencies with the following command: <code class="docutils literal notranslate"><span class="pre">$</span> <span class="pre">pip3</span> <span class="pre">install</span> <span class="pre">-r</span> <span class="pre">requirements.txt</span></code>.</p></li>
 <li><p>In order to setup Face Recognition algorithm, follow these instructions <a class="reference internal" href="face_recognition.html#face-recog-label"><span class="std std-ref">Face Recognition Setup</span></a>.</p></li>
 </ol>
+<div class="toctree-wrapper compound">
+</div>
 <p>Deep-Framework can be deployed on a single node cluster or in a multi node cluster. Make sure every node is accessible via SSH.</p>
 </section>
 </section>
@@ -110,24 +112,47 @@ Deep Framework required al least 60 GB of free space on your disk.</p>
         </div>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper">
-  <h3><a href="index.html">Table of Contents</a></h3>
-  <ul>
-<li><a class="reference internal" href="#">Getting Started</a><ul>
-<li><a class="reference internal" href="#hardware-requirements-for-a-gpu-node">Hardware requirements for a GPU node</a></li>
-<li><a class="reference internal" href="#hardware-requirements-for-a-cpu-node">Hardware requirements for a CPU node</a></li>
-<li><a class="reference internal" href="#software-requirements">Software requirements</a></li>
-<li><a class="reference internal" href="#installing">Installing</a></li>
+        <div class="sphinxsidebarwrapper"><ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="features.html">Features</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="develop.html">How to develop a Detector</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="develop.html#executor-creation">Executor creation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="develop.html#creation-of-dockerfiles">Creation of dockerfiles</a></li>
+<li class="toctree-l3"><a class="reference internal" href="develop.html#creating-configuration-files">Creating configuration files</a></li>
+<li class="toctree-l3"><a class="reference internal" href="develop.html#creation-and-execution-of-tests">Creation and execution of tests</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="develop.html#how-to-develop-a-descriptor">How to develop a Descriptor</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="develop.html#class-definition">Class definition</a></li>
+<li class="toctree-l3"><a class="reference internal" href="develop.html#configuration-creation">Configuration creation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="develop.html#creation-of-the-dockerfiles">Creation of the dockerfiles</a></li>
+<li class="toctree-l3"><a class="reference internal" href="develop.html#creation-and-execution-of-the-tests">Creation and execution of the tests</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="architecture.html">Architecture</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Getting Started</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#hardware-requirements-for-a-gpu-node">Hardware requirements for a GPU node</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#hardware-requirements-for-a-cpu-node">Hardware requirements for a CPU node</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#software-requirements">Software requirements</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#installing">Installing</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="face_recognition.html">Face Recognition Setup</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="run.html">Running</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="usage.html#using-the-deep-framework-demo-web-application">Using the Deep-Framework Demo Web Application</a></li>
+<li class="toctree-l2"><a class="reference internal" href="usage.html#using-a-custom-web-application">Using a custom web application</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="custom_app_example.html">Custom web app example</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="usage.html#using-the-sse-api">Using the SSE API</a></li>
 </ul>
 </li>
 </ul>
 
-  <h4>Previous topic</h4>
-  <p class="topless"><a href="architecture.html"
-                        title="previous chapter">Architecture</a></p>
-  <h4>Next topic</h4>
-  <p class="topless"><a href="run.html"
-                        title="next chapter">Running</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -156,7 +181,7 @@ Deep Framework required al least 60 GB of free space on your disk.</p>
           <a href="genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="run.html" title="Running"
+          <a href="face_recognition.html" title="Face Recognition Setup"
              >next</a> |</li>
         <li class="right" >
           <a href="architecture.html" title="Architecture"

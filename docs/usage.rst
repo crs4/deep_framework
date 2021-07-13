@@ -19,6 +19,12 @@ Using a custom web application
 You can interact directly with the Server and the Stream Manager from your browser-based application by using the `hyperpeer-js module <https://github.com/crs4/hyperpeer-js>`__ (Deep-Framework video streaming is based on `Hyperpeer <http://www.crs4.it/results/technology-catalogue/hyperpeer/>`__ which in turn is based on `WebRTC <https://en.wikipedia.org/wiki/WebRTC>`__). You can install this javascript library (currently available only through its GitHub repo) and using it in your code using browserify or any other frontend package manager. In :ref:`custom_web_app_label`, you can find a simplified example that illustrates how to use `hyperpeer-js <https://github.com/crs4/hyperpeer-js>`__ for sending the local webcam video stream and get the results as ``data`` events. See `hyperpeer-js <https://github.com/crs4/hyperpeer-js>`__ documentation for more details.
 
 
+.. toctree::
+   :maxdepth: 2
+   :hidden:
+
+   custom_app_example
+
 Using the SSE API
 ~~~~~~~~~~~~~~~~~
 

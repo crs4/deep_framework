@@ -1,4 +1,3 @@
-:orphan:
 
 .. _detector_devel_label:
 

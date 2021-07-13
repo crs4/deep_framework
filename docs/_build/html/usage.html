@@ -17,6 +17,7 @@
     
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Custom web app example" href="custom_app_example.html" />
     <link rel="prev" title="Running" href="run.html" /> 
   </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
@@ -25,6 +26,9 @@
         <li class="right" style="margin-right: 10px">
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="custom_app_example.html" title="Custom web app example"
+             accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="run.html" title="Running"
              accesskey="P">previous</a> |</li>
@@ -55,6 +59,8 @@
 <section id="using-a-custom-web-application">
 <h2>Using a custom web application<a class="headerlink" href="#using-a-custom-web-application" title="Permalink to this headline">¶</a></h2>
 <p>You can interact directly with the Server and the Stream Manager from your browser-based application by using the <a class="reference external" href="https://github.com/crs4/hyperpeer-js">hyperpeer-js module</a> (Deep-Framework video streaming is based on <a class="reference external" href="http://www.crs4.it/results/technology-catalogue/hyperpeer/">Hyperpeer</a> which in turn is based on <a class="reference external" href="https://en.wikipedia.org/wiki/WebRTC">WebRTC</a>). You can install this javascript library (currently available only through its GitHub repo) and using it in your code using browserify or any other frontend package manager. In <a class="reference internal" href="custom_app_example.html#custom-web-app-label"><span class="std std-ref">Custom web app example</span></a>, you can find a simplified example that illustrates how to use <a class="reference external" href="https://github.com/crs4/hyperpeer-js">hyperpeer-js</a> for sending the local webcam video stream and get the results as <code class="docutils literal notranslate"><span class="pre">data</span></code> events. See <a class="reference external" href="https://github.com/crs4/hyperpeer-js">hyperpeer-js</a> documentation for more details.</p>
+<div class="toctree-wrapper compound">
+</div>
 </section>
 <section id="using-the-sse-api">
 <h2>Using the SSE API<a class="headerlink" href="#using-the-sse-api" title="Permalink to this headline">¶</a></h2>
@@ -75,20 +81,47 @@
         </div>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper">
-  <h3><a href="index.html">Table of Contents</a></h3>
-  <ul>
-<li><a class="reference internal" href="#">Usage</a><ul>
-<li><a class="reference internal" href="#using-the-deep-framework-demo-web-application">Using the Deep-Framework Demo Web Application</a></li>
-<li><a class="reference internal" href="#using-a-custom-web-application">Using a custom web application</a></li>
-<li><a class="reference internal" href="#using-the-sse-api">Using the SSE API</a></li>
+        <div class="sphinxsidebarwrapper"><ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="features.html">Features</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="develop.html">How to develop a Detector</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="develop.html#executor-creation">Executor creation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="develop.html#creation-of-dockerfiles">Creation of dockerfiles</a></li>
+<li class="toctree-l3"><a class="reference internal" href="develop.html#creating-configuration-files">Creating configuration files</a></li>
+<li class="toctree-l3"><a class="reference internal" href="develop.html#creation-and-execution-of-tests">Creation and execution of tests</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="develop.html#how-to-develop-a-descriptor">How to develop a Descriptor</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="develop.html#class-definition">Class definition</a></li>
+<li class="toctree-l3"><a class="reference internal" href="develop.html#configuration-creation">Configuration creation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="develop.html#creation-of-the-dockerfiles">Creation of the dockerfiles</a></li>
+<li class="toctree-l3"><a class="reference internal" href="develop.html#creation-and-execution-of-the-tests">Creation and execution of the tests</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="architecture.html">Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="start.html">Getting Started</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="start.html#hardware-requirements-for-a-gpu-node">Hardware requirements for a GPU node</a></li>
+<li class="toctree-l2"><a class="reference internal" href="start.html#hardware-requirements-for-a-cpu-node">Hardware requirements for a CPU node</a></li>
+<li class="toctree-l2"><a class="reference internal" href="start.html#software-requirements">Software requirements</a></li>
+<li class="toctree-l2"><a class="reference internal" href="start.html#installing">Installing</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="face_recognition.html">Face Recognition Setup</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="run.html">Running</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Usage</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#using-the-deep-framework-demo-web-application">Using the Deep-Framework Demo Web Application</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#using-a-custom-web-application">Using a custom web application</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="custom_app_example.html">Custom web app example</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#using-the-sse-api">Using the SSE API</a></li>
 </ul>
 </li>
 </ul>
 
-  <h4>Previous topic</h4>
-  <p class="topless"><a href="run.html"
-                        title="previous chapter">Running</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -116,6 +149,9 @@
         <li class="right" style="margin-right: 10px">
           <a href="genindex.html" title="General Index"
              >index</a></li>
+        <li class="right" >
+          <a href="custom_app_example.html" title="Custom web app example"
+             >next</a> |</li>
         <li class="right" >
           <a href="run.html" title="Running"
              >previous</a> |</li>

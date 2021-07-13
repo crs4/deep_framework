@@ -10,3 +10,9 @@ Features
 -  Can stream resulting data and input video to any web application via `WebRTC <https://en.wikipedia.org/wiki/WebRTC>`__. It can also handle the video stream provided by a client web app via WebRTC.
 -  It's possibile to develop and deploy your own detector. See :ref:`detector_devel_label`.
 -  It's possibile to develop and deploy your own descriptor. See :ref:`descriptor_devel_label`.
+
+.. toctree::
+   :maxdepth: 2
+   :hidden:
+
+   develop

@@ -60,4 +60,11 @@ Software dependencies:
 #. Install software dependencies with the following command: ``$ pip3 install -r requirements.txt``.
 #. In order to setup Face Recognition algorithm, follow these instructions :ref:`face_recog_label`.
 
+
+.. toctree::
+   :maxdepth: 2
+   :hidden:
+
+   face_recognition
+
 Deep-Framework can be deployed on a single node cluster or in a multi node cluster. Make sure every node is accessible via SSH.

@@ -1,4 +1,3 @@
-:orphan:
 
 .. _face_recog_label:
 

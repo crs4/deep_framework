@@ -1,5 +1,4 @@
 
-:orphan:
 
 .. _custom_web_app_label:
 
