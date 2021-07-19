@@ -150,6 +150,7 @@ class Collector(Process):
             r['objects'] = objects_res
             r['frame_attributes'] = subs_image_attributes['image_attributes']
             r['vc_time'] = vc_time
+            r['detector_category'] = COMPONENT_NAME.split('_')[0]
             
             
             send_data(sender,None,0,False,**r)
