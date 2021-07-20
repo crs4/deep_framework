@@ -531,7 +531,7 @@ class StandardProvider(Interviewer):
 class ServerProvider(Interviewer):
 
 	def __init__(self,nodes):
-		self.nodes_names = nodes.keys()
+		self.nodes_names = list(nodes.keys())
 		super().__init__()
 
 
