@@ -552,7 +552,7 @@ class ServerProvider(Interviewer):
 		server_node = 'not_specified'
 
 		
-		specific_node = self.get_acceptable_answer('Do you want to deploy the server component on one a specific node of the cluster? (y/n): \n',['y','n'])
+		specific_node = self.get_acceptable_answer('Do you want to deploy the server component in a specific node of the cluster? (y/n): \n',['y','n'])
 		if specific_node == 'y':
 			server_node = self.get_acceptable_answer('Which of the following nodes? '+ str(self.nodes_names)+': \n',self.nodes_names)
 		server_dict['node'] = server_node
