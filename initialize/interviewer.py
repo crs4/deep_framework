@@ -556,7 +556,7 @@ class ServerProvider(Interviewer):
 		if specific_node == 'y':
 			server_node = self.get_acceptable_answer('Which of the following nodes? '+ str(self.nodes_names)+': \n',self.nodes_names)
 		server_dict['node'] = server_node
-		return server_node
+		return server_dict
 
 	def write_server(self,server):
 		server_config = ConfigParser()
