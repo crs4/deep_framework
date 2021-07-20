@@ -528,9 +528,73 @@ class StandardProvider(Interviewer):
 
 
 
+class ServerProvider(Interviewer):
+
+	def __init__(self,nodes):
+		self.nodes_names = nodes.keys()
+		super().__init__()
 
 
+	def want_to_change(self):
 
+		config_question = 'Server configuration file found. Do you want to change it? (y/n): \n'
+		if not os.path.isfile(SERVER_CONFIG_FILE):
+			return True
+
+		if self.get_acceptable_answer(config_question,['y','n']).lower() == 'n':
+			return False
+		else:
+			return True
+
+
+	def ask_for_server(self):
+		server_dict = {}
+		server_node = 'not_specified'
+
+		
+		specific_node = self.get_acceptable_answer('Do you want to deploy the server component on one a specific node of the cluster? (y/n): \n',['y','n'])
+		if specific_node == 'y':
+			server_node = self.get_acceptable_answer('Which of the following nodes? '+ str(self.nodes_names)+': \n',self.nodes_names)
+		server_dict['node'] = server_node
+		return server_node
+
+	def write_server(self,server):
+		server_config = ConfigParser()
+		section_name = 'server configuration'
+		server_config[section_name] = {}
+		server_config[section_name]['node'] = server['node']
+		
+		with open(os.path.join(MAIN_DIR, SERVER_CONFIG_FILE), 'w') as defaultconfigfile:
+			server_config.write(defaultconfigfile)
+		
+	def read_server(self):
+
+		reader_server_config = ConfigParser()
+		reader_server_config.read(SERVER_CONFIG_FILE)
+		server_section = reader_server_config.sections()[0]
+		server_config = dict(reader_server_config[server_section])
+		return server_config
+
+
+	def get_server(self, use_last_settings):
+
+		if not use_last_settings:
+
+			if len(self.nodes_names) == 1:
+				server = dict()
+				server['node'] = 'not_specified'
+				return server
+
+
+			if not self.want_to_change():
+				server = self.read_server()
+			else:
+				server = self.ask_for_server()
+				self.write_server(server)
+		else:
+			server = self.read_server()
+
+		return server
 
 
 
