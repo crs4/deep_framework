@@ -18,7 +18,8 @@ function ViewerController($scope, $timeout, dataService) {
     
     let video = ($('#video'))[0]
     let canvas = $('#canvas')[0] //$document.getElementById('canvas');
-    $scope.demoVideoCanvas = new EnhancedFacesVideoCanvas(video, canvas) 
+    $scope.faceRenderer = new EnhancedFacesVideoCanvas(video, canvas)
+    $scope.objectRenderer = new EnhancedObjectsVideoCanvas(video, canvas)
     
     function handleConnectionChange() {
         $timeout(() => {
@@ -28,8 +29,10 @@ function ViewerController($scope, $timeout, dataService) {
     }
 
     function handleIncomingData(data) {
-        if (data.type == 'data') {
-            $scope.demoVideoCanvas.setData(data)
+        if (data.type != 'data') return
+        $scope.objectRenderer.setData(data)
+        if (data.detector_category == 'face') {
+            $scope.faceRenderer.setData(data)
         }
     }
 
@@ -51,7 +54,8 @@ function ViewerController($scope, $timeout, dataService) {
     function refreshVideoCanvas() {
         // request new frame
         $scope.requestAnimationId = window.requestAnimationFrame(refreshVideoCanvas)
-        $scope.demoVideoCanvas.refresh()
+        $scope.objectRenderer.refresh()
+        $scope.faceRenderer.refresh()
     };
     
     video.addEventListener('play', function () {
@@ -69,7 +73,6 @@ class EnhancedVideoCanvas {
     }
 
     setData(data) {
-        if (data.objects) this.objects = data.objects
         if (data.frame_shape) {
             this.frameWidth = data.frame_shape[1]
             this.frameHeight = data.frame_shape[0]
@@ -94,30 +97,96 @@ class EnhancedVideoCanvas {
     }
 }
 
-class EnhancedFacesVideoCanvas extends EnhancedVideoCanvas{
+class EnhancedObjectsVideoCanvas extends EnhancedVideoCanvas{
+    constructor(...args) {
+        super(...args)
+        this.objectsData = {}
+        this.boxColors = ['yellow', 'red', 'blue', 'lime', 'orange', 'magenta', 'cyan', 'gold', 'purple', 'green']
+        //this.boxColors = [];
+        this.objects = {}
+        this.availableBoxColors = this.boxColors.map(c => c)
+        this.objColorMap = new Map()
+    }
+
+    setData(data) {
+        super.setData(data)
+        this.objects[data.detector_category] = []
+        for (const obj of data.objects) {
+            let objectData = {
+                pid: obj.pid,
+                bbox: obj.rect
+            }
+            const color_class = data.detector_category + obj.class
+            objectData.color = this.objColorMap.get(color_class)
+            if (!objectData.color) {
+                objectData.color = this.availableBoxColors.shift()
+            }
+            if (!objectData.color) {
+                objectData.color = 'black'
+            }
+            this.objColorMap.set(color_class, objectData.color)
+            this.objects[data.detector_category].push(objectData)
+        }
+        // Reuse colors when assigned to object type that disappear
+        // if (Object.keys(this.objects).length < this.objColorMap.size) {
+        //     this.objColorMap.forEach((value, key, map) => {
+        //         if (!this.objectsData.hasOwnProperty(key) && value != 'black') {
+        //             map.delete(key)
+        //             this.availableBoxColors.push(value)
+        //         }
+        //     })
+        // }
+    }
+
+    refresh() {
+        super.refresh()
+        for (const det_cat in this.objects) {
+            for (const objectData of this.objects[det_cat]) {
+                if (!objectData.bbox) return
+                const xScaleFactor = this.frameWidth ? this.canvas.width / frameWidth : this.getXScaleFactor()
+                const yScaleFactor = this.frameHeight ? this.canvas.height / frameHeight : this.getYScaleFactor()
+                var x = objectData.bbox.x_topleft * xScaleFactor
+                var y = objectData.bbox.y_topleft * yScaleFactor
+                var w = (objectData.bbox.x_bottomright - objectData.bbox.x_topleft) * xScaleFactor
+                var h = (objectData.bbox.y_bottomright - objectData.bbox.y_topleft) * yScaleFactor
+                this.context.beginPath()
+                this.context.rect(x, y, w, h)
+                this.context.lineWidth = 5
+                this.context.strokeStyle = objectData.color
+                this.context.stroke()
+        
+                // this.context.font = "20px Arial"
+                // this.context.fillStyle = objectData.color
+                // this.context.fillText('ciao', objectData.bbox.x_topleft * xScaleFactor + 5, objectData.bbox.y_bottomright * yScaleFactor - 10)
+
+            }
+        }
+    }
+}
+
+class EnhancedFacesVideoCanvas extends EnhancedVideoCanvas {
     constructor(...args) {
         super(...args)
         this.facesData = {}
-        this.boxColors = ['yellow', 'red', 'blue', 'lime', 'orange', 'magenta', 'cyan', 'gold', 'purple', 'green']
-        //this.boxColors = [];
-        
-        this.availableBoxColors = this.boxColors.map(c => c)
-        this.faceColorMap = new Map()
+        this.haveData = false
     }
 
     setData(data) {
         super.setData(data)
         this.facesData = {}
-        if (!this.objects.length) return
-        const faces = this.objects
+        if (!data.objects.length) {
+            this.haveData = false
+            return
+        }
+        const faces = data.objects
         faces.forEach((face) => {
             let faceData = {
                 pid: face.pid,
                 bbox: face.rect,
                 name: !face.face_recognition || face.face_recognition.value == 'Unknown' ?
                     `${face.class} ${face.pid.slice(-4)}` : face.face_recognition.value,
-                pitch: face.pitch ? face.pitch.value: undefined,
-                yaw: face.yaw ? face.yaw.value: undefined,
+                pitch: face.pitch ? face.pitch.value : undefined,
+                yaw: face.yaw ? face.yaw.value : undefined,
                 gender: face.gender ? face.gender.value : '-',
                 age: face.age ? face.age.value.slice(1, 7).replace(',', () => ' -') : '-',
                 emotions: face.emotion ? face.emotion.value.map(e => {
@@ -129,28 +198,14 @@ class EnhancedFacesVideoCanvas extends EnhancedVideoCanvas{
                 }) : [],
                 glasses: face.glasses ? face.glasses.value.slice(2, -1) : ''
             }
-            faceData.color = this.faceColorMap.get(face.class)
-            if (!faceData.color) {
-                faceData.color = this.availableBoxColors.shift()
-            }
-            if (!faceData.color) {
-                faceData.color = 'black'
-            }
-            this.faceColorMap.set(face.class, faceData.color)
+            faceData.color = 'black'
             this.facesData[face.pid] = faceData
         })
-        if (Object.keys(this.facesData).length < this.faceColorMap.size) {
-            this.faceColorMap.forEach((value, key, map) => {
-                if (!this.facesData.hasOwnProperty(key) && value != 'black') {
-                    map.delete(key)
-                    this.availableBoxColors.push(value)
-                }
-            })
-        }
+        this.haveData = true
     }
 
     refresh() {
-        super.refresh()
+        // super.refresh()
         for (let face in this.facesData) {
             let faceData = this.facesData[face]
             if (!faceData.bbox) return
@@ -160,11 +215,11 @@ class EnhancedFacesVideoCanvas extends EnhancedVideoCanvas{
             var y = faceData.bbox.y_topleft * yScaleFactor
             var w = (faceData.bbox.x_bottomright - faceData.bbox.x_topleft) * xScaleFactor
             var h = (faceData.bbox.y_bottomright - faceData.bbox.y_topleft) * yScaleFactor
-            this.context.beginPath()
-            this.context.rect(x, y, w, h)
-            this.context.lineWidth = 5
-            this.context.strokeStyle = faceData.color
-            this.context.stroke()
+            // this.context.beginPath()
+            // this.context.rect(x, y, w, h)
+            // this.context.lineWidth = 5
+            // this.context.strokeStyle = faceData.color
+            // this.context.stroke()
             if (faceData.pitch) {
                 const pitchScaling = h / 30
                 let px = x

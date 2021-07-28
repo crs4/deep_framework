@@ -1,14 +1,14 @@
 <div ng-controller="ViewerController">
     <div layout-gt-lg="row" layout="column">
         <div flex="" flex-gt-lg="75" ng-show="status == 'connected'" >
-            <h2 style="text-align: center;">Enhanced Video</h2>
+            <!-- <h2 style="text-align: center;">Enhanced Video</h2> -->
             <video id="video" width='1280px' height='720px' autoplay style="display: none"></video>
             <canvas id="canvas" width='auto' height='auto' ></canvas>
             
         </div>
-        <div flex="" flex-gt-lg="25" ng-show="status == 'connected'" >
+        <div flex="" flex-gt-lg="25" ng-show="status == 'connected' && faceRenderer.haveData" >
 
-            <h2 style="text-align: center;">Video Data</h2>
+            <h2 style="text-align: center;">Face Data</h2>
             <div class="table-responsive-vertical md-whiteframe-z1">
                 <table id="table" class="table table-hover table-bordered">
                     <thead>
@@ -21,7 +21,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr ng-repeat="face in demoVideoCanvas.facesData track by face.pid" >
+                        <tr ng-repeat="face in faceRenderer.facesData track by face.pid" >
                             <td data-title="Name">
                                 <i class="material-icons" style="color: {{face.color}}">face</i> {{face.name}}</td>
                             <td data-title="Gender">{{face.gender}}</td>
