@@ -24,9 +24,12 @@ if __name__ == "__main__":
 		print('Using last configuration and settings...')
 
 	machine = Machine()
-	cluster_manager = ClusterManager()
-	registry = Registry()
+	registry = Registry(machine)
+
+	cluster_manager = ClusterManager(machine,registry)
+
 	starter = Starter(machine,registry,cluster_manager,use_last_settings=args.run)
+
 	nodes_data = starter.get_nodes()
 	
 
@@ -58,7 +61,7 @@ if __name__ == "__main__":
 
 	
 
-	gpu_alloc = GPUallocator(nodes_data,descs,dets)
+	gpu_alloc = GPUallocator(machine,nodes_data,descs,dets)
 	alg_gpu_matches = gpu_alloc.match_algs_gpus()
 	
 	

@@ -7,24 +7,24 @@ import re
 import math
 import collections
 
-from initialize.nodes_utils import SSHConnector,Machine
+from initialize.nodes_utils import SSHConnector
 
 
 
-class GPUallocator(Machine):
+class GPUallocator:
 
 
 
-	def __init__(self,nodes,algorithms,detector):
-		Machine.__init__(self)
+	def __init__(self,machine,nodes,algorithms,detector):
 		self.nodes = nodes
 		self.algs = collections.OrderedDict()
 		self.memory_thr = 2000
 		self.driver_version_thr = 384.0
 		self.__set_algs(detector,algorithms)
 		self.num_detector = len(detector)
+		self.machine = machine
 
-
+		
 	def __set_algs(self,detectors,algorithms):
 		"""
 		This method creates an ordered dict with detector on the top.
@@ -86,7 +86,7 @@ class GPUallocator(Machine):
 		for node_name, node in self.nodes.items():
 			nodes_gpu_info[node_name] = node
 			node_gpus = []
-			self.connection = SSHConnector(node['ip'], node['user'], self.SSH_KEY)
+			self.connection = SSHConnector(node['ip'], node['user'], self.machine.SSH_KEY)
 			suitable = self.__check_gpu_exists_and_suitable(node_name,node)
 			if suitable:
 				command = 'echo -e "import GPUtil\nGPUs = GPUtil.getGPUs()\nfor gpu in GPUs: print(gpu.__dict__)" | python3'

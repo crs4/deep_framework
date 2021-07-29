@@ -61,11 +61,11 @@ class Starter:
 	def manage_registry(self):
 		
 		running = self.registry.check_registry_running()
-		 
+
 		if not running:
 			self.registry.start_registry()
 		self.registry.manage_docker_daemon_json()
-		
+
 
 
 	def __get_top_manager(self):
