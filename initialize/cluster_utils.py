@@ -53,6 +53,7 @@ class ClusterManager:
 		
 		cluster_filename = os.path.join(MAIN_DIR,CLUSTER_CONFIG_FILE)
 		alg_file = os.path.join(MAIN_DIR, ALGS_CONFIG_FILE)
+		server_file = os.path.join(MAIN_DIR, SERVER_CONFIG_FILE)
 		
 		cluster_exist = os.path.isfile(cluster_filename)
 
@@ -70,6 +71,9 @@ class ClusterManager:
 			else:
 				if os.path.exists(alg_file):
 					os.remove(alg_file)
+
+				if os.path.exists(server_file):
+					os.remove(server_file)
 
 		
 		nodes_number = self.q.get_number('How many nodes? \n','int')
