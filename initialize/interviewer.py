@@ -583,6 +583,7 @@ class ServerProvider(Interviewer):
 			if len(self.nodes_names) == 1:
 				server = dict()
 				server['node'] = 'not_specified'
+				self.write_server(server)
 				return server
 
 

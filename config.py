@@ -8,6 +8,7 @@ DETECTOR_CONFIG_FILE = 'initialize/configuration_files//detector_configuration.i
 CLUSTER_CONFIG_FILE = 'initialize/configuration_files/cluster_configuration.ini'
 SOURCES_CONFIG_FILE = 'initialize/configuration_files/sources_configuration.ini'
 SERVER_CONFIG_FILE = 'initialize/configuration_files/server_configuration.ini'
+MACHINE_CONFIG_FILE = 'initialize/configuration_files/machine_configuration.ini'
 DETECTOR_PATH = 'detector/object_extractors'
 DESCRITPTOR_PATH = 'descriptor/feature_extractors'
 ENV_PARAMS = 'env_params.list'

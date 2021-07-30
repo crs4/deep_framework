@@ -86,7 +86,7 @@ class SSHConnector:
 
 class Machine:
 
-	def __init__(self):
+	def __init__(self,use_last_settings=False):
 		self.get_hostname_command = "hostname"
 		self.CUR_USER = getpass.getuser()
 		self.cur_dir = MAIN_DIR
@@ -96,7 +96,7 @@ class Machine:
 		elif self.PLATFORM == "linux":
 		    self.PRIV_SSH_DIR = "/home/%s/.ssh" % (self.CUR_USER)
 		self.SSH_KEY = os.path.join(self.PRIV_SSH_DIR,'id_rsa')
-		self.ip = self.get_ip()
+		self.ip = self.manage_machine_ip(use_last_settings)
 
 	
 	
@@ -155,19 +155,72 @@ class Machine:
 		return docker_is_active
 
 			
+	def manage_machine_ip(self,use_last_settings):
+		machine_config = ConfigParser()
+		config_question = 'Local machine configuration file found. Do you want to change it? (y/n): \n'
+		if use_last_settings:
+			machine_config.read(MACHINE_CONFIG_FILE)
+			machine_config_section = machine_config.sections()[0]
+			machine_config_dict = dict(machine_config[machine_config_section])
+			return machine_config_dict['ip']
 
+
+		if not os.path.isfile(MACHINE_CONFIG_FILE) or interviewer.get_acceptable_answer(config_question,['y','n']).lower() == 'y':
+			ip = self.__get_machine_ip()
+
+			section_name = 'Local machine configuration'
+			machine_config[section_name] = {}
+			machine_config[section_name]['ip'] = ip
+
+			with open(os.path.join(MAIN_DIR, MACHINE_CONFIG_FILE), 'w') as defaultconfigfile:
+				machine_config.write(defaultconfigfile)
+
+			if os.path.isfile(ALGS_CONFIG_FILE):
+				os.remove(ALGS_CONFIG_FILE)
+
+			if os.path.isfile(DETECTOR_CONFIG_FILE):
+				os.remove(DETECTOR_CONFIG_FILE)
+
+			if os.path.isfile(CLUSTER_CONFIG_FILE):
+				os.remove(CLUSTER_CONFIG_FILE)
+
+			if os.path.isfile(SERVER_CONFIG_FILE):
+				os.remove(SERVER_CONFIG_FILE)
+
+
+		else:
+			machine_config.read(MACHINE_CONFIG_FILE)
+
+		machine_config_section = machine_config.sections()[0]
+		machine_config_dict = dict(machine_config[machine_config_section])
+
+		return machine_config_dict['ip']
+
+
+	def __get_machine_ip(self):
+		
+		addr = []
+		for ifaceName in interfaces():
+			addresses = [i['addr'] for i in ifaddresses(ifaceName).setdefault(AF_INET, [{'addr':'No IP addr'}] )]
+			temp_addr = ' '.join(addresses)
+			if not temp_addr.startswith("127.") and not temp_addr.startswith("172.") and 'No' not in temp_addr:
+				addr.append(temp_addr)
+
+
+
+		if len(addr) > 1:
+			ip = interviewer.get_acceptable_answer('Please, choose one of the following detected local IPs? '+ str(addr)+': \n',addr)
+		else:
+			ip = addr[0]
+
+		return ip
 	
 
 	
 
 
 	def get_ip(self):
-		"""
-		ip = [l for l in ([ip for ip in socket.gethostbyname_ex(socket.gethostname())[2] 
-		if not ip.startswith("127.")][:1], [[(s.connect(('8.8.8.8', 53)), 
-		s.getsockname()[0], s.close()) for s in [socket.socket(socket.AF_INET, 
-		socket.SOCK_DGRAM)]][0][1]]) if l][0][0]
-		"""
+		
 		addr = []
 		for ifaceName in interfaces():
 			addresses = [i['addr'] for i in ifaddresses(ifaceName).setdefault(AF_INET, [{'addr':'No IP addr'}] )]

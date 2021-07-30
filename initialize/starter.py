@@ -80,7 +80,6 @@ class Starter:
 	
 
 
-
 	def __load_nodes_data(self,nodes_config):
 
 		cluster_dict = dict()

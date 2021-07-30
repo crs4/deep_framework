@@ -23,9 +23,8 @@ if __name__ == "__main__":
 	if args.run:
 		print('Using last configuration and settings...')
 
-	machine = Machine()
+	machine = Machine(use_last_settings=args.run)
 	registry = Registry(machine)
-
 	cluster_manager = ClusterManager(machine,registry)
 
 	starter = Starter(machine,registry,cluster_manager,use_last_settings=args.run)
