@@ -20,7 +20,7 @@ import shlex
 from configparser import ConfigParser
 import re
 
-
+from netifaces import interfaces, ifaddresses, AF_INET
 from paramiko import client
 
 #MAIN_DIR =  os.path.split(os.path.abspath(__file__))[0]
@@ -168,13 +168,19 @@ class Machine:
 		s.getsockname()[0], s.close()) for s in [socket.socket(socket.AF_INET, 
 		socket.SOCK_DGRAM)]][0][1]]) if l][0][0]
 		"""
-		ips = [l for l in ([ip for ip in socket.gethostbyname_ex(socket.gethostname())[2] 
-		if not ip.startswith("127.")])]
+		addr = []
+		for ifaceName in interfaces():
+			addresses = [i['addr'] for i in ifaddresses(ifaceName).setdefault(AF_INET, [{'addr':'No IP addr'}] )]
+			temp_addr = ' '.join(addresses)
+			if not temp_addr.startswith("127.") and not temp_addr.startswith("172.") and 'No' not in temp_addr:
+				addr.append(temp_addr)
 
-		if len(ips) > 1:
-			ip = interviewer.get_acceptable_answer('Please, choose one of the following detected local IPs? '+ str(ips)+': \n',ips)
+
+
+		if len(addr) > 1:
+			ip = interviewer.get_acceptable_answer('Please, choose one of the following detected local IPs? '+ str(addr)+': \n',addr)
 		else:
-			ip = ips[0]
+			ip = addr[0]
 
 		return ip
 
