@@ -49,7 +49,6 @@ class Starter:
 			if top_manager_node['type'] == 'RemoteNode':
 				create_volume_command = "ssh %s@%s '%s'" % (top_manager_node['user'], top_manager_node['ip'], create_volume_command)
 				rm_volume_command = "ssh %s@%s '%s'" % (top_manager_node['user'], top_manager_node['ip'], rm_volume_command)
-				print(rm_volume_command)
 			self.machine.exec_shell_command(rm_volume_command)
 			com = create_volume_command+path
 			self.machine.exec_shell_command(com)

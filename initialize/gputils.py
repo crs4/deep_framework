@@ -6,6 +6,8 @@ from ast import literal_eval
 import re
 import math
 import collections
+import copy
+
 
 from initialize.nodes_utils import SSHConnector
 
@@ -15,16 +17,32 @@ class GPUallocator:
 
 
 
-	def __init__(self,machine,nodes,algorithms,detector):
-		self.nodes = nodes
+	def __init__(self,machine,nodes,algorithms,detector,server):
 		self.algs = collections.OrderedDict()
 		self.memory_thr = 2000
 		self.driver_version_thr = 384.0
+		self.nodes = self.__set_allocale_nodes(nodes,server)
+
 		self.__set_algs(detector,algorithms)
 		self.num_detector = len(detector)
 		self.machine = machine
 
-		
+	
+	def __set_allocale_nodes(self,nodes,server):
+		allocable_nodes = dict()
+		server_node = server['node']
+		server_isolate = server['isolate']
+		if server['isolate'] == 'n':
+			allocable_nodes = nodes
+		else:
+			for node, node_value in nodes.items():
+				if node != server_node:
+					allocable_nodes[node] = node_value
+
+		return allocable_nodes
+
+
+
 	def __set_algs(self,detectors,algorithms):
 		"""
 		This method creates an ordered dict with detector on the top.
@@ -53,6 +71,8 @@ class GPUallocator:
 			alg_dict[desc_source] = alg
 
 			self.algs.update(alg_dict)
+
+		self.original_algs = copy.deepcopy(self.algs)
 
 
 
@@ -130,6 +150,22 @@ class GPUallocator:
 
 		return gpu_order
 
+	def __check_to_build(self, matches):
+
+		for k_alg, v_alg in self.original_algs.items():
+
+			alg_type = v_alg['type']
+			alg_mode = v_alg['mode']
+			alg_name = v_alg['name']
+
+			if alg_type == 'detector':
+				alg_matched = [ alg_matched for alg_matched in matches['detectors'] if alg_matched['name'] == alg_name][0]
+			else:
+				alg_matched = [ alg_matched for alg_matched in matches['descriptors'] if alg_matched['name'] == alg_name][0]
+
+			if alg_matched['mode'] != alg_mode:
+				alg_matched['to_build'] = 'y'
+
 
 	def match_algs_gpus(self):
 
@@ -200,6 +236,10 @@ class GPUallocator:
 			else:
 				matches['descriptors'].append(v_alg)
 
+
+		
+		self.__check_to_build(matches)
+		
 
 
 		return matches

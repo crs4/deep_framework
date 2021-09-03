@@ -355,6 +355,7 @@ class DetectorProvider(Interviewer):
 				val = reader_det_config[det][key]
 				det_dict[key] = val
 			det_dict['to_build'] = 'n'
+			det_dict['dockerfiles'] = [ av_det['dockerfiles'] for av_det in self.available_detectors if av_det['name'] == det_dict['name']][0]
 			detectors.append(det_dict)
 		return detectors
 
@@ -476,7 +477,10 @@ class DescriptorProvider(Interviewer):
 				val = reader_desc_config[desc][key]
 				desc_dict[key] = val
 			desc_dict['to_build'] = 'n'
+			desc_dict['dockerfiles'] = [ av_desc['dockerfiles'] for av_desc in self.available_descriptors if av_desc['name'] == desc_dict['name']][0]
 			descriptors.append(desc_dict)
+
+		
 		return descriptors
 
 	def get_descriptors(self, use_last_settings):
@@ -555,13 +559,20 @@ class ServerProvider(Interviewer):
 		specific_node = self.get_acceptable_answer('Do you want to deploy the server component in a specific node of the cluster? (y/n): \n',['y','n'])
 		if specific_node == 'y':
 			server_node = self.get_acceptable_answer('Which of the following nodes? '+ str(self.nodes_names)+': \n',self.nodes_names)
+			if len(self.nodes_names) > 1:
+				isolate_node = self.get_acceptable_answer('Do you want to try to deploy only the server component in this node? (y/n): \n',['y','n'])
+			else:
+				isolate_node = 'n'
+				
 		server_dict['node'] = server_node
+		server_dict['isolate'] = isolate_node
 		return server_dict
 
 	def write_server(self,server):
 		server_config = ConfigParser()
 		section_name = 'server configuration'
 		server_config[section_name] = {}
+		server_config[section_name]['isolate'] = server['isolate']
 		server_config[section_name]['node'] = server['node']
 		
 		with open(os.path.join(MAIN_DIR, SERVER_CONFIG_FILE), 'w') as defaultconfigfile:
@@ -583,6 +594,7 @@ class ServerProvider(Interviewer):
 			if len(self.nodes_names) == 1:
 				server = dict()
 				server['node'] = 'not_specified'
+				server['isolate'] = 'n'
 				self.write_server(server)
 				return server
 

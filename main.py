@@ -37,7 +37,6 @@ if __name__ == "__main__":
 	rev = Revealer()
 	det_revealed = rev.reveal_detectors()
 	desc_revealed = rev.reveal_descriptors()
-	
 	standard_revelead = rev.reveal_standard_components()
 	
 	par = ParamsProvider()
@@ -60,9 +59,9 @@ if __name__ == "__main__":
 
 	
 
-	gpu_alloc = GPUallocator(machine,nodes_data,descs,dets)
+	gpu_alloc = GPUallocator(machine,nodes_data,descs,dets,server)
 	alg_gpu_matches = gpu_alloc.match_algs_gpus()
-	
+
 	
 	p = PipelineManager(alg_gpu_matches,sources)
 	deep_structure = p.create_deep_structure()
