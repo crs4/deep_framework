@@ -8,7 +8,7 @@ import traceback as tb
 from utils.abstract_descriptor import AbstractDescriptor
 
 DECIMATION = 70
-PERIOD = 30
+PERIOD = 60
 
 class FluxDescriptor(AbstractDescriptor):
 
