@@ -7,7 +7,8 @@ RUN apt-get update && apt-get install -y \
     libopencv-dev \
     pkg-config \
     iputils-ping \
-    python-setuptools
+    python-setuptools \
+    wget
 
 RUN pip3 install \
     cmake==3.18.2
@@ -28,6 +29,10 @@ COPY --from=utils:deep_setup /home/deepframework/utils /home/deepframework/detec
 COPY --from=interface:deep_setup /home/deepframework/interface/. /home/deepframework/detector
 COPY --from=detector_tests:deep_setup /home/deepframework/detector_tests/execute_test.py /home/deepframework/detector
 
+
+RUN wget --load-cookies /tmp/cookies.txt "https://docs.google.com/uc?export=download&confirm=$(wget --quiet --save-cookies /tmp/cookies.txt --keep-session-cookies --no-check-certificate 'https://docs.google.com/uc?export=download&id=1om2ZFBWBZauTFg3hJAz2XmBMQSdksTfs' -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p')&id=1om2ZFBWBZauTFg3hJAz2XmBMQSdksTfs" -O MobileNetSSD_deploy.caffemodel && rm -rf /tmp/cookies.txt && mv MobileNetSSD_deploy.caffemodel /home/deepframework/detector/person_detection/mobilenet_ssd/
+
 WORKDIR /home/deepframework/detector
 
 CMD python3 provider.py
+

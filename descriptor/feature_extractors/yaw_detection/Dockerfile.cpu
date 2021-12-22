@@ -8,7 +8,8 @@ RUN apt-get update && apt-get install -y \
     libopencv-dev \
     pkg-config \
     iputils-ping \
-    python-setuptools
+    python-setuptools \
+    wget
 
 RUN pip3 install \
     pyzmq==18.0.1 \
@@ -19,6 +20,13 @@ COPY --from=utils:deep_setup /home/deepframework/utils/. /home/deepframework/des
 COPY --from=agent:deep_setup /home/deepframework/agent/. /home/deepframework/descriptor
 COPY --from=descriptor_tests:deep_setup /home/deepframework/descriptor_tests/execute_test.py /home/deepframework/descriptor
 
+
+
+RUN wget --load-cookies /tmp/cookies.txt "https://docs.google.com/uc?export=download&confirm=$(wget --quiet --save-cookies /tmp/cookies.txt --keep-session-cookies --no-check-certificate 'https://docs.google.com/uc?export=download&id=1r4C-ojRTGNh8G-ySv1qgDwCj8pbyJu4n' -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p')&id=1r4C-ojRTGNh8G-ySv1qgDwCj8pbyJu4n" -O cnn_cccdd_30k.tf && rm -rf /tmp/cookies.txt && mv cnn_cccdd_30k.tf /home/deepframework/descriptor/yaw_detection/yaw/etc/tensorflow/head_pose/yaw
+
+
+
+RUN wget --load-cookies /tmp/cookies.txt "https://docs.google.com/uc?export=download&confirm=$(wget --quiet --save-cookies /tmp/cookies.txt --keep-session-cookies --no-check-certificate 'https://docs.google.com/uc?export=download&id=1xyQRHPyYhL2OMBK7Mk9Ybo6wcpz_8cLw' -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p')&id=1xyQRHPyYhL2OMBK7Mk9Ybo6wcpz_8cLw" -O cnn_cccdd_30k.meta && rm -rf /tmp/cookies.txt && mv cnn_cccdd_30k.meta /home/deepframework/descriptor/yaw_detection/yaw/etc/tensorflow/head_pose/yaw
 
 WORKDIR /home/deepframework/descriptor
 

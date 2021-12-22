@@ -8,7 +8,8 @@ RUN apt-get update && apt-get install -y \
     libopencv-dev \
     pkg-config \
     iputils-ping \
-    python-setuptools
+    python-setuptools \
+    wget
 
 RUN pip3 install \
     pyzmq==18.0.1 \
@@ -26,6 +27,22 @@ RUN if [ -f "Tag_label_associations_facenet.yaml" ]; then rm Tag_label_associati
 
 
 
+RUN wget --load-cookies /tmp/cookies.txt "https://docs.google.com/uc?export=download&confirm=$(wget --quiet --save-cookies /tmp/cookies.txt --keep-session-cookies --no-check-certificate 'https://docs.google.com/uc?export=download&id=1XILaDlJ6iyPsxWJlM5epcAtu0vPemRCr' -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p')&id=1XILaDlJ6iyPsxWJlM5epcAtu0vPemRCr" -O model-20170131-234652.ckpt-250000.data-00000-of-00001 && rm -rf /tmp/cookies.txt && mv model-20170131-234652.ckpt-250000.data-00000-of-00001 /home/deepframework/descriptor/face_recognition/facenet/src/models/20170131-234652
+
+
+
+RUN wget --load-cookies /tmp/cookies.txt "https://docs.google.com/uc?export=download&confirm=$(wget --quiet --save-cookies /tmp/cookies.txt --keep-session-cookies --no-check-certificate 'https://docs.google.com/uc?export=download&id=1P0UEEmr8bGqMU-hVllB9a_JDIJ5pUEds' -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p')&id=1P0UEEmr8bGqMU-hVllB9a_JDIJ5pUEds" -O model-20170131-234652.ckpt-250000.index && rm -rf /tmp/cookies.txt && mv model-20170131-234652.ckpt-250000.index /home/deepframework/descriptor/face_recognition/facenet/src/models/20170131-234652
+
+
+
+
+RUN wget --load-cookies /tmp/cookies.txt "https://docs.google.com/uc?export=download&confirm=$(wget --quiet --save-cookies /tmp/cookies.txt --keep-session-cookies --no-check-certificate 'https://docs.google.com/uc?export=download&id=18sRLFLhvtFp1x81pa977Y87_7jE6Evrm' -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p')&id=18sRLFLhvtFp1x81pa977Y87_7jE6Evrm" -O model-20170131-234652.meta && rm -rf /tmp/cookies.txt && mv model-20170131-234652.meta /home/deepframework/descriptor/face_recognition/facenet/src/models/20170131-234652
+
+
+
+
+
 WORKDIR /home/deepframework/descriptor/face_recognition/face_extractor
+
 RUN python3 face_recognition.py -a /home/deepframework/descriptor/face_recognition/template_models/images
 

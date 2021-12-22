@@ -14,6 +14,9 @@ COPY --from=agent:deep_setup /home/deepframework/agent/. /home/deepframework/des
 COPY --from=descriptor_tests:deep_setup /home/deepframework/descriptor_tests/execute_test.py /home/deepframework/descriptor
 
 
+
+RUN wget --load-cookies /tmp/cookies.txt "https://docs.google.com/uc?export=download&confirm=$(wget --quiet --save-cookies /tmp/cookies.txt --keep-session-cookies --no-check-certificate 'https://docs.google.com/uc?export=download&id=1pL50OdLinvMx2sfANsv02mh0pquDeCWc' -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p')&id=1pL50OdLinvMx2sfANsv02mh0pquDeCWc" -O dex_chalearn_iccv2015.caffemodel && rm -rf /tmp/cookies.txt && mv dex_chalearn_iccv2015.caffemodel /home/deepframework/descriptor/age_detection/age_model_rothe/
+
 WORKDIR /home/deepframework/descriptor
 
 CMD python sub_agent.py
