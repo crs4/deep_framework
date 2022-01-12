@@ -85,7 +85,6 @@ class GPUallocator:
 		return True
 
 	def __format_cuda_version(self, cuda_version):
-		cuda_version = 
 		cuda_acc = 0
 		cuda_num = 0
 		cuda_split = cuda_version.split('.')
