@@ -19,6 +19,15 @@ COPY --from=interface:deep_setup /home/deepframework/interface/. /home/deepframe
 COPY --from=detector_tests:deep_setup /home/deepframework/detector_tests/execute_test.py /home/deepframework/detector
 
 
+
+RUN wget --load-cookies /tmp/cookies.txt "https://docs.google.com/uc?export=download&confirm=$(wget --quiet --save-cookies /tmp/cookies.txt --keep-session-cookies --no-check-certificate 'https://docs.google.com/uc?export=download&id=1FI1_tY7fgn-KnCNBJ5gU4yRqTQZFYS1p' -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p')&id=1FI1_tY7fgn-KnCNBJ5gU4yRqTQZFYS1p" -O det1.caffemodel && rm -rf /tmp/cookies.txt && mv det1.caffemodel /home/deepframework/detector/face_detection/mtcnn_caffe/model/
+
+RUN wget --load-cookies /tmp/cookies.txt "https://docs.google.com/uc?export=download&confirm=$(wget --quiet --save-cookies /tmp/cookies.txt --keep-session-cookies --no-check-certificate 'https://docs.google.com/uc?export=download&id=1Ij_O9BvxLgU7o9EXgtMZzzp3G3_nwgR_' -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p')&id=1Ij_O9BvxLgU7o9EXgtMZzzp3G3_nwgR_" -O det2.caffemodel && rm -rf /tmp/cookies.txt && mv det2.caffemodel /home/deepframework/detector/face_detection/mtcnn_caffe/model/
+
+RUN wget --load-cookies /tmp/cookies.txt "https://docs.google.com/uc?export=download&confirm=$(wget --quiet --save-cookies /tmp/cookies.txt --keep-session-cookies --no-check-certificate 'https://docs.google.com/uc?export=download&id=17iCa3QYxLrG1u_vx4Wc7Y3k0BlKllwQv' -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p')&id=17iCa3QYxLrG1u_vx4Wc7Y3k0BlKllwQv" -O det3.caffemodel  && rm -rf /tmp/cookies.txt && mv det3.caffemodel /home/deepframework/detector/face_detection/mtcnn_caffe/model/
+
+
+
 WORKDIR /home/deepframework/detector
 
 CMD python3 provider.py

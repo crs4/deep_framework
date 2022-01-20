@@ -1,0 +1,38 @@
+
+FROM tensorflow/tensorflow:1.12.0-gpu
+
+
+
+RUN apt-get update && apt-get install -y \ 
+    build-essential \
+    libjpeg-dev \
+    libopencv-dev \
+    pkg-config \
+    iputils-ping \
+    python-setuptools \
+    wget
+
+RUN pip install \
+    opencv-python==4.1.0.25 \
+    pyzmq==18.0.1 \
+    Keras==2.2.4 \
+    pyyaml==5.1
+
+
+
+COPY . /home/deepframework/descriptor/clothing_recognition
+COPY --from=utils:deep_setup /home/deepframework/utils /home/deepframework/descriptor/utils
+COPY --from=agent:deep_setup /home/deepframework/agent/. /home/deepframework/descriptor
+COPY --from=descriptor_tests:deep_setup /home/deepframework/descriptor_tests/execute_test.py /home/deepframework/descriptor
+
+
+
+RUN wget --load-cookies /tmp/cookies.txt "https://docs.google.com/uc?export=download&confirm=$(wget --quiet --save-cookies /tmp/cookies.txt --keep-session-cookies --no-check-certificate 'https://docs.google.com/uc?export=download&id=16ntJw26d4ZrGY8XN7oGLwji5HSzIkPDO' -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p')&id=16ntJw26d4ZrGY8XN7oGLwji5HSzIkPDO" -O model.h5 && rm -rf /tmp/cookies.txt && mv model.h5 /home/deepframework/descriptor/clothing_recognition/models/clothing/adam_small_vgg_3_no_augmentation
+
+WORKDIR /home/deepframework/descriptor
+
+
+CMD python sub_agent.py
+
+
+

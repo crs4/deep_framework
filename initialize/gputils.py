@@ -91,8 +91,8 @@ class GPUallocator:
 		if cuda_version == 'None':
 			return -1
 		if len(cuda_split) == 3:
-			cuda_acc = cuda_split[1] + '.' + cuda_split[2]
-			cuda_num = float(cuda_split[0]) + float(cuda_acc)
+			#cuda_acc = cuda_split[1] + '.' + cuda_split[2]
+			cuda_num = float(cuda_split[0]) + float(cuda_split[1])
 			return cuda_num
 
 		else:

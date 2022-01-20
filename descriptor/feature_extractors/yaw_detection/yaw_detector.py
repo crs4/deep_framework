@@ -44,7 +44,7 @@ class YawNet(AbstractDescriptor):
         with self.sess.as_default():
           self.my_head_pose_estimator = CnnHeadPoseEstimator(self.sess) #Head pose estimation object
           # Load the weights from the configuration folders
-          self.my_head_pose_estimator.load_yaw_variables(gaze_path +'yaw/cnn_cccdd_30k')
+          self.my_head_pose_estimator.load_yaw_variables(gaze_path +'yaw/cnn_cccdd_30k.tf')
           
 
 

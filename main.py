@@ -41,6 +41,7 @@ if __name__ == "__main__":
 	
 	par = ParamsProvider()
 	par.set_stream_params(use_last_settings=args.run)
+
 	
 	sp = SourceProvider(nodes_data)
 	sources = sp.get_sources(use_last_settings=args.run)
@@ -56,6 +57,7 @@ if __name__ == "__main__":
 
 	standard_prov = StandardProvider(standard_revelead)
 	stds = standard_prov.get_standard_components(use_last_settings=args.run)
+
 
 	
 

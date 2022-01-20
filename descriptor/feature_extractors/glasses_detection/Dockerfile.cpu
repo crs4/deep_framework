@@ -8,7 +8,8 @@ RUN apt-get update && apt-get install -y \
     libopencv-dev \
     pkg-config \
     iputils-ping \
-    python-setuptools
+    python-setuptools \
+    wget
 
 RUN pip3 install \
     numpy==1.15.4 \
@@ -21,6 +22,11 @@ COPY . /home/deepframework/descriptor/glasses_detection
 COPY --from=utils:deep_setup /home/deepframework/utils/. /home/deepframework/descriptor/utils
 COPY --from=agent:deep_setup /home/deepframework/agent/. /home/deepframework/descriptor
 COPY --from=descriptor_tests:deep_setup /home/deepframework/descriptor_tests/execute_test.py /home/deepframework/descriptor
+
+
+
+RUN wget --load-cookies /tmp/cookies.txt "https://docs.google.com/uc?export=download&confirm=$(wget --quiet --save-cookies /tmp/cookies.txt --keep-session-cookies --no-check-certificate 'https://docs.google.com/uc?export=download&id=1WOWfLfyU-TmgtopIo547wA1xkpJ1sxlZ' -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p')&id=1WOWfLfyU-TmgtopIo547wA1xkpJ1sxlZ" -O model.h5 && rm -rf /tmp/cookies.txt && mv model.h5 /home/deepframework/descriptor/glasses_detection/glasses/adam_small_vgg_3_augmentation_2
+
 
 WORKDIR /home/deepframework/descriptor
 

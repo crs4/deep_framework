@@ -2,7 +2,7 @@
 import os
 from config import *
 import subprocess
-excluded = ['clothing','sample','generic','img']
+excluded = ['sample','generic','img']
 
 
 def find_dockerfiles(path):
@@ -75,11 +75,22 @@ def create_test_file(rm,build_com,run_com,img, path):
 	f_image = image_name.split(':')[0]
 	test_file = 'test_'+f_image+'_'+mode+'.sh'
 	test_path = os.path.join(path+'/test_scripts',test_file)
-	
-	
+	"""
+	face_recog_setup_build = 'docker build -f descriptor/feature_extractors/face_recognition/Dockerfile.setup  -t face_recog:setup descriptor/feature_extractors/face_recognition/'
+	face_recog_setup_run = 'docker run --name recog_setup face_recog:setup'
+	face_recog_setup_stop_cont = 'docker container rm recog_setup'
+	face_recog_setup_rm_img = 'docker rmi face_recog:setup'
+	"""
 	with open(test_path, 'w') as tfile:
+		"""
+		if 'face_recognition' in build_com:
+			tfile.write(face_recog_setup_build+'\n')
+			tfile.write(face_recog_setup_run+'\n')
+		"""
+
 		tfile.write(build_com+'\n')
 		tfile.write(run_com+'\n')
+		
 		tfile.write(rm[0]+'\n')
 		tfile.write(rm[1]+'\n')
 
