@@ -75,6 +75,7 @@ function AlgorithmController($scope,$compile,$mdDialog,algService,statsService) 
     var descriptors = new Set();
     var performance_dicts = {}
     function set_algs(algs_data) {
+        if (algs_data == undefined) return
         Object.keys(algs_data).forEach((alg_name) => {
             if (!descriptors.has(alg_name)) {
                 descriptors.add(alg_name)
@@ -111,6 +112,9 @@ function AlgorithmController($scope,$compile,$mdDialog,algService,statsService) 
         }
         if (selected_pipeline == undefined) return
         var algs_data = stats_data[selected_source].pipelines[selected_pipeline].descriptors
+        if (algs_data == undefined) {
+            update_algs = true
+        }
         if (update_algs) {
             for (let sc in custom_scopes) {
                 custom_scopes[sc].$destroy()

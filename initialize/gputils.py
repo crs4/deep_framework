@@ -6,23 +6,41 @@ from ast import literal_eval
 import re
 import math
 import collections
-
-from initialize.nodes_utils import SSHConnector,Machine
-
+import copy
 
 
-class GPUallocator(Machine):
+from initialize.nodes_utils import SSHConnector
 
 
 
-	def __init__(self,nodes,algorithms,detector):
-		Machine.__init__(self)
-		self.nodes = nodes
+class GPUallocator:
+
+
+
+	def __init__(self,machine,nodes,algorithms,detector,server):
 		self.algs = collections.OrderedDict()
 		self.memory_thr = 2000
 		self.driver_version_thr = 384.0
+		self.nodes = self.__set_allocale_nodes(nodes,server)
+
 		self.__set_algs(detector,algorithms)
 		self.num_detector = len(detector)
+		self.machine = machine
+
+	
+	def __set_allocale_nodes(self,nodes,server):
+		allocable_nodes = dict()
+		server_node = server['node']
+		server_isolate = server['isolate']
+		if server['isolate'] == 'n':
+			allocable_nodes = nodes
+		else:
+			for node, node_value in nodes.items():
+				if node != server_node:
+					allocable_nodes[node] = node_value
+
+		return allocable_nodes
+
 
 
 	def __set_algs(self,detectors,algorithms):
@@ -54,6 +72,8 @@ class GPUallocator(Machine):
 
 			self.algs.update(alg_dict)
 
+		self.original_algs = copy.deepcopy(self.algs)
+
 
 
 	def __check_gpu_exists_and_suitable(self,node_name,node):
@@ -71,8 +91,8 @@ class GPUallocator(Machine):
 		if cuda_version == 'None':
 			return -1
 		if len(cuda_split) == 3:
-			cuda_acc = cuda_split[1] + '.' + cuda_split[2]
-			cuda_num = float(cuda_split[0]) + float(cuda_acc)
+			#cuda_acc = cuda_split[1] + '.' + cuda_split[2]
+			cuda_num = float(cuda_split[0]) + float(cuda_split[1])
 			return cuda_num
 
 		else:
@@ -86,7 +106,7 @@ class GPUallocator(Machine):
 		for node_name, node in self.nodes.items():
 			nodes_gpu_info[node_name] = node
 			node_gpus = []
-			self.connection = SSHConnector(node['ip'], node['user'], self.SSH_KEY)
+			self.connection = SSHConnector(node['ip'], node['user'], self.machine.SSH_KEY)
 			suitable = self.__check_gpu_exists_and_suitable(node_name,node)
 			if suitable:
 				command = 'echo -e "import GPUtil\nGPUs = GPUtil.getGPUs()\nfor gpu in GPUs: print(gpu.__dict__)" | python3'
@@ -129,6 +149,22 @@ class GPUallocator(Machine):
 						fr_index+=1
 
 		return gpu_order
+
+	def __check_to_build(self, matches):
+
+		for k_alg, v_alg in self.original_algs.items():
+
+			alg_type = v_alg['type']
+			alg_mode = v_alg['mode']
+			alg_name = v_alg['name']
+
+			if alg_type == 'detector':
+				alg_matched = [ alg_matched for alg_matched in matches['detectors'] if alg_matched['name'] == alg_name][0]
+			else:
+				alg_matched = [ alg_matched for alg_matched in matches['descriptors'] if alg_matched['name'] == alg_name][0]
+
+			if alg_matched['mode'] != alg_mode:
+				alg_matched['to_build'] = 'y'
 
 
 	def match_algs_gpus(self):
@@ -200,6 +236,10 @@ class GPUallocator(Machine):
 			else:
 				matches['descriptors'].append(v_alg)
 
+
+		
+		self.__check_to_build(matches)
+		
 
 
 		return matches

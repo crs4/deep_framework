@@ -56,7 +56,17 @@ RUN pip install numpy==1.16
 
 COPY --from=utils:deep_setup /home/deepframework/utils /yolo4_deep_sort/utils
 COPY --from=interface:deep_setup /home/deepframework/interface/. /yolo4_deep_sort
-COPY --from=detector_tests:deep_setup /home/deepframework/detector_tests/execute_test.py /home/deepframework/detector
+COPY --from=detector_tests:deep_setup /home/deepframework/detector_tests/execute_test.py /yolo4_deep_sort
+
+
+RUN wget --load-cookies /tmp/cookies.txt "https://docs.google.com/uc?export=download&confirm=$(wget --quiet --save-cookies /tmp/cookies.txt --keep-session-cookies --no-check-certificate 'https://docs.google.com/uc?export=download&id=1XSqgSD6w0EDzMwqPdXCB_aCvegt1NbUD' -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p')&id=1XSqgSD6w0EDzMwqPdXCB_aCvegt1NbUD" -O deep_sort_ckpt.t7 && rm -rf /tmp/cookies.txt && mv deep_sort_ckpt.t7 /yolo4_deep_sort/drone_object_detector/models/
+
+
+
+RUN wget --load-cookies /tmp/cookies.txt "https://docs.google.com/uc?export=download&confirm=$(wget --quiet --save-cookies /tmp/cookies.txt --keep-session-cookies --no-check-certificate 'https://docs.google.com/uc?export=download&id=13jpcjXGShdRLBFy1bnV6ldy9g7ArO37I' -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p')&id=13jpcjXGShdRLBFy1bnV6ldy9g7ArO37I" -O market1501.pb && rm -rf /tmp/cookies.txt && mv market1501.pb /yolo4_deep_sort/drone_object_detector/models/
+
+
+RUN wget --load-cookies /tmp/cookies.txt "https://docs.google.com/uc?export=download&confirm=$(wget --quiet --save-cookies /tmp/cookies.txt --keep-session-cookies --no-check-certificate 'https://docs.google.com/uc?export=download&id=1GRGw7aBuOB-4NIAwQdsd9m-8lXx6bzSW' -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p')&id=1GRGw7aBuOB-4NIAwQdsd9m-8lXx6bzSW" -O yolo-obj_best.weights && rm -rf /tmp/cookies.txt && mv yolo-obj_best.weights /yolo4_deep_sort/drone_object_detector/darknet/models/yolo608_visdrone
 
 
 CMD python3 provider.py

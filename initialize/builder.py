@@ -100,6 +100,7 @@ class ImageManager:
 		return build_commands,push_commands,pull_commands
 
 	def build_images(self):
+		print('s')
 		for i,build in enumerate(self.build_commands):
 			if 'cpu' in build:
 				mode = 'cpu'

@@ -11,9 +11,10 @@ from config import *
 class DockerServicesManager:
 
 
-	def __init__(self,deep_structure,registry_address,sources):
+	def __init__(self,deep_structure,registry_address,sources,server):
 		self.deep_structure = deep_structure
 		self.registry_address = registry_address
+		self.server_config = server
 		self.sources = sources
 		self.services = []
 		self.dict_services = dict()
@@ -130,7 +131,7 @@ class DockerServicesManager:
 		self.dict_services[monitor_service.service_name] = monitor_dict
 
 
-		server_service = ServerService(server,desc_params_list,det_params_list, self.sources,self.registry_address)
+		server_service = ServerService(server,desc_params_list,det_params_list, self.sources,self.registry_address,self.server_config)
 		server_dict = server_service.create_server_service()
 		self.services.append(server_service)
 		self.dict_services[server_service.service_name] = server_dict
@@ -489,7 +490,7 @@ class MonitorService(DeepService):
 
 class ServerService(DeepService):
 
-	def __init__(self,server_component,desc_params,det_params,sources,registry_address):
+	def __init__(self,server_component,desc_params,det_params,sources,registry_address,server_config):
 		super().__init__()
 		self.service_name = server_component.component_type
 		self.image_tag = self.set_component_tag()
@@ -498,6 +499,7 @@ class ServerService(DeepService):
 		self.environments = self.__set_environments(server_component,desc_params,det_params,sources)
 		self.image_name = self.set_image_name(registry_address,self.service_name,self.image_tag)
 		self.server_port =  str(server_component.server_port)
+		self.server_config = server_config
 
 	def __set_environments(self,server_component,desc_params,det_params,sources):
 		environments = []
@@ -528,6 +530,9 @@ class ServerService(DeepService):
 		server_dict['image'] = self.image_name
 		server_dict['networks'] = [self.net]
 		server_dict['ports'] = [self.server_port+':'+self.server_port]
+		if self.server_config['node'] != 'not_specified':
+			server_dict['deploy']= {'placement':{'constraints': ['node.hostname=='+self.server_config['node'] ]}}
+
 
 
 		return server_dict

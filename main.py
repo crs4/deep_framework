@@ -23,12 +23,13 @@ if __name__ == "__main__":
 	if args.run:
 		print('Using last configuration and settings...')
 
-	machine = Machine()
-	cluster_manager = ClusterManager()
-	registry = Registry()
+	machine = Machine(use_last_settings=args.run)
+	registry = Registry(machine)
+	cluster_manager = ClusterManager(machine,registry)
+
 	starter = Starter(machine,registry,cluster_manager,use_last_settings=args.run)
+
 	nodes_data = starter.get_nodes()
-	#print(nodes_data)
 	
 
 
@@ -36,11 +37,11 @@ if __name__ == "__main__":
 	rev = Revealer()
 	det_revealed = rev.reveal_detectors()
 	desc_revealed = rev.reveal_descriptors()
-	
 	standard_revelead = rev.reveal_standard_components()
 	
 	par = ParamsProvider()
 	par.set_stream_params(use_last_settings=args.run)
+
 	
 	sp = SourceProvider(nodes_data)
 	sources = sp.get_sources(use_last_settings=args.run)
@@ -50,19 +51,24 @@ if __name__ == "__main__":
 	
 	desc_prov = DescriptorProvider(desc_revealed,dets)
 	descs = desc_prov.get_descriptors(use_last_settings=args.run)
-	
+
+	server_prov = ServerProvider(nodes_data)
+	server = server_prov.get_server(use_last_settings=args.run)
 
 	standard_prov = StandardProvider(standard_revelead)
 	stds = standard_prov.get_standard_components(use_last_settings=args.run)
 
-	gpu_alloc = GPUallocator(nodes_data,descs,dets)
-	alg_gpu_matches = gpu_alloc.match_algs_gpus()
+
 	
+
+	gpu_alloc = GPUallocator(machine,nodes_data,descs,dets,server)
+	alg_gpu_matches = gpu_alloc.match_algs_gpus()
+
 	
 	p = PipelineManager(alg_gpu_matches,sources)
 	deep_structure = p.create_deep_structure()
 
-	dm = DockerServicesManager(deep_structure,registry.insecure_addr,sources)
+	dm = DockerServicesManager(deep_structure,registry.insecure_addr,sources,server)
 	docker_services = dm.get_services()
 	dm.write_services()
 	img_man = ImageManager(machine,docker_services,registry.insecure_addr,stds)

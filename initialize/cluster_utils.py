@@ -15,9 +15,11 @@ class ClusterManager:
 
 
 
-	def __init__(self):
+	def __init__(self,machine,registry):
 		self.local_node_answered = False
 		self.q = Interviewer()
+		self.machine = machine
+		self.registry = registry
 
 	def create_node(self,node_role = None, cluster = None):
 		if not node_role:
@@ -28,7 +30,7 @@ class ClusterManager:
 
 		if not self.local_node_answered and self.q.get_acceptable_answer("Is this a local node?: (y/n): ", ['y', 'n']) == 'y':
 
-			node = LocalNode(role_node_answer,cluster)
+			node = LocalNode(role_node_answer,self.machine,cluster)
 			self.local_node_answered = True
 		else:
 			ip = self.q.get_ip("ip: ")
@@ -36,7 +38,7 @@ class ClusterManager:
 			port = self.q.get_number("ssh port (default 22): ","int", '22')
 			#pulling = self.q.get_acceptable_answer("Do you want to pull docker images?: (y/n): ", ['y', 'n'])
 			#node = RemoteNode(ip, user, role_node_answer,pulling, port,cluster)
-			node = RemoteNode(ip, user, role_node_answer, port,cluster)
+			node = RemoteNode(ip, user, role_node_answer, self.machine,self.registry,port,cluster)
 			dest_folder = self.q.get_remote_folder("Please insert a valid project destination folder: ",user,ip)
 			node.dest_folder = dest_folder
 			node.start_routine()
@@ -53,6 +55,7 @@ class ClusterManager:
 		
 		cluster_filename = os.path.join(MAIN_DIR,CLUSTER_CONFIG_FILE)
 		alg_file = os.path.join(MAIN_DIR, ALGS_CONFIG_FILE)
+		server_file = os.path.join(MAIN_DIR, SERVER_CONFIG_FILE)
 		
 		cluster_exist = os.path.isfile(cluster_filename)
 
@@ -71,6 +74,9 @@ class ClusterManager:
 				if os.path.exists(alg_file):
 					os.remove(alg_file)
 
+				if os.path.exists(server_file):
+					os.remove(server_file)
+
 		
 		nodes_number = self.q.get_number('How many nodes? \n','int')
 
@@ -80,7 +86,7 @@ class ClusterManager:
 
 		print('Please, insert information of your main cluster manager:')
 		top_node = self.create_node('manager')
-		cluster = Cluster(top_node)
+		cluster = Cluster(self.machine,top_node)
 		cluster.initialize()
 
 

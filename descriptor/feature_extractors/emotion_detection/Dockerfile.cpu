@@ -15,6 +15,12 @@ COPY --from=descriptor_tests:deep_setup /home/deepframework/descriptor_tests/exe
 
 
 
+RUN wget --load-cookies /tmp/cookies.txt "https://docs.google.com/uc?export=download&confirm=$(wget --quiet --save-cookies /tmp/cookies.txt --keep-session-cookies --no-check-certificate 'https://docs.google.com/uc?export=download&id=1Y-WJ5cdzBFF_gN_gGI0huISq6e0MeqZs' -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p')&id=1Y-WJ5cdzBFF_gN_gGI0huISq6e0MeqZs" -O models2405_iter_610000.caffemodel && rm -rf /tmp/cookies.txt && mv models2405_iter_610000.caffemodel /home/deepframework/descriptor/emotion_detection/happynet/models_2405/VGG_S_rgb/
+
+
+
+
+
 WORKDIR /home/deepframework/descriptor
 
 CMD python sub_agent.py

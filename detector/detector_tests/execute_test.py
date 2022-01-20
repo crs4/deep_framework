@@ -12,7 +12,7 @@ cur_dir =  os.path.split(os.path.abspath(__file__))[0]
 config_file = [os.path.join(dp, f) for dp, dn, filenames in os.walk(cur_dir) for f in filenames if os.path.splitext(f)[1] == '.ini'][0]
 config = ConfigParser()
 config.read(config_file)
-det_config = {'path': config.get('CONFIGURATION','PATH'), 'class':config.get('CONFIGURATION','CLASS'),'name':config.get('CONFIGURATION','NAME')}
+det_config = {'path': config.get('CONFIGURATION','PATH'), 'class':config.get('CONFIGURATION','CLASS'),'name':config.get('CONFIGURATION','CATEGORY')}
 
 module = importlib.import_module(det_config['path'])
 det_instance = getattr(module, det_config['class'])

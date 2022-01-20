@@ -92,7 +92,7 @@ class Revealer:
 		for f in dockerfiles:
 
 			comp_name = f.split('/')[-2]
-			if 'setup' in f and 'test' not in f:
+			if 'setup' in f :#and 'test' not in f:
 				standard_components['setup'][comp_name] = f
 			else:
 

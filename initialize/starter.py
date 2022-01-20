@@ -49,7 +49,6 @@ class Starter:
 			if top_manager_node['type'] == 'RemoteNode':
 				create_volume_command = "ssh %s@%s '%s'" % (top_manager_node['user'], top_manager_node['ip'], create_volume_command)
 				rm_volume_command = "ssh %s@%s '%s'" % (top_manager_node['user'], top_manager_node['ip'], rm_volume_command)
-				print(rm_volume_command)
 			self.machine.exec_shell_command(rm_volume_command)
 			com = create_volume_command+path
 			self.machine.exec_shell_command(com)
@@ -61,11 +60,11 @@ class Starter:
 	def manage_registry(self):
 		
 		running = self.registry.check_registry_running()
-		 
+
 		if not running:
 			self.registry.start_registry()
 		self.registry.manage_docker_daemon_json()
-		
+
 
 
 	def __get_top_manager(self):
@@ -78,7 +77,6 @@ class Starter:
 
 
 	
-
 
 
 	def __load_nodes_data(self,nodes_config):

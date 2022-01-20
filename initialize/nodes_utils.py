@@ -1,6 +1,7 @@
 from pathlib import Path
 
 from config import *
+from initialize.interviewer import Interviewer
 
 
 import subprocess
@@ -19,11 +20,13 @@ import shlex
 from configparser import ConfigParser
 import re
 
-
+from netifaces import interfaces, ifaddresses, AF_INET
 from paramiko import client
 
 #MAIN_DIR =  os.path.split(os.path.abspath(__file__))[0]
 
+
+interviewer = Interviewer()
 
 
 class SSHConnector:
@@ -83,7 +86,7 @@ class SSHConnector:
 
 class Machine:
 
-	def __init__(self):
+	def __init__(self,use_last_settings=False):
 		self.get_hostname_command = "hostname"
 		self.CUR_USER = getpass.getuser()
 		self.cur_dir = MAIN_DIR
@@ -93,6 +96,7 @@ class Machine:
 		elif self.PLATFORM == "linux":
 		    self.PRIV_SSH_DIR = "/home/%s/.ssh" % (self.CUR_USER)
 		self.SSH_KEY = os.path.join(self.PRIV_SSH_DIR,'id_rsa')
+		self.ip = self.manage_machine_ip(use_last_settings)
 
 	
 	
@@ -151,17 +155,86 @@ class Machine:
 		return docker_is_active
 
 			
+	def manage_machine_ip(self,use_last_settings):
+		machine_config = ConfigParser()
+		config_question = 'Local machine configuration file found. Do you want to change it? (y/n): \n'
+		if use_last_settings:
+			machine_config.read(MACHINE_CONFIG_FILE)
+			machine_config_section = machine_config.sections()[0]
+			machine_config_dict = dict(machine_config[machine_config_section])
+			return machine_config_dict['ip']
 
+
+		if not os.path.isfile(MACHINE_CONFIG_FILE) or interviewer.get_acceptable_answer(config_question,['y','n']).lower() == 'y':
+			ip = self.__get_machine_ip()
+
+			section_name = 'Local machine configuration'
+			machine_config[section_name] = {}
+			machine_config[section_name]['ip'] = ip
+
+			with open(os.path.join(MAIN_DIR, MACHINE_CONFIG_FILE), 'w') as defaultconfigfile:
+				machine_config.write(defaultconfigfile)
+
+			if os.path.isfile(ALGS_CONFIG_FILE):
+				os.remove(ALGS_CONFIG_FILE)
+
+			if os.path.isfile(DETECTOR_CONFIG_FILE):
+				os.remove(DETECTOR_CONFIG_FILE)
+
+			if os.path.isfile(CLUSTER_CONFIG_FILE):
+				os.remove(CLUSTER_CONFIG_FILE)
+
+			if os.path.isfile(SERVER_CONFIG_FILE):
+				os.remove(SERVER_CONFIG_FILE)
+
+
+		else:
+			machine_config.read(MACHINE_CONFIG_FILE)
+
+		machine_config_section = machine_config.sections()[0]
+		machine_config_dict = dict(machine_config[machine_config_section])
+
+		return machine_config_dict['ip']
+
+
+	def __get_machine_ip(self):
+		
+		addr = []
+		for ifaceName in interfaces():
+			addresses = [i['addr'] for i in ifaddresses(ifaceName).setdefault(AF_INET, [{'addr':'No IP addr'}] )]
+			temp_addr = ' '.join(addresses)
+			if not temp_addr.startswith("127.") and not temp_addr.startswith("172.") and 'No' not in temp_addr:
+				addr.append(temp_addr)
+
+
+
+		if len(addr) > 1:
+			ip = interviewer.get_acceptable_answer('Please, choose one of the following detected local IPs? '+ str(addr)+': \n',addr)
+		else:
+			ip = addr[0]
+
+		return ip
 	
 
 	
 
 
 	def get_ip(self):
-		ip = [l for l in ([ip for ip in socket.gethostbyname_ex(socket.gethostname())[2] 
-		if not ip.startswith("127.")][:1], [[(s.connect(('8.8.8.8', 53)), 
-		s.getsockname()[0], s.close()) for s in [socket.socket(socket.AF_INET, 
-		socket.SOCK_DGRAM)]][0][1]]) if l][0][0]
+		
+		addr = []
+		for ifaceName in interfaces():
+			addresses = [i['addr'] for i in ifaddresses(ifaceName).setdefault(AF_INET, [{'addr':'No IP addr'}] )]
+			temp_addr = ' '.join(addresses)
+			if not temp_addr.startswith("127.") and not temp_addr.startswith("172.") and 'No' not in temp_addr:
+				addr.append(temp_addr)
+
+
+
+		if len(addr) > 1:
+			ip = interviewer.get_acceptable_answer('Please, choose one of the following detected local IPs? '+ str(addr)+': \n',addr)
+		else:
+			ip = addr[0]
+
 		return ip
 
 	
@@ -198,11 +271,11 @@ class Machine:
 
 
 	
-class Node(Machine):
+class Node:
 		
-	def __init__(self, role, cluster = None):
-		Machine.__init__(self)
-		self.machine = super(Node,self)
+	def __init__(self, role,machine,cluster = None):
+
+		self.machine = machine
 		self.role = role
 		self.cluster = cluster
 		if cluster:
@@ -251,17 +324,17 @@ class Node(Machine):
 
 
 class LocalNode(Node):
-	def __init__(self, role,cluster = None):
-		Node.__init__(self,role,cluster)
-		Machine.gen_key(self)
-		self.ip = Machine.get_ip(self)
-		self.hostname = Machine.get_hostname(self)
+	def __init__(self, role,machine,cluster = None):
+		Node.__init__(self,role,machine,cluster)
+		self.machine.gen_key()
+		self.ip = self.machine.ip
+		self.hostname = self.machine.get_hostname()
 		self.user = getpass.getuser()
-		Machine.push_key(self,'22',self.user,self.ip)
+		self.machine.push_key('22',self.user,self.ip)
 		self.working_path = MAIN_DIR
 		self.leave_swarm()
-		nvidia_data = Machine.exec_shell_command(self,self.nvidia_command,ignore_err = True)
-		cuda_data = Machine.exec_shell_command(self,self.cuda_command,ignore_err = True)
+		nvidia_data = self.machine.exec_shell_command(self.nvidia_command,ignore_err = True)
+		cuda_data = self.machine.exec_shell_command(self.cuda_command,ignore_err = True)
 		self.cuda_version = self.get_cuda_version(nvidia_data ,cuda_data)
 
 
@@ -271,19 +344,19 @@ class LocalNode(Node):
 
 class RemoteNode(Node):
 
-	def __init__(self, ip, user, role, ssh_port = 22, cluster = None):
-		Node.__init__(self,role,cluster)
-		self.machine = super(Node,self)
+	def __init__(self, ip, user, role, machine, registry,ssh_port = 22, cluster = None):
+		Node.__init__(self,role,machine,cluster)
+		self.machine = machine
 		self.machine.push_key(ssh_port,user,ip)
-		self.connection = SSHConnector(ip, user, self.SSH_KEY)
+		self.connection = SSHConnector(ip, user, self.machine.SSH_KEY)
 		self.user = user
 		self.ip = ip
 		self.ssh_port = str(ssh_port)
-		self.hostname = Machine.get_hostname(self)
+		self.hostname = self.machine.get_hostname()
 		#self.pull = True if pull == 'y' else False
-		self.leave_swarm()
+		self.connection.send_remote_command(self.leave_command,ignore_err = True)
 		self.dest_folder = None
-		self.registry = Registry()
+		self.registry = registry
 		
 
 
@@ -431,9 +504,10 @@ class RemoteNode(Node):
 
 class Cluster:
 
-	def __init__(self,top_node):
+	def __init__(self,machine,top_node):
 		self.main_cluster_manager_node = top_node
 		self.node_list = [top_node]
+		self.machine = machine
 
 
 
@@ -468,13 +542,13 @@ class Cluster:
 		if type(self.main_cluster_manager_node).__name__ ==  'RemoteNode':
 			nodes_id = self.main_cluster_manager_node.connection.send_remote_command(command).split('\n')
 		else:
-			nodes_id = Machine.exec_shell_command(self,command).split('\n')
+			nodes_id = self.machine.exec_shell_command(command).split('\n')
 
 		for node in nodes_id:
 			if type(self.main_cluster_manager_node).__name__ ==  'RemoteNode':
 				node_ins = self.main_cluster_manager_node.connection.send_remote_command(ins_command + node)
 			else:
-				node_ins = Machine.exec_shell_command(self,ins_command + node)
+				node_ins = self.machine.exec_shell_command(ins_command + node)
 
 			j_ins = json.loads(node_ins)[0]
 			node_addr = j_ins['Status']['Addr']
@@ -521,15 +595,16 @@ class Cluster:
 
 
 
-class Registry(Machine):
+class Registry:
 
-	def __init__(self):
-		Machine.__init__(self)
-		self.address = Machine.get_ip(self)
-		if self.PLATFORM == "darwin":
-			self.daemon_path = "/Users/%s/.docker/daemon.json" % (self.CUR_USER)
+	def __init__(self,machine):
+		self.machine = machine
+		self.address = self.machine.ip
+
+		if self.machine.PLATFORM == "darwin":
+			self.daemon_path = "/Users/%s/.docker/daemon.json" % (self.machine.CUR_USER)
 			self.docker_restart_command = "osascript -e 'quit app \"Docker\"'; open -a Docker ;"
-		elif self.PLATFORM == "linux":
+		elif self.machine.PLATFORM == "linux":
 
 			self.daemon_path = '/etc/docker/daemon.json'
 			self.docker_restart_command = "sudo service docker restart"
@@ -547,7 +622,7 @@ class Registry(Machine):
 		mv_com = 'sudo mv '+temp_file+ ' ' + self.daemon_path
 		try:
 			com = 'sudo cat ' + self.daemon_path
-			daemon = Machine.exec_shell_command(self,com)
+			daemon = self.machine.exec_shell_command(com)
 			data = json.loads(daemon)
 			if 'insecure-registries' in data.keys():
 				ins = data['insecure-registries']
@@ -566,9 +641,9 @@ class Registry(Machine):
 			with open(temp_file, 'w', encoding='utf-8') as f:
 				json.dump(data, f)
 
-			Machine.exec_shell_command(self,mv_com + ' && ' +self.docker_restart_command)
+			self.machine.exec_shell_command(mv_com + ' && ' +self.docker_restart_command)
 			print('Loading docker configuration...')
-			running = Machine.check_daemon_is_running(self)
+			running = self.machine.check_daemon_is_running()
 			if not running:
 				print('Error while restarting docker daemon')
 				sys.exit(0)
@@ -579,7 +654,7 @@ class Registry(Machine):
 
 	def check_registry_running(self):
 		command = "curl -I -k -s http://"+self.insecure_addr +"/ | head -n 1 | cut -d ' ' -f 2"
-		res = Machine.exec_shell_command(self,command)
+		res = self.machine.exec_shell_command(command)
 		if res == '200':
 			return True
 		else:
@@ -587,7 +662,7 @@ class Registry(Machine):
 
 	def start_registry(self):
 		command = "docker run -d -p 5000:5000 --restart=always --name registry registry:2"
-		Machine.exec_shell_command(self,command)
+		self.machine.exec_shell_command(command)
 		print('Starting docker....')
 		registry_up = False
 		attempts_start = time.time()
@@ -600,7 +675,7 @@ class Registry(Machine):
 
 	def stop_registry(self):
 		command = "docker container stop registry && docker container rm -v registry"
-		Machine.exec_shell_command(self,command)
+		self.machine.exec_shell_command(command)
 		time.sleep(5)
 		with open(self.daemon_path, 'r', encoding='utf-8') as f:
 			data = json.load(f)
