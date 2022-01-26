@@ -17,9 +17,9 @@ WORKDIR /person_detection
 RUN pip install -r requirements.txt
 
 
-COPY --from=utils:deep_setup /home/deepframework/utils /home/deepframework/detector/utils
-COPY --from=interface:deep_setup /home/deepframework/interface/. /home/deepframework/detector
-COPY --from=detector_tests:deep_setup /home/deepframework/detector_tests/execute_test.py /home/deepframework/detector
+COPY --from=utils:deep_setup /home/deepframework/utils /person_detection
+COPY --from=interface:deep_setup /home/deepframework/interface/. /person_detection
+COPY --from=detector_tests:deep_setup /home/deepframework/detector_tests/execute_test.py /person_detection
 
 
 
