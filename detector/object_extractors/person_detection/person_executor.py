@@ -11,11 +11,11 @@ from deep_sort.utils.parser import get_config
 from yolov5.utils.general import (LOGGER, check_img_size, non_max_suppression, scale_coords, 
                                   check_imshow, xyxy2xywh, increment_path)
 
-"""
+
 from utils.features import Object, Rect, Point
 from utils.abstract_detector import AbstractDetector
-"""
-class PersonExecutor:
+
+class PersonExecutor(AbstractDetector):
 
     ratio = 1
 
