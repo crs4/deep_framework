@@ -67,7 +67,7 @@ class PersonExecutor(AbstractDetector):
         img = self.person_detector.preprocess_image(current_frame)
 
         detector_preditions,names = self.person_detector.detect_person(current_frame)
-        print('detector: ',detector_preditions)
+
         for i, det in enumerate(detector_preditions):  # detections per image
             im0 = current_frame.copy()
             
@@ -103,12 +103,10 @@ class PersonExecutor(AbstractDetector):
                         obj_dict['rect'] = rect_scaled
 
                         objects_list.append(obj_dict)
-        """
+        
         objects_list_final = self.__create_objects(objects_list)
         print(objects_list_final)
         return objects_list_final
-        """
-        print(objects_list)
 
 
 
