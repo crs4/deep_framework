@@ -12,8 +12,8 @@ from yolov5.utils.general import (LOGGER, check_img_size, non_max_suppression, s
                                   check_imshow, xyxy2xywh, increment_path)
 
 
-from utils.features import Object, Rect, Point
-from utils.abstract_detector import AbstractDetector
+from utils_df.features import Object, Rect, Point
+from utils_df.abstract_detector import AbstractDetector
 
 class PersonExecutor(AbstractDetector):
 
