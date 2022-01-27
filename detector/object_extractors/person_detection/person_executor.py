@@ -8,7 +8,7 @@ from deep_sort.utils.parser import get_config
 from person_detector import PersonDetector
 from deep_sort.deep_sort import DeepSort
 from deep_sort.utils.parser import get_config
-from yolov5.yolo_utils.general import (LOGGER, check_img_size, non_max_suppression, scale_coords, 
+from yolov5.utils.general import (LOGGER, check_img_size, non_max_suppression, scale_coords, 
                                   check_imshow, xyxy2xywh, increment_path)
 
 
