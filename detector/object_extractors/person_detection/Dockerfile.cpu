@@ -17,7 +17,7 @@ WORKDIR /person_detection
 RUN pip install -r requirements.txt
 
 
-COPY --from=utils:deep_setup /home/deepframework/utils/. /person_detection/yolov5/utils
+COPY --from=utils:deep_setup /home/deepframework/utils/ /person_detection/utils
 COPY --from=interface:deep_setup /home/deepframework/interface/. /person_detection
 COPY --from=detector_tests:deep_setup /home/deepframework/detector_tests/execute_test.py /person_detection
 

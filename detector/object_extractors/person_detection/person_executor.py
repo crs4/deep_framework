@@ -12,8 +12,8 @@ from yolov5.yolo_utils.general import (LOGGER, check_img_size, non_max_suppressi
                                   check_imshow, xyxy2xywh, increment_path)
 
 
-from features import Object, Rect, Point
-from abstract_detector import AbstractDetector
+from utils.features import Object, Rect, Point
+from utils.abstract_detector import AbstractDetector
 
 class PersonExecutor(AbstractDetector):
 
