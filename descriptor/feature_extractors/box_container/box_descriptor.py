@@ -27,12 +27,18 @@ class BoxDescriptor:
 		:rtype: list
 		:returns: list of tuples, one per crop, composed of the class and the probality associated
 		"""
+		
+		master_box = dict()
+		objects = detector_results['objects']
+
+		if len(objects) == 0:
+			return master_box
+
+
 		min_x_topleft = 99999999999
 		min_y_topleft = 99999999999
 		max_x_bottomright = 0
 		max_y_bottomright = 0
-		master_box = dict()
-		objects = detector_results['objects']
 		for obj in objects:
 			x_topleft = obj['rect']['x_topleft']
 			y_topleft = obj['rect']['y_topleft']
@@ -51,7 +57,6 @@ class BoxDescriptor:
 			if y_bottomright > max_y_bottomright:
 				max_y_bottomright = y_bottomright
 
-		
 		master_box['x_topleft'] = min_x_topleft
 		master_box['y_topleft'] = min_y_topleft
 		master_box['x_bottomright'] = max_x_bottomright
