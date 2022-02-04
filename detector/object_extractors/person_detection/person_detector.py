@@ -1,69 +1,92 @@
 
 
+import argparse
 
-import time
-
-
-import numpy as np
-import cv2
-import sys
 import os
-import imutils
-from .person_detection_constants import *
+import platform
+import shutil
+import time
+from pathlib import Path
+import cv2
+import torch
+import torch.backends.cudnn as cudnn
+import numpy as np
 
 
+import sys
+sys.path.insert(0, './yolov5')
 
-class MobileDetector:
+from person_constants import *
+
+from utils.downloads import attempt_download
+from models.common import DetectMultiBackend
+from utils.general import (LOGGER, check_img_size, non_max_suppression, scale_coords, 
+                                  check_imshow, xyxy2xywh, increment_path)
+from utils.augmentations import letterbox
+from utils.torch_utils import select_device, time_sync
+from utils.plots import Annotator, colors
+
+class PersonDetector:
 
     def __init__(self):
+
         cur_dir = os.path.dirname(os.path.abspath(__file__))
-        model_path= os.path.join(cur_dir,'mobilenet_ssd/'+MOBILE_MODEL_NAME)
-        proto_path= os.path.join(cur_dir,'mobilenet_ssd/'+MOBILE_PROTO_NAME)
-        self.net = cv2.dnn.readNetFromCaffe(proto_path, model_path)
-        self.W = None
-        self.H = None
-        self.CLASSES = ["background", "aeroplane", "bicycle", "bird", "boat",
-                    "bottle", "bus", "car", "cat", "chair", "cow", "diningtable",
-                    "dog", "horse", "motorbike", "person", "pottedplant", "sheep",
-                    "sofa", "train", "tvmonitor"]
+        self.__setup_detector()
 
-    def detect_person(self, frame):
 
-        boxes = []
+    def __setup_detector(self):
+        # Load model
+        from person_constants import HALF, DEVICE, YOLO_MODEL, IMGSZ
+
+        self.device = select_device(DEVICE)
+        self.yolo_model = DetectMultiBackend(YOLO_MODEL, device=self.device, dnn=False)
+
+        stride, names, pt, jit, _ = self.yolo_model.stride, self.yolo_model.names, self.yolo_model.pt, self.yolo_model.jit, self.yolo_model.onnx
+        IMGSZ *= 2 if len(IMGSZ) == 1 else 1  # expand
+        imgsz = check_img_size(IMGSZ, s=stride)  # check image size
+        
+        
+        # Half
+        HALF &= pt and self.device.type != 'cpu'  # half precision only supported by PyTorch on CUDA
+        if pt:
+            self.yolo_model.model.half() if HALF else self.yolo_model.model.float()
+
+        # Get names and colors
+        self.names = self.yolo_model.module.names if hasattr(self.yolo_model, 'module') else self.yolo_model.names
+
+        if pt and self.device.type != 'cpu':
+            self.yolo_model(torch.zeros(1, 3, *imgsz).to(self.device).type_as(next(self.yolo_model.model.parameters())))  # warmup
+    
+    def preprocess_image(self, img0, img_size=640, stride=32, auto=True):
+        # Padded resize
+        img = letterbox(img0, img_size, stride, auto=auto)[0]
+        # Convert
+        img = img.transpose((2, 0, 1))[::-1]  # HWC to CHW, BGR to RGB
+        img = np.ascontiguousarray(img)
+        img = torch.from_numpy(img).to(self.device)
+        img = img.half() if HALF else img.float()  # uint8 to fp16/32
+        img /= 255.0  # 0 - 255 to 0.0 - 1.0
+        if img.ndimension() == 3:
+            img = img.unsqueeze(0)
+        return img
+
+
+    def detect_person(self, im0):
+
         
 
-        # if the frame dimensions are empty, set them
-        if self.W is None or self.H is None:
-            (self.H, self.W) = frame.shape[:2]
+        boxes = []
+        img = self.preprocess_image(im0)
 
-        blob = cv2.dnn.blobFromImage(frame, 0.007843, (self.W, self.H), 127.5)
-        self.net.setInput(blob)
-        detections = self.net.forward()
+        pred = self.yolo_model(img, augment=AUGMENT, visualize=False)
+        t3 = time_sync()
+        #dt[1] += t3 - t2
 
-        for i in np.arange(0, detections.shape[2]):
-            # extract the confidence (i.e., probability) associated
-            # with the prediction
-            confidence = detections[0, 0, i, 2]
+        # Apply NMS
+        pred = non_max_suppression(pred, CONF_THRES, IOU_THRES, CLASSES, AGNOSTIC_NMS, max_det=MAX_DET)
+        #dt[2] += time_sync() - t3
+        
 
-            # filter out weak detections by requiring a minimum
-            # confidence
-            if confidence > CONFIDENCE_THR:
-                # extract the index of the class label from the
-                # detections list
-                idx = int(detections[0, 0, i, 1])
-
-                # if the class label is not a person, ignore it
-                if self.CLASSES[idx] != "person":
-                    continue
-
-                # compute the (x, y)-coordinates of the bounding box
-                # for the object
-                box = detections[0, 0, i, 3:7] * np.array([self.W, self.H, self.W, self.H])
-                (startX, startY, endX, endY) = box.astype("int")
-                boxes.append((startX, startY, endX, endY))
-
-        return boxes
-
-    	
+        return pred,self.names
 
 
