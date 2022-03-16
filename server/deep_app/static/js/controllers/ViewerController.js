@@ -18,8 +18,9 @@ function ViewerController($scope, $timeout, dataService) {
     
     let video = ($('#video'))[0]
     let canvas = $('#canvas')[0] //$document.getElementById('canvas');
+    let hidden_canvas = $('#hidden_canvas')[0]
     $scope.faceRenderer = new EnhancedFacesVideoCanvas(video, canvas)
-    $scope.objectRenderer = new EnhancedObjectsVideoCanvas(video, canvas)
+    $scope.objectRenderer = new EnhancedObjectsVideoCanvas(video, canvas, hidden_canvas)
     
     function handleConnectionChange() {
         $timeout(() => {
@@ -63,6 +64,13 @@ function ViewerController($scope, $timeout, dataService) {
         refreshVideoCanvas();
     }, false);
 
+    $scope.selectTarget = function (event) { 
+        $scope.objectRenderer.setTargetObject(event.offsetX, event.offsetY)
+        setTimeout(() => {
+            deepConnection.send({ type: 'metadata', metadata: $scope.objectRenderer.targetObject })
+            console.log('metadata sent!')
+        }, 10)
+    };
 }
 
 class EnhancedVideoCanvas {
@@ -70,6 +78,7 @@ class EnhancedVideoCanvas {
         this.video = videoElement
         this.canvas = canvasElement
         this.context = this.canvas.getContext('2d')
+        this.frozen = false
     }
 
     setData(data) {
@@ -80,6 +89,7 @@ class EnhancedVideoCanvas {
     }
 
     refresh() {
+        if (this.frozen) return
         let vw = this.video.videoWidth
         let vh = this.video.videoHeight
         this.aspectRatio = vw / vh
@@ -95,20 +105,32 @@ class EnhancedVideoCanvas {
     getYScaleFactor() {
         return this.canvas.height / this.video.videoHeight
     }
+
+    freeze() {
+        this.frozen = true
+    }
+
+    unfreeze() {
+        this.frozen = false
+    }
 }
 
 class EnhancedObjectsVideoCanvas extends EnhancedVideoCanvas{
-    constructor(...args) {
-        super(...args)
+    constructor(videoElement, canvasElement, hidden_canvas) {
+        super(videoElement, canvasElement)
         this.objectsData = {}
         this.boxColors = ['yellow', 'red', 'blue', 'lime', 'orange', 'magenta', 'cyan', 'gold', 'purple', 'green']
         //this.boxColors = [];
         this.objects = {}
         this.availableBoxColors = this.boxColors.map(c => c)
         this.objColorMap = new Map()
+        this.target = {x: 0, y: 0}
+        this.targetObject = null
+        this.hidden_canvas = hidden_canvas
     }
 
     setData(data) {
+        if (this.frozen) return
         super.setData(data)
         this.objects[data.detector_category] = []
         for (const obj of data.objects) {
@@ -149,6 +171,22 @@ class EnhancedObjectsVideoCanvas extends EnhancedVideoCanvas{
                 var y = objectData.bbox.y_topleft * yScaleFactor
                 var w = (objectData.bbox.x_bottomright - objectData.bbox.x_topleft) * xScaleFactor
                 var h = (objectData.bbox.y_bottomright - objectData.bbox.y_topleft) * yScaleFactor
+                if (this.frozen) {
+                    if (this.target.x > x && this.target.x < x + w && this.target.y > y && this.target.y < y + h) {
+                        objectData.color = 'red'
+                        var imgData = this.context.getImageData(x, y, w, h)
+                        var ctx = this.hidden_canvas.getContext('2d')
+                        var scale = this.hidden_canvas.height / h
+                        this.hidden_canvas.width = w * scale
+                        ctx.scale(scale, scale)
+                        this.putImageData(ctx, imgData, 0, 0)
+                        var targetImg = this.hidden_canvas.toDataURL()//this.context.getImageData(x, y, w, h)
+                        this.targetObject = {
+                            bbox: objectData.bbox,
+                            image: targetImg
+                        }
+                    }
+                }
                 this.context.beginPath()
                 this.context.rect(x, y, w, h)
                 this.context.lineWidth = 5
@@ -161,6 +199,47 @@ class EnhancedObjectsVideoCanvas extends EnhancedVideoCanvas{
 
             }
         }
+    }
+
+    putImageData(ctx, imageData, dx, dy,
+        dirtyX, dirtyY, dirtyWidth, dirtyHeight) {
+        var data = imageData.data;
+        var height = imageData.height;
+        var width = imageData.width;
+        dirtyX = dirtyX || 0;
+        dirtyY = dirtyY || 0;
+        dirtyWidth = dirtyWidth !== undefined ? dirtyWidth : width;
+        dirtyHeight = dirtyHeight !== undefined ? dirtyHeight : height;
+        var limitBottom = dirtyY + dirtyHeight;
+        var limitRight = dirtyX + dirtyWidth;
+        for (var y = dirtyY; y < limitBottom; y++) {
+            for (var x = dirtyX; x < limitRight; x++) {
+                var pos = y * width + x;
+                ctx.fillStyle = 'rgba(' + data[pos * 4 + 0]
+                    + ',' + data[pos * 4 + 1]
+                    + ',' + data[pos * 4 + 2]
+                    + ',' + (data[pos * 4 + 3] / 255) + ')';
+                ctx.fillRect(x + dx, y + dy, 1, 1);
+            }
+        }
+    }
+
+    setTargetObject(x, y) {
+        super.refresh()
+        this.freeze()
+        console.log("frozen!")
+        // this.context.font = "20px Arial"
+        // this.context.fillStyle = "red"
+        // this.context.fillText("target", x, y)
+        this.target = {x, y}
+        this.refresh()
+        let text = "Confirm target!\nEither OK or Cancel."
+        if (confirm(text) == true) {
+            console.log("You pressed OK!")
+        } else {
+            console.log("You canceled!")
+        }
+        this.unfreeze()
     }
 }
 
