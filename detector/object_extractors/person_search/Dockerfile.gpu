@@ -1,0 +1,40 @@
+# CHANGE INITIAL IMAGE
+FROM nvidia/cuda:11.0-base
+
+ENV DEBIAN_FRONTEND noninteractive
+RUN apt-get update && apt-get install -y \ 
+    python3-dev git wget sudo  \
+    build-essential \
+    python-setuptools
+    # OTHERS PACKAGES
+
+RUN wget https://bootstrap.pypa.io/get-pip.py && \
+    python3 get-pip.py && \
+    rm get-pip.py
+
+RUN pip3 install \
+    imutils==0.5.2 \
+    pyzmq==18.0.1 \
+    torch==1.4.0 \
+    torchvision==0.5.0 \
+    yacs==0.1.8 \
+    tabulate==0.8.7
+    # OTHERS PACKAGES
+
+
+COPY . /home/deepframework/detector/person_search
+WORKDIR /home/deepframework/detector/person_search
+RUN python3 download_backbone_net.py
+
+# OTHER OPERATIONS HERE
+# ...
+# ...
+
+# DON'T TOUCH 
+COPY --from=utils:deep_setup /home/deepframework/utils /home/deepframework/detector/utils
+COPY --from=interface:deep_setup /home/deepframework/interface/. /home/deepframework/detector
+COPY --from=detector_tests:deep_setup /home/deepframework/detector_tests/execute_test.py /home/deepframework/detector
+
+# DON'T TOUCH 
+WORKDIR /home/deepframework/detector
+CMD python3 provider.py

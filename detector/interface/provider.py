@@ -13,10 +13,9 @@ from utils.features import Object, Rect, Point
 import copy
 import zmq
 import time,json
-import cv2
 import sys
 import importlib
-
+import traceback
 
 
 
@@ -59,7 +58,8 @@ class ObjectProvider(Process):
             self.executor = det_instance()
             print('CREATED ',self.det_name)
         except Exception as e:
-                print(e,'setup detector')
+                print(e,'setup detector error!')
+                print(e, traceback.format_exc())
 
         
         context = zmq.Context()
@@ -170,7 +170,8 @@ class ObjectProvider(Process):
                 object_list = self.executor.extract_features(current_frame,executor_dict)
 
             except Exception as e:
-                print('gen ',e)
+                print('Executor error! ',e)
+                print(e, traceback.format_exc())
                 raise e
 
             res = dict()
