@@ -118,14 +118,18 @@ class StreamManager:
         self.monitor_sender.connect(PROT+MONITOR_ADDRESS+':'+MONITOR_STATS_IN)
 
 
-    def create_deep_message(self, frame):
+    def create_deep_message(self, frame, metadata=None):
         if not self.stream_enable.is_set():
             return
         self.received_frame = frame
         self.received_frames += 1
         capture_time = time.time()
         
-        res = {'frame_idx': self.received_frames , 'vc_time': capture_time, 'frame_shape': frame.shape}
+        res = {'frame_idx': self.received_frames , 'vc_time': capture_time, 'frame_shape': frame.shape, 'metadata': metadata}
+        if metadata is not None:
+            # res['frame_idx'] = 999999
+            logging.info('Sending metadata for frame_idx: '+str(self.received_frames)+', keys: ' + str(list(res['metadata'])))
+            
         #if self.deep_delay < float(MAX_ALLOWED_DELAY) and self.processing_period < float(MAX_ALLOWED_DELAY):  
         #    send_data(self.sender_socket,[frame],0,False,**res)
         #else:
@@ -209,7 +213,7 @@ class StreamManager:
             raise c
 
 
-    def on_remote_data(self, data):
+    def on_client_data(self, data):
         # logging.info(f'[{self.id}]: Remote message: {str(data)}')
         data_type = data['type']
         if data_type == 'acknowledge':
@@ -220,13 +224,15 @@ class StreamManager:
 
         elif data_type == 'metadata':
             self.source_metadata = data['metadata']
-            logging.info('Source metadata: ' + str(self.source_metadata))
+            self.create_deep_message(self.received_frame, self.source_metadata)
+            logging.info('Client metadata!')
     
     async def on_capture_data(self, data):
         data_type = data['type']
         if data_type == 'metadata':
             self.source_metadata = data['metadata']
-            logging.info('Source metadata: ' + str(self.source_metadata))
+            logging.info('Capture metadata!')
+            self.create_deep_message(self.received_frame, self.source_metadata)
         if self.peer.readyState == PeerState.CONNECTED:
             await self.peer.send(data)
 
@@ -346,7 +352,7 @@ class StreamManager:
         tasks.append(asyncio.create_task(self.task_monitor(tasks)))
         
 
-        self.peer.add_data_handler(self.on_remote_data)
+        self.peer.add_data_handler(self.on_client_data)
         try:
             while True:
                 await self.stream_enable.wait()

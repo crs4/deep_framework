@@ -1,14 +1,12 @@
 import torch
 import torch.utils.data
 from torchvision.transforms import functional as F
-print("2Pre-Loading Person Search Executor...")
-import os 
-print(os.getcwd())
 from person_search.searcher_defaults import get_default_cfg
-print("Post-Loading Person Search Executor...")
 from person_search.models.seqnet import SeqNet
 from person_search.searcher_utils.utils import resume_from_ckpt
 import numpy as np
+from PIL import Image
+import base64
 
 from utils.features import Object, Rect, Point
 from utils.abstract_detector import AbstractDetector
@@ -17,7 +15,7 @@ from utils.abstract_detector import AbstractDetector
 model_cfg_file = "person_search/trained_models/exp_cuhk/config.yaml"
 model_ckpt_file = "person_search/trained_models/exp_cuhk/epoch_19.pth"
 
-print("Loading Person Search Executor...")
+print("Loading Person Search Executor v0.4 ...")
 
 class PersonSearchExecutor(AbstractDetector):
 
@@ -36,15 +34,44 @@ class PersonSearchExecutor(AbstractDetector):
         resume_from_ckpt(model_ckpt_file, self.model)
         self.query_feat = None
         print("Model loaded")
+        self.object_class = 'person'
 
 
     def extract_features(self,current_frame,executor_dict):
-        print('Frame data: ' + str(executor_dict))
-        if "app_data" in executor_dict:
-            query_img = [F.to_tensor(executor_dict["app_data"]["query_img"]).to(self.device)]
-            query_target = [{"boxes": torch.tensor([[0, 0, 195, 355]]).to(self.device)}]
-            with torch.no_grad():
-                self.query_feat = self.model(query_img, query_target)[0]
+        if "metadata" in executor_dict:
+            print('- ',executor_dict['frame_idx'],'-metadata: ', executor_dict["metadata"], end='')
+            if executor_dict["metadata"] is not None:
+                print('Frame data: ' + str(list(executor_dict["metadata"])))
+                if "target_bbox" not in executor_dict["metadata"]:
+                    self.query_feat = None
+                    self.object_class = 'person'
+                    print('Target reset')
+                else:
+                    print('Target received')
+                    # head='data:image/png;base64,'
+                    # img_str = executor_dict["metadata"]["target_image"]
+                    # img_b = base64.b64decode(img_str[len(head):])
+
+                    # with open('target_img.png', 'wb') as f:
+                    #     f.write(img_b)
+                    
+                    # img_t = F.to_tensor(Image.open('target_img.png').convert("RGB"))
+                    # print('Target image loaded, setting target...')
+                    # query_img = [img_t.to(self.device)]
+                    # query_target = [{"boxes": torch.tensor([[0, 0, img_t.shape[2], img_t.shape[1]]]).to(self.device)}]
+                    query_img = [F.to_tensor(current_frame).to(self.device)]
+                    bbox = executor_dict["metadata"]["target_bbox"]
+                    x1 = bbox['x_topleft']
+                    y1 = bbox['y_topleft']
+                    x2 = bbox['x_bottomright']
+                    y2 = bbox['y_bottomright']
+                    query_target = [{"boxes": torch.tensor([[x1, y1, x2, y2]]).to(self.device)}]
+                    with torch.no_grad():
+                        self.query_feat = self.model(query_img, query_target)[0]
+                    
+                    self.object_class = 'target'
+                    print('New Target set!')
+           
 
         frame_t = [F.to_tensor(current_frame).to(self.device)]
         with torch.no_grad():
@@ -61,13 +88,22 @@ class PersonSearchExecutor(AbstractDetector):
                 similarities = similarities.unsqueeze(0)
 
         obj_list = []
+        max_sim = 0
         for detection, sim in zip(detections, similarities):
+            if self.query_feat is not None:
+                if sim < 0.3:
+                    continue
             x1, y1, x2, y2 = detection
             top_left_point = Point(x1, y1)
             bottom_right_point = Point(x2, y2)
-            rect = Rect(top_left_point,bottom_right_point, **{'score':sim,'class':'person'})
+            rect = Rect(top_left_point,bottom_right_point, **{'score':sim,'class':self.object_class})
             obj = Object(rect)
-            obj_list.append(obj)
+            if self.query_feat is not None:
+                if sim > max_sim:
+                    max_sim = sim
+                    obj_list = [obj]
+            else:
+                obj_list.append(obj)
 
-        print(obj_list)
+        # print(obj_list)
         return obj_list

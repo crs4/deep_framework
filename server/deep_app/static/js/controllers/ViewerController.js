@@ -67,9 +67,31 @@ function ViewerController($scope, $timeout, dataService) {
     $scope.selectTarget = function (event) { 
         $scope.objectRenderer.setTargetObject(event.offsetX, event.offsetY)
         setTimeout(() => {
-            deepConnection.send({ type: 'metadata', metadata: $scope.objectRenderer.targetObject })
+            // let text
+            // if ($scope.objectRenderer.targetObject.target_bbox != undefined) {
+            //     text = "Confirm target in RED!\nEither OK or Cancel."
+            // }  else {
+            //     text = "Confirm NO target!\nEither OK or Cancel."
+            // }
+            // if (confirm(text) == true) {
+            //     console.log("You pressed OK!")
+            //     let message = { 
+            //         type: 'metadata', 
+            //         metadata: $scope.objectRenderer.targetObject
+            //     }
+            //     deepConnection.send(message)
+            //     $scope.objectRenderer.targetObject = {}
+            // } else {
+            //     console.log("You canceled!")
+            // }
+            let message = {
+                type: 'metadata',
+                metadata: $scope.objectRenderer.targetObject
+            }
+            deepConnection.send(message)
+            $scope.objectRenderer.targetObject = {}
             console.log('metadata sent!')
-        }, 10)
+        }, 1)
     };
 }
 
@@ -125,7 +147,7 @@ class EnhancedObjectsVideoCanvas extends EnhancedVideoCanvas{
         this.availableBoxColors = this.boxColors.map(c => c)
         this.objColorMap = new Map()
         this.target = {x: 0, y: 0}
-        this.targetObject = null
+        this.targetObject = {}
         this.hidden_canvas = hidden_canvas
     }
 
@@ -173,17 +195,17 @@ class EnhancedObjectsVideoCanvas extends EnhancedVideoCanvas{
                 var h = (objectData.bbox.y_bottomright - objectData.bbox.y_topleft) * yScaleFactor
                 if (this.frozen) {
                     if (this.target.x > x && this.target.x < x + w && this.target.y > y && this.target.y < y + h) {
-                        objectData.color = 'red'
-                        var imgData = this.context.getImageData(x, y, w, h)
-                        var ctx = this.hidden_canvas.getContext('2d')
-                        var scale = this.hidden_canvas.height / h
-                        this.hidden_canvas.width = w * scale
-                        ctx.scale(scale, scale)
-                        this.putImageData(ctx, imgData, 0, 0)
-                        var targetImg = this.hidden_canvas.toDataURL()//this.context.getImageData(x, y, w, h)
+                        // objectData.color = 'red'
+                        // var imgData = this.context.getImageData(x, y, w, h)
+                        // var ctx = this.hidden_canvas.getContext('2d')
+                        // var scale = this.hidden_canvas.height / h
+                        // this.hidden_canvas.width = w * scale
+                        // ctx.scale(scale, scale)
+                        // this.putImageData(ctx, imgData, 0, 0)
+                        // var targetImg = this.hidden_canvas.toDataURL()//this.context.getImageData(x, y, w, h)
                         this.targetObject = {
-                            bbox: objectData.bbox,
-                            image: targetImg
+                            target_bbox: objectData.bbox,
+                            //target_image: targetImg
                         }
                     }
                 }
@@ -233,12 +255,7 @@ class EnhancedObjectsVideoCanvas extends EnhancedVideoCanvas{
         // this.context.fillText("target", x, y)
         this.target = {x, y}
         this.refresh()
-        let text = "Confirm target!\nEither OK or Cancel."
-        if (confirm(text) == true) {
-            console.log("You pressed OK!")
-        } else {
-            console.log("You canceled!")
-        }
+        
         this.unfreeze()
     }
 }
