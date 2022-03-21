@@ -1,7 +1,7 @@
 <div ng-controller="ViewerController">
-    <div layout-gt-lg="row" layout="column">
+    <div layout-gt-lg="row" layout="column" ng-keydown="sendCommand($event, 'down')" ng-keyup="sendCommand($event, 'up')">
         <div flex="" flex-gt-lg="75" ng-show="status == 'connected'" >
-            <!-- <h2 style="text-align: center;">Enhanced Video</h2> -->
+            <h2 style="text-align: center;">{{command}}</h2>
             <video id="video" width='1280px' height='720px' autoplay style="display: none"></video>
             <canvas id="canvas" width='auto' height='auto' ng-click="selectTarget($event)"></canvas>
             <canvas id="hidden_canvas" width='320' height='240' style="display: none"></canvas>

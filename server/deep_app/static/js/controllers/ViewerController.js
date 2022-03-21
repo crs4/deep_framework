@@ -92,7 +92,19 @@ function ViewerController($scope, $timeout, dataService) {
             $scope.objectRenderer.targetObject = {}
             console.log('metadata sent!')
         }, 1)
-    };
+    }
+
+    $scope.command =''
+    $scope.sendCommand = function(event, type){
+        
+        console.log(`Keyboard command: [${event.key}]`)
+        let message = {
+            type: 'command',
+            command: { name: event.key, event_type: type} 
+        }
+        deepConnection.send(message)
+        $scope.command = event.key
+    }
 }
 
 class EnhancedVideoCanvas {

@@ -213,7 +213,7 @@ class StreamManager:
             raise c
 
 
-    def on_client_data(self, data):
+    async def on_client_data(self, data):
         # logging.info(f'[{self.id}]: Remote message: {str(data)}')
         data_type = data['type']
         if data_type == 'acknowledge':
@@ -226,6 +226,12 @@ class StreamManager:
             self.source_metadata = data['metadata']
             self.create_deep_message(self.received_frame, self.source_metadata)
             logging.info('Client metadata!')
+        elif data_type == 'command':
+            logging.info('Client command!')
+            if self.capture_peer != None:
+                if self.capture_peer.readyState == PeerState.CONNECTED:
+                    logging.info('command send: '+ str(data))
+                    await self.capture_peer.send(data)
     
     async def on_capture_data(self, data):
         data_type = data['type']
