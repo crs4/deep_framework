@@ -27,7 +27,7 @@ COPY . /home/deepframework/detector/person_search
 WORKDIR /home/deepframework/detector/person_search
 
 
-RUN wget --load-cookies /tmp/cookies.txt "https://docs.google.com/uc?export=download&confirm=$(wget --quiet --save-cookies /tmp/cookies.txt --keep-session-cookies --no-check-certificate 'https://docs.google.com/uc?export=download&id=1KK8KH58Q85AVyV_B3hGjXgOW2JhFYXBm' -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p')&id=1KK8KH58Q85AVyV_B3hGjXgOW2JhFYXBm" -O epoch_19.pth && rm -rf /tmp/cookies.txt && mv epoch_19.pth /home/deepframework/detector/person_search/trained_models/
+RUN wget --load-cookies /tmp/cookies.txt "https://docs.google.com/uc?export=download&confirm=$(wget --quiet --save-cookies /tmp/cookies.txt --keep-session-cookies --no-check-certificate 'https://docs.google.com/uc?export=download&id=1KK8KH58Q85AVyV_B3hGjXgOW2JhFYXBm' -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p')&id=1KK8KH58Q85AVyV_B3hGjXgOW2JhFYXBm" -O epoch_19.pth && rm -rf /tmp/cookies.txt && mv epoch_19.pth /home/deepframework/detector/person_search/trained_models/exp_cuhk/
 
 RUN python3 download_backbone_net.py
 
