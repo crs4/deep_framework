@@ -30,7 +30,7 @@ RUN make -f Makefile_gpu
 
 WORKDIR /yolo4_deep_sort
 
-RUN wget https://bootstrap.pypa.io/get-pip.py && \
+RUN wget https://bootstrap.pypa.io/pip/3.6/get-pip.py && \
     python3 get-pip.py && \
     rm get-pip.py
 
