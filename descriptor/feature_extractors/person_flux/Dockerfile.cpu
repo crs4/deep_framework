@@ -9,8 +9,7 @@ RUN apt-get update && apt-get install -y \
     libopencv-dev \
     pkg-config \
     iputils-ping \
-    python-setuptools \
-    libsm6 libxext6 libxrender-dev libglib2.0-0
+    python-setuptools
 
 # CHECK PIP INSTALLATION
 RUN pip3 install \

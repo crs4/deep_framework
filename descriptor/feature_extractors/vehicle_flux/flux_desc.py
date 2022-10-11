@@ -8,7 +8,7 @@ import traceback as tb
 from utils.abstract_descriptor import AbstractDescriptor
 
 DECIMATION = 70
-PERIOD = 30
+PERIOD = 60
 
 class FluxDescriptor(AbstractDescriptor):
 
@@ -42,9 +42,12 @@ class FluxDescriptor(AbstractDescriptor):
             raise Exception('rect is not in det_obj')
           if type(det_obj['rect']['x_topleft']) != int:
             raise Exception("det_obj['rect']['x_topleft'] is not int")
-          x_c.append(det_obj['rect']['x_topleft'] + (det_obj['rect']['x_bottomright'] - det_obj['rect']['x_topleft']) / 2)
-          y_c.append(det_obj['rect']['y_topleft'] + (det_obj['rect']['y_bottomright'] - det_obj['rect']['y_topleft']) / 2)
-          ids.append(det_obj['pid'])
+          if 'class' not in det_obj:
+            raise Exception('class is not in det_obj')
+          if det_obj['class'] in ['two_wheeled_vehicle', 'small_vehicle', 'big_vehicle']:
+            x_c.append(det_obj['rect']['x_topleft'] + (det_obj['rect']['x_bottomright'] - det_obj['rect']['x_topleft']) / 2)
+            y_c.append(det_obj['rect']['y_topleft'] + (det_obj['rect']['y_bottomright'] - det_obj['rect']['y_topleft']) / 2)
+            ids.append(det_obj['pid'])
 
         detected_objects = pd.DataFrame({'x_c': x_c, 'y_c': y_c}, index=ids)
         timestamp = detector_results['vc_time']
