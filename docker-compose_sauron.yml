@@ -1,0 +1,8 @@
+services:
+    gatenode:
+        image: deep_gate_node:sauron
+        networks:
+        - net_deep
+version: '3'
+networks:
+    net_deep:

@@ -172,7 +172,7 @@ class Starter:
 	def start_framework(self):
 		self.__pull_images()
 
-		start_command = "docker stack deploy -c "+ MAIN_COMPOSE_FILE + " deepframework"
+		start_command = "docker stack deploy -c "+ MAIN_COMPOSE_FILE + " -c docker-compose_sauron.yml" + " deepframework"
 		top_manager_node = self.top_manager_node
 		
 

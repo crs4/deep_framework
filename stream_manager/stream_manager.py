@@ -348,6 +348,10 @@ class StreamManager:
 
         self.peer.add_data_handler(self.on_remote_data)
         try:
+            # ONLY FOR SAURON: start inmediately
+            await self.peer.open()
+            self.stream_enable.set()
+            await self.start_stream_capture()
             while True:
                 await self.stream_enable.wait()
 
